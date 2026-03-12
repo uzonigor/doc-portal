@@ -149,6 +149,20 @@
             margin-bottom: 60px;
         }
         
+        /* DESKTOP - 3 KOLONE */
+        @media (min-width: 1920px) {
+            .options-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        /* TABLET/iPad - 1 KOLONA */
+        @media (max-width: 1366px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
         .option-card {
             background: #ffffff;
             border: 2px solid #e2e8f0;
