@@ -15,13 +15,14 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #f7fafc;
             color: #2d3748;
+            font-size: 16px;
         }
         
         /* HEADER */
         header {
             background: #ffffff;
             border-bottom: 1px solid #e2e8f0;
-            padding: 24px 40px;
+            padding: 32px 40px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
         
@@ -34,23 +35,23 @@
         }
         
         .logo {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             color: #2d3748;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
         
         .logo-icon {
-            width: 24px;
-            height: 24px;
+            width: 36px;
+            height: 36px;
             background: linear-gradient(135deg, #d4a853 0%, #c99a3f 100%);
             clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 75% 50%, 100% 75%, 25% 100%, 0% 75%, 25% 50%);
         }
         
         .breadcrumb {
-            font-size: 12px;
+            font-size: 14px;
             color: #718096;
         }
         
@@ -63,13 +64,13 @@
         main {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 40px;
+            padding: 48px 40px;
         }
         
         .page-title {
-            font-size: 32px;
+            font-size: 38px;
             font-weight: 600;
-            margin-bottom: 32px;
+            margin-bottom: 48px;
             color: #2d3748;
         }
         
@@ -78,36 +79,36 @@
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
+            padding: 44px;
+            margin-bottom: 36px;
         }
         
         .section-title {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 600;
-            margin-bottom: 24px;
+            margin-bottom: 32px;
             color: #2d3748;
         }
         
         /* FORM */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 28px;
         }
         
         label {
             display: block;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 600;
             color: #2d3748;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
         
         input, textarea {
             width: 100%;
-            padding: 10px 12px;
+            padding: 16px 14px;
             border: 1px solid #cbd5e0;
-            border-radius: 6px;
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 16px;
             font-family: inherit;
             color: #2d3748;
         }
@@ -115,21 +116,21 @@
         input:focus, textarea:focus {
             outline: none;
             border-color: #d4a853;
-            box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.1);
+            box-shadow: 0 0 0 4px rgba(212, 168, 83, 0.1);
         }
         
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 24px;
         }
         
         .btn {
-            padding: 10px 20px;
-            font-size: 14px;
+            padding: 14px 28px;
+            font-size: 16px;
             font-weight: 600;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -143,15 +144,38 @@
             background: #d4a853;
         }
         
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        
         .btn-danger {
             background: #fee2e2;
             color: #991b1b;
-            padding: 6px 12px;
-            font-size: 12px;
+            padding: 8px 16px;
+            font-size: 14px;
         }
         
         .btn-danger:hover {
             background: #fecaca;
+        }
+        
+        /* SEARCH */
+        .search-container {
+            display: flex;
+            gap: 18px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+        }
+        
+        .search-container input {
+            padding: 16px 14px;
+            font-size: 16px;
+        }
+        
+        #searchResults {
+            margin-top: 16px;
+            font-size: 16px;
+            color: #718096;
         }
         
         /* TABLICA */
@@ -159,23 +183,15 @@
             overflow-x: auto;
         }
         
-        .hidden-form {
-            display: none;
-        }
-        
-        .hidden-form.show {
-            display: block;
-        }
-        
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: 16px;
         }
         
         th {
             background: #f7fafc;
-            padding: 12px;
+            padding: 16px;
             text-align: left;
             font-weight: 600;
             color: #4a5568;
@@ -183,7 +199,7 @@
         }
         
         td {
-            padding: 12px;
+            padding: 16px;
             border-bottom: 1px solid #e2e8f0;
             color: #2d3748;
         }
@@ -193,43 +209,132 @@
         }
         
         .kupac-id {
-            font-size: 12px;
+            font-size: 14px;
             color: #718096;
             font-family: monospace;
         }
         
         .no-data {
             text-align: center;
-            padding: 40px 20px;
+            padding: 48px 20px;
             color: #718096;
-            font-size: 14px;
+            font-size: 16px;
         }
         
         /* FOOTER */
         footer {
             background: #f7fafc;
             border-top: 1px solid #e2e8f0;
-            padding: 30px 40px;
+            padding: 44px 40px;
             text-align: center;
-            font-size: 12px;
+            font-size: 14px;
             color: #718096;
         }
         
+        /* TABLET - iPad Air 11" */
+        @media (min-width: 1024px) and (max-width: 1366px) {
+            body {
+                font-size: 16px;
+            }
+            
+            main {
+                padding: 60px 80px;
+            }
+            
+            .page-title {
+                font-size: 36px;
+                margin-bottom: 40px;
+            }
+            
+            .section {
+                padding: 40px;
+                margin-bottom: 40px;
+                border-radius: 12px;
+            }
+            
+            .section-title {
+                font-size: 24px;
+                margin-bottom: 28px;
+            }
+            
+            label {
+                font-size: 16px;
+                margin-bottom: 10px;
+            }
+            
+            input, textarea {
+                padding: 12px 14px;
+                font-size: 16px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 28px;
+            }
+            
+            .btn {
+                padding: 12px 24px;
+                font-size: 16px;
+            }
+            
+            table {
+                font-size: 16px;
+            }
+            
+            th {
+                padding: 16px;
+                font-size: 16px;
+            }
+            
+            td {
+                padding: 16px;
+                font-size: 15px;
+            }
+            
+            .search-container {
+                gap: 20px;
+            }
+            
+            .search-container button {
+                width: auto;
+            }
+        }
+        
+        /* SMALLER TABLETS */
         @media (max-width: 768px) {
             main {
-                padding: 20px;
+                padding: 32px 20px;
+            }
+            
+            .page-title {
+                font-size: 28px;
+                margin-bottom: 36px;
+            }
+            
+            .section {
+                padding: 32px 24px;
+                margin-bottom: 24px;
             }
             
             .form-row {
                 grid-template-columns: 1fr;
             }
             
+            .search-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-container button {
+                width: 100%;
+            }
+            
             table {
-                font-size: 12px;
+                font-size: 14px;
             }
             
             th, td {
-                padding: 8px;
+                padding: 12px 8px;
             }
         }
     </style>
@@ -251,26 +356,25 @@
     <h1 class="page-title">Upravljanje Kupcima</h1>
 
     <!-- SEARCH/FILTER SEKCIJA -->
-    <section class="section" style="margin-bottom: 30px;">
-        <div class="search-container" style="display: flex; gap: 15px; align-items: flex-end;">
+    <section class="section" style="margin-bottom: 36px;">
+        <div class="search-container">
             <div style="flex: 1;">
-                <label for="searchInput" style="display: block; margin-bottom: 8px;">Pretraži kupce:</label>
+                <label for="searchInput" style="display: block; margin-bottom: 12px;">Pretraži kupce:</label>
                 <input 
                     type="text" 
                     id="searchInput" 
                     placeholder="Pretraži po imenu, prezimenu, email-u ili PIB-u..."
-                    style="width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 14px;"
                 >
             </div>
             <button class="btn btn-primary" onclick="resetSearch()">Očisti</button>
             <button class="btn btn-primary" onclick="scrollToForm()" style="background: #d4a853;">+ Dodaj kupca</button>
         </div>
-        <p id="searchResults" style="margin-top: 12px; font-size: 13px; color: #718096;"></p>
+        <p id="searchResults"></p>
     </section>
 
     <!-- FORMA ZA DODAVANJE KUPCA - SKRIVENA -->
     <section class="section hidden-form" id="formaSekcija">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
             <h2 class="section-title" style="margin-bottom: 0;">Dodaj novog kupca</h2>
             <button class="btn btn-danger" onclick="closeForm()" style="background: #cbd5e0; color: #2d3748;">✕ Zatvori</button>
         </div>
@@ -357,6 +461,16 @@
     <p>GO4 - Dokumentacioni Portal © 2024 | Powered by GO4ENERGY</p>
 </footer>
 
+<style>
+    .hidden-form {
+        display: none;
+    }
+    
+    .hidden-form.show {
+        display: block;
+    }
+</style>
+
 <script>
 // Ucitaj kupce iz localStorage
 function loadKupci() {
@@ -404,12 +518,9 @@ document.getElementById('kupacForm').addEventListener('submit', function(e) {
     kupci.push(kupac);
     localStorage.setItem('kupci', JSON.stringify(kupci));
     
-    // Resetuj formu
     this.reset();
-    
-    // Osveži listu
     loadKupci();
-    
+    closeForm();
     alert('Kupac je uspješno dodan!');
 });
 
@@ -446,7 +557,6 @@ searchInput.addEventListener('input', function() {
         );
     });
     
-    // Prikaži rezultate
     const kupciBodies = document.getElementById('kupciBodies');
     if (filtrirani.length === 0) {
         kupciBodies.innerHTML = '<tr><td colspan="6" class="no-data">Nema rezultata. Pokušaj sa drugačijim pojmom.</td></tr>';
@@ -475,16 +585,10 @@ function resetSearch() {
     loadKupci();
 }
 
-// Scroll to form za dodavanje kupca
-function scrollToForm() {
-    openForm();
-}
-
 // Otvori formu
 function openForm() {
     const formaSekcija = document.getElementById('formaSekcija');
     formaSekcija.classList.add('show');
-    // Scroll to form
     setTimeout(() => {
         formaSekcija.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
@@ -494,6 +598,11 @@ function openForm() {
 function closeForm() {
     const formaSekcija = document.getElementById('formaSekcija');
     formaSekcija.classList.remove('show');
+}
+
+// Scroll to form za dodavanje kupca
+function scrollToForm() {
+    openForm();
 }
 
 // Ucitaj kupce na stranici load
