@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zahtev za prilagođenje mernog mesta</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .page {
+            background: white;
+            width: 210mm;
+            height: 297mm;
+            margin: 0 auto 20px;
+            padding: 20mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .page-number {
+            position: absolute;
+            bottom: 10mm;
+            right: 10mm;
+            font-size: 10pt;
+            color: #666;
+        }
+        
+        .header-info {
+            margin-bottom: 20pt;
+        }
+        
+        .header-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20pt;
+            margin-bottom: 12pt;
+        }
+        
+        .header-item {
+            font-size: 10pt;
+        }
+        
+        .header-item label {
+            display: block;
+            margin-bottom: 3pt;
+            font-size: 10pt;
+        }
+        
+        .header-item input {
+            border: none;
+            border-bottom: 1px solid #000;
+            width: 100%;
+            padding: 3pt 5pt;
+            font-size: 10pt;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        
+        .title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 20pt 0;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10pt;
+        }
+        
+        .section-title {
+            background: #e8e8e8;
+            padding: 5pt 8pt;
+            font-weight: bold;
+            font-size: 10pt;
+            margin-top: 15pt;
+            margin-bottom: 10pt;
+            border: 1px solid #999;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 40% 60%;
+            gap: 10pt;
+            margin-bottom: 12pt;
+            align-items: baseline;
+        }
+        
+        .form-row-full {
+            margin-bottom: 12pt;
+        }
+        
+        .form-label {
+            font-size: 10pt;
+            color: #000;
+        }
+        
+        .form-input {
+            border: none;
+            border-bottom: 1px solid #000;
+            padding: 3pt 5pt;
+            font-size: 10pt;
+            font-family: 'Times New Roman', Times, serif;
+            background: transparent;
+            width: 100%;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            background: #ffffcc;
+        }
+        
+        .text-block {
+            font-size: 9pt;
+            line-height: 1.4;
+            margin: 10pt 0;
+            padding: 8pt;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+        }
+        
+        .notice-block {
+            font-size: 9pt;
+            line-height: 1.4;
+            margin: 10pt 0;
+            padding: 8pt;
+            border: 2px solid #000;
+            background: #ffffff;
+        }
+        
+        .notice-item {
+            margin: 8pt 0;
+            padding-left: 15pt;
+        }
+        
+        .signature-section {
+            margin-top: 30pt;
+            border-top: 2px solid #000;
+            padding-top: 15pt;
+        }
+        
+        .signature-block {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30pt;
+            text-align: center;
+        }
+        
+        .signature-item {
+            font-size: 9pt;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 35pt;
+            padding-top: 5pt;
+            min-height: 40pt;
+        }
+        
+        .button-group {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .btn-print {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-print:hover {
+            background: #45a049;
+        }
+        
+        .btn-email {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-email:hover {
+            background: #0b7dda;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+            .page {
+                margin: 0;
+                box-shadow: none;
+                width: auto;
+                height: auto;
+                page-break-after: always;
+                padding: 0;
+            }
+            .button-group {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="button-group">
+    <button class="btn-print" onclick="window.print()">Štampaj/Preuzmi PDF</button>
+    <button class="btn-email" onclick="sendEmail()">Pošalji mailu</button>
+</div>
+
+<div class="page" id="page1">
+    
+    <!-- Zaglavlje -->
+    <div class="header-info">
+        <div style="font-size: 11pt; font-weight: bold; margin-bottom: 8pt;">Elektrodistribucija Srbije</div>
+        
+        <div class="header-row">
+            <div class="header-item">
+                <label>Ogranaka:</label>
+                <input type="text" placeholder="(upisati naziv Ogranaka EDS d.o.o. Beograd)">
+            </div>
+            <div></div>
+        </div>
+        
+        <div class="header-row">
+            <div class="header-item">
+                <label>Broj:</label>
+                <input type="text">
+            </div>
+            <div class="header-item">
+                <label>Datum:</label>
+                <input type="text">
+            </div>
+        </div>
+    </div>
+    
+    <div class="title">ZAHTEV ZA PRILAGOĐENJE MERNOG MESTA</div>
+    
+    <!-- SEKCIJA 1: Podaci o krajnjem kupcu -->
+    <div class="section-title">PODACI O KRAJNJEM KUPCU ELEKTRICNE ENERGIJE</div>
+    
+    <div class="form-row">
+        <div class="form-label">Ime i prezime / poslovno ime:</div>
+        <input class="form-input" id="imePrezime" type="text">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-label">PIB za pravna lica i preduzetnik:</div>
+        <input class="form-input" id="pib" type="text">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-label">Maticni broj za pravna lica i preduzetnik:</div>
+        <input class="form-input" id="maticniBroj" type="text">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-label">Kontakt telefon:</div>
+        <input class="form-input" id="telefon" type="text">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-label">Email adresa:</div>
+        <input class="form-input" id="email" type="email">
+    </div>
+    
+    <!-- SEKCIJA 2: Podaci o mernom mestu -->
+    <div class="section-title">PODACI O MERNOM MESTU</div>
+    
+    <div class="form-row">
+        <div class="form-label">Identifikacioni broj mernog mesta:</div>
+        <input class="form-input" id="merneMesto" type="text">
+    </div>
+    
+    <!-- SEKCIJA 3: Podaci o objektu -->
+    <div class="section-title">PODACI O OBJEKTU KRAJNJEG KUPCA</div>
+    
+    <div class="form-row">
+        <div class="form-label">Opština:</div>
+        <input class="form-input" type="text">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-label">Mesto:</div>
+        <input class="form-input" id="mesto" type="text">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-label">Adresa:</div>
+        <input class="form-input" id="adresa" type="text">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-label">Katastarska parcela:</div>
+        <input class="form-input" type="text">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-label">Katastarska opština:</div>
+        <input class="form-input" type="text">
+    </div>
+    
+    <!-- SEKCIJA 4: Podaci o izvođaču radova -->
+    <div class="section-title">PODACI O IZVOĐAČU RADOVA</div>
+    
+    <div class="form-row">
+        <div class="form-label">Poslovn ime:</div>
+        <input class="form-input" type="text">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-label">PIB:</div>
+        <input class="form-input" type="text">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-label">Maticni broj:</div>
+        <input class="form-input" type="text">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-label">Broj licence:</div>
+        <input class="form-input" type="text">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-label">Kontakt telefon:</div>
+        <input class="form-input" type="text">
+    </div>
+    
+    <div class="form-row">
+        <div class="form-label">Email adresa:</div>
+        <input class="form-input" type="email">
+    </div>
+    
+    <div class="page-number">Stranica 1 od 2</div>
+</div>
+
+<!-- STRANICA 2 -->
+<div class="page" id="page2">
+    
+    <div class="text-block" style="margin-top: 0;">
+        <strong>OBAVEST:</strong><br>
+        Obavesćujem Vas da sam izgradula/o fotovoltajski proizvodni objekat snage 
+        <strong id="snagaText">___</strong> kW (upisati instaliranu snagu/proizvodni kapacitet proizvodnog objekta u kW).
+    </div>
+    
+    <div class="text-block">
+        U skladuš sa Uredbom o kriterijumima, uslovima i načinu obračuna potražvanja i obaveza između kupca – proizvođača i snabdevača ("Službeni glasnik RS", broj 83 od 27. avgusta 2021. godine), u daljem tekstu: Uredba, molim da mi obezedite beznnapona stanje i demontažu postojeceg mernog uređaja i plambi operatora distribticnog sistema kako bih mogla/ao da izvršim prilagođenje mernog mesta.
+    </div>
+    
+    <div class="text-block">
+        Molim da me obaveste o planiranom terminu sprovođenja zahteva, kako bih mogla/ao da organizujem prilagođenje mernog mesta.
+    </div>
+    
+    <div class="text-block">
+        Nakon prilagođenja mernog mesta, obavezujem se da o istom obavesttim Elektrodistribuciju Srbije d.o.o. Beograd, koja je dužna da, izvrši kontrolu i prijem mernog mesta, plombiranje uređaja i uspostavljanje napajanja objekta krajnjeg kupca za smer potroške ukoliko je prilagođenje mernog mesta izvršeno na prpisn način.
+    </div>
+    
+    <div class="notice-block">
+        <strong>Ovlašćenim licima Elektrodistribucije Srbije uručiću:</strong>
+        <div class="notice-item">1. potvrdu sa izjavom odgovornog izvođača radova da je mernt mest ispravn izvedeno u skladuš sa propisima i standardima i</div>
+        <div class="notice-item">2. ateste za ugradenu opremu i uređaje.</div>
+    </div>
+    
+    <div style="font-size: 9pt; margin-top: 15pt; padding: 8pt; background: #f0f0f0; border: 1px solid #999;">
+        <strong>Prilog:</strong> Dokaz o uplati sledećih troškov:
+        <div style="margin-top: 8pt;">
+            • Za monofazno brojilo: 20.854,98 RSD (sa PDV)<br>
+            • Za trofazno brojilo ili direktnu mernu grupu: 21.198,18 RSD (sa PDV)
+        </div>
+    </div>
+    
+    <div style="margin-top: 15pt; font-size: 9pt; padding: 8pt; background: #ffffcc; border: 1px solid #999;">
+        <strong>OBAVESTO JE UPOZORENJA:</strong>
+        <ol style="margin-left: 15pt; margin-top: 8pt;">
+            <li>Ukoliko operator distribucnog sistema konstatu neispravnost uređaja ili mernog mesta, ima obavezu da ne izvrši prikljuchenje objekta;</li>
+            <li>Potrošnja elektricne energije preko mernog uređaja na kom su oštećene ili nedostaju plambe operatora sistema tretira se kao neovlašćena potrošnja;</li>
+            <li>Nije dozvoljeno prikljuchivanje proizvodnog objekta bez prethodne saglasnosti i tehnickkog prijema;</li>
+            <li>Rad stručnih službi EDS vrši se radnim danima, od 08:30 do 15:00 časova.</li>
+        </ol>
+    </div>
+    
+    <!-- POTPISI -->
+    <div class="signature-section">
+        <div class="signature-block">
+            <div class="signature-item">
+                <div style="margin-bottom: 5pt;">U ________________, dana ___________</div>
+            </div>
+            <div class="signature-item">
+                <div class="form-label"><strong>VLASNIK OBJEKTA</strong></div>
+                <div class="signature-line"></div>
+                <div style="margin-top: 5pt; font-size: 8pt;">Potpis i pečat</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="page-number">Stranica 2 od 2</div>
+</div>
+
+<script>
+function populateForm() {
+    const userData = {
+        imePrezime: document.getElementById('imePrezime').value,
+        pib: document.getElementById('pib').value,
+        maticniBroj: document.getElementById('maticniBroj').value,
+        telefon: document.getElementById('telefon').value,
+        email: document.getElementById('email').value,
+        merneMesto: document.getElementById('merneMesto').value,
+        mesto: document.getElementById('mesto').value,
+        adresa: document.getElementById('adresa').value,
+        snaga: document.getElementById('snagaText').textContent
+    };
+    
+    return userData;
+}
+
+function sendEmail() {
+    const userData = populateForm();
+    
+    const formData = {
+        htmlContent: document.documentElement.outerHTML,
+        userData: userData,
+        stageId: 'stage2'
+    };
+    
+    alert('Slanje dokumentacije na email operatora...\n\nEmail: ' + userData.email);
+    
+    // TODO: Integracija sa API-jem
+}
+
+// Auto-popunjavanje na učitavanju
+window.addEventListener('load', function() {
+    const saved = localStorage.getItem('userData');
+    if (saved) {
+        const data = JSON.parse(saved);
+        if (document.getElementById('imePrezime')) {
+            document.getElementById('imePrezime').value = (data.ime || '') + ' ' + (data.prezime || '');
+            document.getElementById('pib').value = data.pib || '';
+            document.getElementById('maticniBroj').value = data.maticniBroj || '';
+            document.getElementById('telefon').value = data.telefonski || '';
+            document.getElementById('email').value = data.email || '';
+            document.getElementById('merneMesto').value = data.merneMesto || '';
+            document.getElementById('mesto').value = data.mesto || '';
+            document.getElementById('adresa').value = data.adresa || '';
+            document.getElementById('snagaText').textContent = data.kw || '___';
+        }
+    }
+});
+</script>
+
+</body>
+</html>
