@@ -68,21 +68,95 @@
         .hero p {
             font-size: 18px;
             color: #718096;
-            margin-bottom: 32px;
+            margin-bottom: 0;
             max-width: 700px;
             margin-left: auto;
             margin-right: auto;
             line-height: 1.6;
         }
         
-        /* GRID */
-        .options-section {
-            max-width: 1200px;
+        /* KUPCI SECTION */
+        .kupci-section {
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 60px 40px;
+            padding: 80px 40px;
+            border-bottom: 2px solid #e2e8f0;
         }
         
-        .section-title {
+        .section-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .kupci-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .kupci-card {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 50px 40px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 220px;
+        }
+        
+        .kupci-card:hover {
+            border-color: #d4a853;
+            box-shadow: 0 8px 24px rgba(212, 168, 83, 0.15);
+            transform: translateY(-4px);
+        }
+        
+        .kupci-icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+        }
+        
+        .kupci-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+        
+        .kupci-description {
+            font-size: 14px;
+            color: #718096;
+            line-height: 1.6;
+            max-width: 400px;
+        }
+        
+        /* PORTALI SECTION */
+        .portali-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 80px 40px;
+        }
+        
+        .portali-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .portali-title {
             font-size: 24px;
             font-weight: 600;
             margin-bottom: 50px;
@@ -214,8 +288,16 @@
                 font-size: 32px;
             }
             
-            .options-section {
-                padding: 40px 20px;
+            .kupci-section {
+                padding: 60px 20px;
+            }
+            
+            .portali-section {
+                padding: 60px 20px;
+            }
+            
+            .portali-title {
+                font-size: 20px;
             }
             
             .options-grid {
@@ -247,8 +329,23 @@
         <p>Krajnji kupci koji nisu domaćinstva ili stambene zajednice za instalirane proizvodne snage fotonaponskih modula</p>
     </section>
 
-    <section class="options-section">
-        <h2 class="section-title">Izaberi kategoriju prema instaliranoj snazi:</h2>
+    <!-- KUPCI SEKCIJA - ODVOJENA -->
+    <section class="kupci-section">
+        <div class="section-label">Upravljanje</div>
+        
+        <div class="kupci-container">
+            <a href="/kupci" class="kupci-card">
+                <div class="kupci-icon">👥</div>
+                <h2 class="kupci-title">Kupci</h2>
+                <p class="kupci-description">Upravljaj bazom kupaca i investitora. Dodaj nove, izmeni ili izbriši postojeće kupce.</p>
+            </a>
+        </div>
+    </section>
+
+    <!-- PORTALI SEKCIJA - 3 NAČINA -->
+    <section class="portali-section">
+        <div class="portali-label">Dokumentacioni Portali</div>
+        <h2 class="portali-title">Izaberi kategoriju prema instaliranoj snazi:</h2>
         
         <div class="options-grid">
             <!-- NAČIN 1 -->

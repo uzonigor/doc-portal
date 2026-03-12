@@ -61,6 +61,11 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Upravljanje kupcima
+app.get('/kupci', (req, res) => {
+    res.sendFile(path.join(__dirname, 'kupci.html'));
+});
+
 // Način 1 - Do 10,8 kW
 app.get('/doc-portal-1', (req, res) => {
     res.sendFile(path.join(__dirname, 'doc-portal-1.html'));

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GO4 - Upravljanje Kupcima</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f7fafc;
+            color: #2d3748;
+        }
+        
+        /* HEADER */
+        header {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 24px 40px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #d4a853 0%, #c99a3f 100%);
+            clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 75% 50%, 100% 75%, 25% 100%, 0% 75%, 25% 50%);
+        }
+        
+        .breadcrumb {
+            font-size: 12px;
+            color: #718096;
+        }
+        
+        .breadcrumb a {
+            color: #d4a853;
+            text-decoration: none;
+        }
+        
+        /* MAIN */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 32px;
+            color: #2d3748;
+        }
+        
+        /* SECTIONS */
+        .section {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #2d3748;
+        }
+        
+        /* FORM */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #2d3748;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #d4a853;
+            box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #085158;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #d4a853;
+        }
+        
+        .btn-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .btn-danger:hover {
+            background: #fecaca;
+        }
+        
+        /* TABLICA */
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .hidden-form {
+            display: none;
+        }
+        
+        .hidden-form.show {
+            display: block;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        th {
+            background: #f7fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #2d3748;
+        }
+        
+        tr:hover {
+            background: #f7fafc;
+        }
+        
+        .kupac-id {
+            font-size: 12px;
+            color: #718096;
+            font-family: monospace;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        /* FOOTER */
+        footer {
+            background: #f7fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 30px 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #718096;
+        }
+        
+        @media (max-width: 768px) {
+            main {
+                padding: 20px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <div class="logo">
+            <div class="logo-icon"></div>
+            GO4 - Upravljanje Kupcima
+        </div>
+        <div class="breadcrumb">
+            <a href="/">← Nazad na početak</a>
+        </div>
+    </div>
+</header>
+
+<main>
+    <h1 class="page-title">Upravljanje Kupcima</h1>
+
+    <!-- SEARCH/FILTER SEKCIJA -->
+    <section class="section" style="margin-bottom: 30px;">
+        <div class="search-container" style="display: flex; gap: 15px; align-items: flex-end;">
+            <div style="flex: 1;">
+                <label for="searchInput" style="display: block; margin-bottom: 8px;">Pretraži kupce:</label>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Pretraži po imenu, prezimenu, email-u ili PIB-u..."
+                    style="width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 14px;"
+                >
+            </div>
+            <button class="btn btn-primary" onclick="resetSearch()">Očisti</button>
+            <button class="btn btn-primary" onclick="scrollToForm()" style="background: #d4a853;">+ Dodaj kupca</button>
+        </div>
+        <p id="searchResults" style="margin-top: 12px; font-size: 13px; color: #718096;"></p>
+    </section>
+
+    <!-- FORMA ZA DODAVANJE KUPCA - SKRIVENA -->
+    <section class="section hidden-form" id="formaSekcija">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 class="section-title" style="margin-bottom: 0;">Dodaj novog kupca</h2>
+            <button class="btn btn-danger" onclick="closeForm()" style="background: #cbd5e0; color: #2d3748;">✕ Zatvori</button>
+        </div>
+        
+        <form id="kupacForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="ime">Ime</label>
+                    <input type="text" id="ime" name="ime" required>
+                </div>
+                <div class="form-group">
+                    <label for="prezime">Prezime</label>
+                    <input type="text" id="prezime" name="prezime" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="pib">PIB</label>
+                    <input type="text" id="pib" name="pib" required>
+                </div>
+                <div class="form-group">
+                    <label for="maticniBroj">Matrični broj</label>
+                    <input type="text" id="maticniBroj" name="maticniBroj">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefonski">Telefonski broj</label>
+                    <input type="tel" id="telefonski" name="telefonski">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="adresa">Adresa</label>
+                <input type="text" id="adresa" name="adresa" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="mesto">Mjesto</label>
+                    <input type="text" id="mesto" name="mesto" required>
+                </div>
+                <div class="form-group">
+                    <label for="kw">Instalirano (kW)</label>
+                    <input type="number" id="kw" name="kw" step="0.1" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Dodaj kupca</button>
+        </form>
+    </section>
+
+    <!-- LISTA KUPACA -->
+    <section class="section">
+        <h2 class="section-title">Lista kupaca</h2>
+        
+        <div class="table-container">
+            <table id="kupcitable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Ime i Prezime</th>
+                        <th>Email</th>
+                        <th>Telefon</th>
+                        <th>kW</th>
+                        <th>Akcija</th>
+                    </tr>
+                </thead>
+                <tbody id="kupciBodies">
+                    <tr><td colspan="6" class="no-data">Nema kupaca. Dodaj prvog kupca gore.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <p>GO4 - Dokumentacioni Portal © 2024 | Powered by GO4ENERGY</p>
+</footer>
+
+<script>
+// Ucitaj kupce iz localStorage
+function loadKupci() {
+    const kupciBodies = document.getElementById('kupciBodies');
+    const kupci = JSON.parse(localStorage.getItem('kupci')) || [];
+    
+    if (kupci.length === 0) {
+        kupciBodies.innerHTML = '<tr><td colspan="6" class="no-data">Nema kupaca. Dodaj prvog kupca gore.</td></tr>';
+        return;
+    }
+    
+    kupciBodies.innerHTML = kupci.map(kupac => `
+        <tr>
+            <td><span class="kupac-id">${kupac.id}</span></td>
+            <td>${kupac.ime} ${kupac.prezime}</td>
+            <td>${kupac.email}</td>
+            <td>${kupac.telefonski || '-'}</td>
+            <td>${kupac.kw} kW</td>
+            <td>
+                <button class="btn btn-danger" onclick="obrisiKupca('${kupac.id}')">Obriši</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Dodaj novog kupca
+document.getElementById('kupacForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const kupac = {
+        id: 'kupac_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        ime: document.getElementById('ime').value,
+        prezime: document.getElementById('prezime').value,
+        pib: document.getElementById('pib').value,
+        maticniBroj: document.getElementById('maticniBroj').value,
+        email: document.getElementById('email').value,
+        telefonski: document.getElementById('telefonski').value,
+        adresa: document.getElementById('adresa').value,
+        mesto: document.getElementById('mesto').value,
+        kw: parseFloat(document.getElementById('kw').value),
+        datumKreiran: new Date().toISOString()
+    };
+    
+    const kupci = JSON.parse(localStorage.getItem('kupci')) || [];
+    kupci.push(kupac);
+    localStorage.setItem('kupci', JSON.stringify(kupci));
+    
+    // Resetuj formu
+    this.reset();
+    
+    // Osveži listu
+    loadKupci();
+    
+    alert('Kupac je uspješno dodan!');
+});
+
+// Obriši kupca
+function obrisiKupca(id) {
+    if (confirm('Sigurno želiš obrisati ovog kupca?')) {
+        const kupci = JSON.parse(localStorage.getItem('kupci')) || [];
+        const filtrirani = kupci.filter(k => k.id !== id);
+        localStorage.setItem('kupci', JSON.stringify(filtrirani));
+        loadKupci();
+        alert('Kupac je obrisan!');
+    }
+}
+
+// Search/Filter funkcionalnost
+const searchInput = document.getElementById('searchInput');
+const searchResults = document.getElementById('searchResults');
+
+searchInput.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase().trim();
+    
+    if (searchTerm === '') {
+        resetSearch();
+        return;
+    }
+    
+    const kupci = JSON.parse(localStorage.getItem('kupci')) || [];
+    const filtrirani = kupci.filter(kupac => {
+        return (
+            kupac.ime.toLowerCase().includes(searchTerm) ||
+            kupac.prezime.toLowerCase().includes(searchTerm) ||
+            kupac.email.toLowerCase().includes(searchTerm) ||
+            kupac.pib.toLowerCase().includes(searchTerm)
+        );
+    });
+    
+    // Prikaži rezultate
+    const kupciBodies = document.getElementById('kupciBodies');
+    if (filtrirani.length === 0) {
+        kupciBodies.innerHTML = '<tr><td colspan="6" class="no-data">Nema rezultata. Pokušaj sa drugačijim pojmom.</td></tr>';
+        searchResults.textContent = `Nema kupaca koji odgovaraju: "${searchTerm}"`;
+    } else {
+        kupciBodies.innerHTML = filtrirani.map(kupac => `
+            <tr>
+                <td><span class="kupac-id">${kupac.id}</span></td>
+                <td>${kupac.ime} ${kupac.prezime}</td>
+                <td>${kupac.email}</td>
+                <td>${kupac.telefonski || '-'}</td>
+                <td>${kupac.kw} kW</td>
+                <td>
+                    <button class="btn btn-danger" onclick="obrisiKupca('${kupac.id}')">Obriši</button>
+                </td>
+            </tr>
+        `).join('');
+        searchResults.textContent = `Pronađeni kupci: ${filtrirani.length}`;
+    }
+});
+
+// Reset search
+function resetSearch() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchResults').textContent = '';
+    loadKupci();
+}
+
+// Scroll to form za dodavanje kupca
+function scrollToForm() {
+    openForm();
+}
+
+// Otvori formu
+function openForm() {
+    const formaSekcija = document.getElementById('formaSekcija');
+    formaSekcija.classList.add('show');
+    // Scroll to form
+    setTimeout(() => {
+        formaSekcija.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+}
+
+// Zatvori formu
+function closeForm() {
+    const formaSekcija = document.getElementById('formaSekcija');
+    formaSekcija.classList.remove('show');
+}
+
+// Ucitaj kupce na stranici load
+loadKupci();
+</script>
+
+</body>
+</html>
