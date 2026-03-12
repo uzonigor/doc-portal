@@ -56,6 +56,26 @@ app.use('/api/submissions', submissionsRouter);
 // FRONTEND ROUTES
 // ============================================
 
+// Landing page (početna stranica)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Način 1 - Do 10,8 kW
+app.get('/doc-portal-1', (req, res) => {
+    res.sendFile(path.join(__dirname, 'doc-portal-1.html'));
+});
+
+// Način 2 - Do 50 kW
+app.get('/doc-portal-2', (req, res) => {
+    res.sendFile(path.join(__dirname, 'doc-portal-2.html'));
+});
+
+// Način 3 - 50-150 kW
+app.get('/doc-portal-3', (req, res) => {
+    res.sendFile(path.join(__dirname, 'doc-portal-3.html'));
+});
+
 // Služi index.html za sve ostale rute (SPA fallback)
 app.get('*', (req, res) => {
     if (!req.path.startsWith('/api')) {
