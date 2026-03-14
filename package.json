@@ -2,10 +2,14 @@
   "name": "doc-portal",
   "version": "1.0.0",
   "description": "GO4 Documentation Portal",
+  "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:generate": "prisma generate",
+    "prisma:studio": "prisma studio"
   },
   "keywords": [
     "documentation",
@@ -20,9 +24,11 @@
     "dotenv": "^16.3.1",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.7",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "@prisma/client": "^5.8.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "prisma": "^5.8.0"
   }
 }

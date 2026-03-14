@@ -765,6 +765,9 @@
     const sidebarToggle = document.getElementById('sidebarToggle');
     const mainContent = document.querySelector('.main-content');
     
+    // Varijabla za čuvanje svih kupaca (za search)
+    let allKupci = [];
+    
     // Toggle između Kompanija i Fizičkih lica
     const tipKompanija = document.getElementById('tipKompanija');
     const tipFizicko = document.getElementById('tipFizicko');
@@ -800,45 +803,71 @@
         sidebarToggle.textContent = isCollapsed ? '▶' : '◀';
     });
 
-    // Učitaj kupce
-    function loadKupci() {
-        const kupci = JSON.parse(localStorage.getItem('kupci') || '[]');
-        tableBody.innerHTML = '';
+    // Učitaj kupce sa API-ja
+    async function loadKupci() {
+        try {
+            tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">Učitavam...</td></tr>';
+            
+            const response = await fetch('/api/kupci');
+            
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+            
+            const kupci = await response.json();
+            allKupci = kupci; // Spremi za search
+            tableBody.innerHTML = '';
 
-        if (kupci.length === 0) {
-            emptyState.style.display = 'block';
-            document.querySelector('.projects-table').style.display = 'none';
-        } else {
-            emptyState.style.display = 'none';
-            document.querySelector('.projects-table').style.display = 'block';
+            if (kupci.length === 0) {
+                emptyState.style.display = 'block';
+                document.querySelector('.projects-table').style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                document.querySelector('.projects-table').style.display = 'block';
 
-            kupci.forEach(kupac => {
-                const row = document.createElement('tr');
-                const tipBadge = kupac.tip === 'kompanija' ? 'Kompanija' : 'Fizičko lice';
-                const tipBadgeColor = kupac.tip === 'kompanija' ? '#fef5e7' : '#f0f7ff';
-                const tipBadgeColorText = kupac.tip === 'kompanija' ? '#c99a3f' : '#0369a1';
-                
-                row.innerHTML = `
-                    <td style="background: ${tipBadgeColor}; color: ${tipBadgeColorText}; font-weight: 600; border-radius: 4px; padding: 4px 8px; width: fit-content;">${tipBadge}</td>
-                    <td class="kupac-name">${kupac.naziv}</td>
-                    <td>${kupac.pib || kupac.jmbg || '-'}</td>
-                    <td>${kupac.mb || '-'}</td>
-                    <td>${kupac.email || '-'}</td>
-                    <td>${kupac.telefon || '-'}</td>
-                    <td><button type="button" class="action-btn" onclick="obrisiKupca('${kupac.id}')">Obriši</button></td>
-                `;
-                tableBody.appendChild(row);
-            });
+                kupci.forEach(kupac => {
+                    const row = document.createElement('tr');
+                    const tipBadge = kupac.tip === 'kompanija' ? 'Kompanija' : 'Fizičko lice';
+                    const tipBadgeColor = kupac.tip === 'kompanija' ? '#fef5e7' : '#f0f7ff';
+                    const tipBadgeColorText = kupac.tip === 'kompanija' ? '#c99a3f' : '#0369a1';
+                    
+                    row.innerHTML = `
+                        <td style="background: ${tipBadgeColor}; color: ${tipBadgeColorText}; font-weight: 600; border-radius: 4px; padding: 4px 8px; width: fit-content;">${tipBadge}</td>
+                        <td class="kupac-name">${kupac.naziv}</td>
+                        <td>${kupac.pib || kupac.jmbg || '-'}</td>
+                        <td>${kupac.mbKompanije || '-'}</td>
+                        <td>${kupac.email || '-'}</td>
+                        <td>${kupac.telefon || '-'}</td>
+                        <td><button type="button" class="action-btn" onclick="obrisiKupca(${kupac.id})">Obriši</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading kupci:', error);
+            tableBody.innerHTML = `<tr><td colspan="7" style="color: red; text-align: center; padding: 20px;">Greška pri učitavanju kupaca: ${error.message}</td></tr>`;
         }
     }
 
     // Obriši kupca
-    function obrisiKupca(id) {
+    async function obrisiKupca(id) {
         if (confirm('Sigurno želiš obrisati ovog kupca?')) {
-            const kupci = JSON.parse(localStorage.getItem('kupci') || '[]');
-            const filtrirani = kupci.filter(k => k.id !== id);
-            localStorage.setItem('kupci', JSON.stringify(filtrirani));
-            loadKupci();
+            try {
+                const response = await fetch(`/api/kupci/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Greška pri brisanju kupca');
+                }
+
+                console.log('Kupac je obrisan:', id);
+                loadKupci();
+            } catch (error) {
+                console.error('Error deleting kupac:', error);
+                alert('Greška: ' + error.message);
+            }
         }
     }
 
@@ -859,15 +888,13 @@
     cancelBtn.addEventListener('click', closeModalWindow);
 
     // Submit forma
-    kupacForm.addEventListener('submit', (e) => {
+    kupacForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const tip = document.querySelector('input[name="tipKupca"]:checked').value;
         
         let newKupac = {
-            id: `kupac_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            tip: tip,
-            datumKreiran: new Date().toISOString()
+            tip: tip
         };
 
         if (tip === 'kompanija') {
@@ -875,7 +902,7 @@
                 ...newKupac,
                 naziv: document.getElementById('nazivKompanije').value,
                 pib: document.getElementById('pib').value,
-                mb: document.getElementById('mbKompanije').value,
+                mbKompanije: document.getElementById('mbKompanije').value,
                 adresa: document.getElementById('adresaKompanije').value,
                 mjesto: document.getElementById('mjestoKompanije').value,
                 email: document.getElementById('emailKompanije').value,
@@ -889,7 +916,7 @@
                 ime: document.getElementById('imeFizicko').value,
                 prezime: document.getElementById('prezimeFizicko').value,
                 jmbg: document.getElementById('jmbg').value,
-                mb: document.getElementById('licniId').value,
+                mbKompanije: document.getElementById('licniId').value,
                 adresa: document.getElementById('adresaFizicko').value,
                 mjesto: document.getElementById('mjestoFizicko').value,
                 email: document.getElementById('emailFizicko').value,
@@ -897,25 +924,42 @@
             };
         }
 
-        const kupci = JSON.parse(localStorage.getItem('kupci') || '[]');
-        kupci.push(newKupac);
-        localStorage.setItem('kupci', JSON.stringify(kupci));
+        try {
+            // POST zahtjev na API
+            const response = await fetch('/api/kupci', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newKupac)
+            });
 
-        closeModalWindow();
-        kupacForm.reset();
-        tipKompanija.checked = true;
-        formaKompanije.style.display = 'block';
-        formaFizicka.style.display = 'none';
-        loadKupci();
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Greška pri kreiranju kupca');
+            }
+
+            const createdKupac = await response.json();
+            console.log('Kupac je kreiran:', createdKupac);
+
+            closeModalWindow();
+            kupacForm.reset();
+            tipKompanija.checked = true;
+            formaKompanije.style.display = 'block';
+            formaFizicka.style.display = 'none';
+            loadKupci();
+        } catch (error) {
+            console.error('Error creating kupac:', error);
+            alert('Greška: ' + error.message);
+        }
     });
 
     // Pretraga
     searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
-        const kupci = JSON.parse(localStorage.getItem('kupci') || '[]');
-        
         tableBody.innerHTML = '';
-        const filtered = kupci.filter(k => {
+        
+        const filtered = allKupci.filter(k => {
             let match = false;
             
             // Pretraga po zajedničkim poljima
@@ -955,10 +999,10 @@
                     <td style="background: ${tipBadgeColor}; color: ${tipBadgeColorText}; font-weight: 600; border-radius: 4px; padding: 4px 8px; width: fit-content;">${tipBadge}</td>
                     <td class="kupac-name">${kupac.naziv}</td>
                     <td>${kupac.pib || kupac.jmbg || '-'}</td>
-                    <td>${kupac.mb || '-'}</td>
+                    <td>${kupac.mbKompanije || '-'}</td>
                     <td>${kupac.email || '-'}</td>
                     <td>${kupac.telefon || '-'}</td>
-                    <td><button type="button" class="action-btn" onclick="obrisiKupca('${kupac.id}')">Obriši</button></td>
+                    <td><button type="button" class="action-btn" onclick="obrisiKupca(${kupac.id})">Obriši</button></td>
                 `;
                 tableBody.appendChild(row);
             });

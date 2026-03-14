@@ -1,12 +1,21 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Import routes
-const formsRouter = require('./routes/forms');
-const uploadRouter = require('./routes/upload');
-const submissionsRouter = require('./routes/submissions');
+// Import Prisma routes
+import kupciRouter from './routes/kupci.js';
+import projektiRouter from './routes/projekti.js';
+import fazeRouter from './routes/faze.js';
+
+// Import legacy routes (ako trebaju)
+// import formsRouter from './routes/forms.js';
+// import uploadRouter from './routes/upload.js';
+// import submissionsRouter from './routes/submissions.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,7 +27,7 @@ const PORT = process.env.PORT || 5000;
 // CORS - dozvoli zahteve sa frontenda
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
-        ? ['https://yourdomain.com'] 
+        ? ['https://yourdomain.com', 'https://your-render-app.onrender.com'] 
         : ['http://localhost:3000', 'http://localhost:5000'],
     credentials: true
 }));
@@ -31,7 +40,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '.')));
 
 // ============================================
-// API ROUTES
+// API ROUTES - PRISMA
 // ============================================
 
 // Health check
@@ -39,18 +48,19 @@ app.get('/api/health', (req, res) => {
     res.json({ 
         status: 'OK',
         message: 'Backend radi!',
+        database: 'PostgreSQL + Prisma',
         timestamp: new Date().toISOString()
     });
 });
 
-// Forms routes
-app.use('/api/forms', formsRouter);
+// Kupci routes
+app.use('/api/kupci', kupciRouter);
 
-// Upload routes
-app.use('/api/upload', uploadRouter);
+// Projekti routes
+app.use('/api/projekti', projektiRouter);
 
-// Submissions routes
-app.use('/api/submissions', submissionsRouter);
+// Faze routes
+app.use('/api/faze', fazeRouter);
 
 // ============================================
 // FRONTEND ROUTES
@@ -66,7 +76,7 @@ app.get('/kupci', (req, res) => {
     res.sendFile(path.join(__dirname, 'kupci.html'));
 });
 
-// Način 1 - Do 10,8 kW
+// Način 1 - Do 10,8 kW - Lista projekata
 app.get('/doc-portal-1', (req, res) => {
     res.sendFile(path.join(__dirname, 'doc-portal-1.html'));
 });
@@ -124,10 +134,11 @@ app.listen(PORT, () => {
     console.log(`
     ╔════════════════════════════════════╗
     ║  GO4 - DOC Portal Backend          ║
+    ║  PostgreSQL + Prisma               ║
     ║  Server je pokrenut na port ${PORT}  ║
     ║  http://localhost:${PORT}            ║
     ╚════════════════════════════════════╝
     `);
 });
 
-module.exports = app;
+export default app;
