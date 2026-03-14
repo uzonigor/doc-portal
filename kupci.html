@@ -602,12 +602,12 @@
             <table id="kupcitable">
                 <thead>
                     <tr>
-                        <th>Naziv kompanije</th>
-                        <th>PIB</th>
+                        <th>Tip</th>
+                        <th>Naziv / Ime i Prezime</th>
+                        <th>PIB / JMBG</th>
                         <th>MB</th>
                         <th>Email</th>
                         <th>Telefon</th>
-                        <th>Direktor</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -638,41 +638,108 @@
         </div>
 
         <form id="kupacForm">
-            <div class="form-group">
-                <label class="form-label">Naziv kompanije</label>
-                <input type="text" id="nazivKompanije" class="form-input" required>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">PIB</label>
-                    <input type="text" id="pib" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">MB kompanije / MB fizickog lica</label>
-                    <input type="text" id="maticniBroj" class="form-input" required>
+            <!-- TIP KUPCA -->
+            <div class="form-group" style="margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">
+                <label class="form-label">Tip kupca:</label>
+                <div style="display: flex; gap: 24px; margin-top: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #4a5568;">
+                        <input type="radio" name="tipKupca" value="kompanija" checked id="tipKompanija"> Kompanija
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: #4a5568;">
+                        <input type="radio" name="tipKupca" value="fizicko_lice" id="tipFizicko"> Fizičko lice
+                    </label>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Adresa APR</label>
-                <input type="text" id="adresa" class="form-input" required>
+            <!-- POLJA ZA KOMPANIJE -->
+            <div id="formaKompanije" class="forma-tip">
+                <div class="form-group">
+                    <label class="form-label">Naziv kompanije</label>
+                    <input type="text" id="nazivKompanije" class="form-input">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">PIB</label>
+                        <input type="text" id="pib" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">MB kompanije</label>
+                        <input type="text" id="mbKompanije" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Adresa APR</label>
+                    <input type="text" id="adresaKompanije" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mjesto</label>
+                    <input type="text" id="mjestoKompanije" class="form-input">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Email adresa</label>
+                        <input type="email" id="emailKompanije" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Kontakt telefon</label>
+                        <input type="tel" id="telefonKompanije" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Direktor kompanije (za potpis)</label>
+                    <input type="text" id="direktorKompanije" class="form-input">
+                </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Email adresa</label>
-                    <input type="email" id="email" class="form-input" required>
+            <!-- POLJA ZA FIZIČKA LICA -->
+            <div id="formaFizicka" class="forma-tip" style="display: none;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Ime</label>
+                        <input type="text" id="imeFizicko" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Prezime</label>
+                        <input type="text" id="prezimeFizicko" class="form-input">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Kontakt telefon</label>
-                    <input type="tel" id="telefon" class="form-input" required>
-                </div>
-            </div>
 
-            <div class="form-group">
-                <label class="form-label">Direktor kompanije / Fizicko lice (za potpis)</label>
-                <input type="text" id="direktor" class="form-input" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">JMBG</label>
+                        <input type="text" id="jmbg" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Lični ID broj</label>
+                        <input type="text" id="licniId" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Adresa</label>
+                    <input type="text" id="adresaFizicko" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mjesto</label>
+                    <input type="text" id="mjestoFizicko" class="form-input">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Email adresa</label>
+                        <input type="email" id="emailFizicko" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Kontakt telefon</label>
+                        <input type="tel" id="telefonFizicko" class="form-input">
+                    </div>
+                </div>
             </div>
 
             <div class="modal-footer">
@@ -697,6 +764,22 @@
     const menuBtn = document.getElementById('menuBtn');
     const sidebarToggle = document.getElementById('sidebarToggle');
     const mainContent = document.querySelector('.main-content');
+    
+    // Toggle između Kompanija i Fizičkih lica
+    const tipKompanija = document.getElementById('tipKompanija');
+    const tipFizicko = document.getElementById('tipFizicko');
+    const formaKompanije = document.getElementById('formaKompanije');
+    const formaFizicka = document.getElementById('formaFizicka');
+
+    tipKompanija.addEventListener('change', () => {
+        formaKompanije.style.display = 'block';
+        formaFizicka.style.display = 'none';
+    });
+
+    tipFizicko.addEventListener('change', () => {
+        formaKompanije.style.display = 'none';
+        formaFizicka.style.display = 'block';
+    });
     
     // Učitaj stanje sidebar-a iz localStorage
     function initSidebar() {
@@ -731,13 +814,17 @@
 
             kupci.forEach(kupac => {
                 const row = document.createElement('tr');
+                const tipBadge = kupac.tip === 'kompanija' ? 'Kompanija' : 'Fizičko lice';
+                const tipBadgeColor = kupac.tip === 'kompanija' ? '#fef5e7' : '#f0f7ff';
+                const tipBadgeColorText = kupac.tip === 'kompanija' ? '#c99a3f' : '#0369a1';
+                
                 row.innerHTML = `
-                    <td class="kupac-name">${kupac.nazivKompanije}</td>
-                    <td>${kupac.pib}</td>
-                    <td>${kupac.maticniBroj}</td>
-                    <td>${kupac.email}</td>
+                    <td style="background: ${tipBadgeColor}; color: ${tipBadgeColorText}; font-weight: 600; border-radius: 4px; padding: 4px 8px; width: fit-content;">${tipBadge}</td>
+                    <td class="kupac-name">${kupac.naziv}</td>
+                    <td>${kupac.pib || kupac.jmbg || '-'}</td>
+                    <td>${kupac.mb || '-'}</td>
+                    <td>${kupac.email || '-'}</td>
                     <td>${kupac.telefon || '-'}</td>
-                    <td>${kupac.direktor}</td>
                     <td><button type="button" class="action-btn" onclick="obrisiKupca('${kupac.id}')">Obriši</button></td>
                 `;
                 tableBody.appendChild(row);
@@ -775,17 +862,40 @@
     kupacForm.addEventListener('submit', (e) => {
         e.preventDefault();
         
-        const newKupac = {
+        const tip = document.querySelector('input[name="tipKupca"]:checked').value;
+        
+        let newKupac = {
             id: `kupac_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            nazivKompanije: document.getElementById('nazivKompanije').value,
-            pib: document.getElementById('pib').value,
-            maticniBroj: document.getElementById('maticniBroj').value,
-            adresa: document.getElementById('adresa').value,
-            email: document.getElementById('email').value,
-            telefon: document.getElementById('telefon').value,
-            direktor: document.getElementById('direktor').value,
+            tip: tip,
             datumKreiran: new Date().toISOString()
         };
+
+        if (tip === 'kompanija') {
+            newKupac = {
+                ...newKupac,
+                naziv: document.getElementById('nazivKompanije').value,
+                pib: document.getElementById('pib').value,
+                mb: document.getElementById('mbKompanije').value,
+                adresa: document.getElementById('adresaKompanije').value,
+                mjesto: document.getElementById('mjestoKompanije').value,
+                email: document.getElementById('emailKompanije').value,
+                telefon: document.getElementById('telefonKompanije').value,
+                direktor: document.getElementById('direktorKompanije').value
+            };
+        } else {
+            newKupac = {
+                ...newKupac,
+                naziv: document.getElementById('imeFizicko').value + ' ' + document.getElementById('prezimeFizicko').value,
+                ime: document.getElementById('imeFizicko').value,
+                prezime: document.getElementById('prezimeFizicko').value,
+                jmbg: document.getElementById('jmbg').value,
+                mb: document.getElementById('licniId').value,
+                adresa: document.getElementById('adresaFizicko').value,
+                mjesto: document.getElementById('mjestoFizicko').value,
+                email: document.getElementById('emailFizicko').value,
+                telefon: document.getElementById('telefonFizicko').value
+            };
+        }
 
         const kupci = JSON.parse(localStorage.getItem('kupci') || '[]');
         kupci.push(newKupac);
@@ -793,6 +903,9 @@
 
         closeModalWindow();
         kupacForm.reset();
+        tipKompanija.checked = true;
+        formaKompanije.style.display = 'block';
+        formaFizicka.style.display = 'none';
         loadKupci();
     });
 
@@ -802,14 +915,28 @@
         const kupci = JSON.parse(localStorage.getItem('kupci') || '[]');
         
         tableBody.innerHTML = '';
-        const filtered = kupci.filter(k => 
-            k.nazivKompanije.toLowerCase().includes(searchTerm) ||
-            k.pib.includes(searchTerm) ||
-            k.maticniBroj.toLowerCase().includes(searchTerm) ||
-            k.email.toLowerCase().includes(searchTerm) ||
-            k.telefon.toLowerCase().includes(searchTerm) ||
-            k.direktor.toLowerCase().includes(searchTerm)
-        );
+        const filtered = kupci.filter(k => {
+            let match = false;
+            
+            // Pretraga po zajedničkim poljima
+            match = match || k.naziv.toLowerCase().includes(searchTerm);
+            match = match || (k.email && k.email.toLowerCase().includes(searchTerm));
+            match = match || (k.telefon && k.telefon.toLowerCase().includes(searchTerm));
+            match = match || (k.adresa && k.adresa.toLowerCase().includes(searchTerm));
+            match = match || (k.mjesto && k.mjesto.toLowerCase().includes(searchTerm));
+            
+            // Pretraga po specifičnim poljima
+            if (k.tip === 'kompanija') {
+                match = match || (k.pib && k.pib.includes(searchTerm));
+                match = match || (k.direktor && k.direktor.toLowerCase().includes(searchTerm));
+            } else {
+                match = match || (k.jmbg && k.jmbg.includes(searchTerm));
+                match = match || (k.ime && k.ime.toLowerCase().includes(searchTerm));
+                match = match || (k.prezime && k.prezime.toLowerCase().includes(searchTerm));
+            }
+            
+            return match;
+        });
 
         if (filtered.length === 0) {
             emptyState.style.display = 'block';
@@ -820,13 +947,17 @@
             
             filtered.forEach(kupac => {
                 const row = document.createElement('tr');
+                const tipBadge = kupac.tip === 'kompanija' ? 'Kompanija' : 'Fizičko lice';
+                const tipBadgeColor = kupac.tip === 'kompanija' ? '#fef5e7' : '#f0f7ff';
+                const tipBadgeColorText = kupac.tip === 'kompanija' ? '#c99a3f' : '#0369a1';
+                
                 row.innerHTML = `
-                    <td class="kupac-name">${kupac.nazivKompanije}</td>
-                    <td>${kupac.pib}</td>
-                    <td>${kupac.maticniBroj}</td>
-                    <td>${kupac.email}</td>
+                    <td style="background: ${tipBadgeColor}; color: ${tipBadgeColorText}; font-weight: 600; border-radius: 4px; padding: 4px 8px; width: fit-content;">${tipBadge}</td>
+                    <td class="kupac-name">${kupac.naziv}</td>
+                    <td>${kupac.pib || kupac.jmbg || '-'}</td>
+                    <td>${kupac.mb || '-'}</td>
+                    <td>${kupac.email || '-'}</td>
                     <td>${kupac.telefon || '-'}</td>
-                    <td>${kupac.direktor}</td>
                     <td><button type="button" class="action-btn" onclick="obrisiKupca('${kupac.id}')">Obriši</button></td>
                 `;
                 tableBody.appendChild(row);
