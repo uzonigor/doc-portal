@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GO4 - DOC Portal - Način 1</title>
+    <title>Dokumentacija Do 10,8 kW - GO4 Portal</title>
     <style>
         * {
             margin: 0;
@@ -17,704 +17,767 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'General Sans', sans-serif;
-            background: #ffffff;
+            background: #fafbfc;
             color: #4a5568;
-        }
-        
-        /* HEADER/NAV */
-        header {
-            background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            padding: 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        }
-        
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 16px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
             font-size: 16px;
-            font-weight: 600;
-            color: #2d3748;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
         
-        .logo-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, #d4a853 0%, #c99a3f 100%);
-            clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 75% 50%, 100% 75%, 25% 100%, 0% 75%, 25% 50%);
-        }
-        
-        .breadcrumb {
-            font-size: 12px;
-            color: #718096;
-        }
-        
-        .breadcrumb a {
-            color: #d4a853;
-            text-decoration: none;
-        }
-        
-        /* HERO */
-        .hero {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px 40px;
-            text-align: center;
-            background: #f7fafc;
-        }
-        
-        .hero h1 {
-            font-size: 42px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #2d3748;
-            line-height: 1.3;
-        }
-        
-        .hero p {
-            font-size: 16px;
-            color: #718096;
-            margin-bottom: 0;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-            font-weight: 400;
-            line-height: 1.6;
-        }
-        
-        /* TIMELINE/STEPPER */
-        .phases-section {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 60px 40px;
-        }
-        
-        .phases-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 50px;
-            color: #2d3748;
-            text-align: center;
-            line-height: 1.4;
-        }
-        
-        .timeline {
-            position: relative;
-        }
-        
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 24px;
-            top: 60px;
-            bottom: 0;
-            width: 1px;
-            background: #e2e8f0;
-        }
-        
-        .phase-item {
-            position: relative;
-            margin-bottom: 45px;
-            padding-left: 70px;
-        }
-        
-        .phase-number {
-            position: absolute;
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
             left: 0;
             top: 0;
-            width: 48px;
-            height: 48px;
-            background: #edf2f7;
-            color: #2d3748;
-            border-radius: 50%;
+            width: 260px;
+            height: 100vh;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            padding: 32px 24px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .sidebar-logo {
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 12px;
+            margin-bottom: 48px;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .sidebar-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #d4a853 0%, #c99a3f 100%);
+            clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 75% 50%, 100% 75%, 25% 100%, 0% 75%, 25% 50%);
+            flex-shrink: 0;
+        }
+        
+        .sidebar-logo-text {
+            font-size: 13px;
             font-weight: 600;
-            font-size: 18px;
-            border: 1px solid #e2e8f0;
+            color: #2d3748;
         }
         
-        .phase-item.active .phase-number {
-            background: #d4a853;
-            color: #ffffff;
-            border-color: #d4a853;
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
         
-        .phase-content {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
             border-radius: 8px;
-            padding: 28px;
+            text-decoration: none;
+            color: #718096;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
             transition: all 0.2s;
         }
         
-        .phase-item:hover .phase-content {
-            border-color: #cbd5e0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        .nav-item:hover {
+            background: #f7fafc;
+            color: #2d3748;
         }
         
-        .phase-header {
+        .nav-item.active {
+            background: #fef5e7;
+            color: #d4a853;
+        }
+        
+        .nav-icon {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* TOP BAR */
+        .top-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .top-bar-content {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 18px;
+            align-items: center;
         }
         
-        .phase-title {
-            font-size: 16px;
+        .top-bar-title {
+            font-size: 18px;
             font-weight: 600;
             color: #2d3748;
-            margin-bottom: 6px;
         }
         
-        .phase-description {
-            font-size: 13px;
+        .top-bar-menu {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #2d3748;
+        }
+        
+        /* CONTENT */
+        .content {
+            flex: 1;
+            padding: 48px 40px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* HEADER */
+        .page-header {
+            margin-bottom: 48px;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        
+        .page-subtitle {
+            font-size: 15px;
             color: #718096;
-            line-height: 1.5;
-            margin-bottom: 0;
         }
         
-        .phase-status {
-            font-size: 11px;
+        /* CONTROLS */
+        .controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0 16px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            border: none;
+            background: none;
+            font-size: 14px;
+            color: #2d3748;
+            outline: none;
+            padding: 12px 0;
+        }
+        
+        .search-box input::placeholder {
+            color: #a0aec0;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
             font-weight: 600;
-            padding: 5px 12px;
-            border-radius: 10px;
-            background: #edf2f7;
-            color: #718096;
-            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #ffffff;
+            color: #2d3748;
+        }
+        
+        .btn:hover {
+            border-color: #cbd5e0;
+            background: #f7fafc;
+        }
+        
+        .btn-primary {
+            background: #085158;
+            color: white;
+            border-color: #085158;
+        }
+        
+        .btn-primary:hover {
+            background: #d4a853;
+            border-color: #d4a853;
+        }
+        
+        /* TABLE */
+        .projects-table {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #f7fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            padding: 16px 20px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4a5568;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
-        .phase-item.active .phase-status {
+        td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+            color: #2d3748;
+        }
+        
+        tbody tr:hover {
+            background: #f7fafc;
+            cursor: pointer;
+        }
+        
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .project-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-active {
             background: #fef5e7;
             color: #c99a3f;
         }
         
-        /* DOKUMENTACIJA */
-        .phase-docs-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #edf2f7;
+        .status-completed {
+            background: #f0fdf4;
+            color: #15803d;
         }
         
-        .docs-title {
-            font-size: 12px;
-            font-weight: 600;
+        .status-draft {
+            background: #edf2f7;
             color: #4a5568;
-            margin-bottom: 12px;
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            color: #d4a853;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .action-btn:hover {
+            color: #085158;
+        }
+        
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        
+        .empty-state-text {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 24px;
+        }
+        
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.2s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background-color: #fefeff;
+            margin: 80px auto;
+            padding: 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            margin-bottom: 24px;
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .modal-close {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            color: #a0aec0;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        
+        .modal-close:hover {
+            color: #2d3748;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
-        .docs-list {
-            list-style: none;
-        }
-        
-        .doc-item {
-            font-size: 13px;
-            color: #4a5568;
-            padding: 11px;
-            background: #f7fafc;
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
             border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            transition: all 0.15s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .doc-item:hover {
-            border-color: #cbd5e0;
-            background: #edf2f7;
-        }
-        
-        .doc-item.form-link {
-            cursor: pointer;
-            background: #f0f7ff;
-            border-color: #b3d9ff;
-        }
-        
-        .doc-item.form-link:hover {
-            background: #e0efff;
-            border-color: #7db3e8;
-        }
-        
-        .doc-item.upload-field {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 12px;
-        }
-        
-        .doc-item.uploaded {
-            background: #f0fdf4 !important;
-            border-color: #bbf7d0 !important;
-        }
-        
-        .doc-item.uploaded .doc-text {
-            color: #15803d;
-            font-weight: 500;
-        }
-        
-        .doc-item.uploaded .doc-num {
-            color: #15803d;
-        }
-        
-        .doc-num {
-            font-weight: 600;
+            border-radius: 8px;
+            font-size: 14px;
             color: #2d3748;
-            min-width: 32px;
-            font-size: 12px;
+            font-family: inherit;
         }
         
-        .doc-text {
-            flex: 1;
-            font-size: 13px;
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #d4a853;
+            box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.1);
         }
         
-        .file-input-wrapper {
-            width: 100%;
-            margin-top: 8px;
-        }
-        
-        .file-input-wrapper input[type="file"] {
-            font-size: 12px;
-            padding: 7px;
-            border: 1px solid #cbd5e0;
-            border-radius: 4px;
-            width: 100%;
-            cursor: pointer;
-            color: #718096;
-            background: #ffffff;
-        }
-        
-        .file-uploaded {
+        .modal-footer {
             display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 6px;
-            font-size: 12px;
-            color: #15803d;
-            font-weight: 500;
-        }
-        
-        .file-uploaded::before {
-            content: '✓';
-            font-weight: bold;
-        }
-        
-        /* PHASE BUTTONS */
-        .phase-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 18px;
-        }
-        
-        .btn {
-            padding: 8px 16px;
-            font-size: 12px;
-            font-weight: 600;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .btn-secondary {
-            background: #edf2f7;
-            color: #4a5568;
-            border: 1px solid #cbd5e0;
-        }
-        
-        .btn-secondary:hover {
-            background: #e2e8f0;
-            border-color: #a0aec0;
-        }
-        
-        .btn-disabled {
-            background: #edf2f7;
-            color: #a0aec0;
-            cursor: not-allowed;
-            border: 1px solid #cbd5e0;
+            gap: 12px;
+            margin-top: 32px;
+            justify-content: flex-end;
         }
         
         /* FOOTER */
         footer {
-            background: #f7fafc;
-            color: #718096;
-            padding: 30px 40px;
+            padding: 32px 40px;
             text-align: center;
             font-size: 12px;
-            border-top: 1px solid #e2e8f0;
+            color: #a0aec0;
+            margin-top: auto;
         }
         
-        /* RESPONSIVE */
+        /* MOBILE */
         @media (max-width: 768px) {
-            .header-content {
-                padding: 12px 20px;
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+                padding: 20px;
+                margin-bottom: 20px;
             }
             
-            .hero {
-                padding: 50px 20px 40px;
+            .sidebar.hidden {
+                display: none;
             }
             
-            .hero h1 {
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .top-bar-menu {
+                display: block;
+            }
+            
+            .content {
+                padding: 32px 20px;
+            }
+            
+            .page-title {
                 font-size: 28px;
             }
             
-            .phases-section {
-                padding: 40px 20px;
-            }
-            
-            .phase-item {
-                padding-left: 55px;
-            }
-            
-            .phase-number {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
-            }
-            
-            .timeline::before {
-                left: 20px;
-            }
-            
-            .phase-buttons {
+            .controls {
                 flex-direction: column;
+            }
+            
+            .search-box {
+                min-width: 100%;
             }
             
             .btn {
                 width: 100%;
-                text-align: center;
             }
             
-            .phase-header {
-                flex-direction: column;
-                gap: 8px;
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 12px 10px;
             }
         }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="header-content">
-        <div class="logo">
-            <div class="logo-icon"></div>
-        </div>
-        <div class="breadcrumb">
-            <a href="/">← Nazad na početak</a>
+<div class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-logo">
+        <div class="sidebar-logo-icon"></div>
+        <div class="sidebar-logo-text">GO4<br>Portal</div>
+    </a>
+    
+    <nav class="sidebar-nav">
+        <a href="/" class="nav-item">
+            <span class="nav-icon">■</span>
+            <span>Dashboard</span>
+        </a>
+        <a href="/kupci" class="nav-item">
+            <span class="nav-icon">◎</span>
+            <span>Kupci</span>
+        </a>
+        <a href="/doc-portal-1/" class="nav-item active">
+            <span class="nav-icon">▢</span>
+            <span>Dokumenti</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">⚙</span>
+            <span>Postavke</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">?</span>
+            <span>Pomoć</span>
+        </a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="top-bar-title">Dokumentacija - Do 10,8 kW</div>
+            <button class="top-bar-menu" id="menuBtn">☰</button>
         </div>
     </div>
-</header>
 
-<main>
-    <section class="hero" id="home">
-    </section>
-
-    <section class="phases-section" id="faze">
-        <h2 class="phases-title">Krajnji kupci koji nisu domaćinstva ili stambene zajednice za instalirane proizvodne snage fotonaponskih modula do 10,8 kW</h2>
-        
-        <div class="timeline">
-            <!-- FAZA 0 -->
-            <div class="phase-item active">
-                <div class="phase-number">0</div>
-                <div class="phase-content">
-                    <div class="phase-header">
-                        <div>
-                            <h3 class="phase-title">Priprema dokumentacije</h3>
-                            <p class="phase-description">Osnovne forme ovlašćenja i ugovora potrebne za početak.</p>
-                        </div>
-                        <span class="phase-status">U toku</span>
-                    </div>
-
-                    <div class="phase-docs-section">
-                        <h4 class="docs-title">Potrebne forme:</h4>
-                        <ul class="docs-list">
-                            <li class="doc-item form-link" onclick="window.open('forma-ovlascenja.html', '_blank')">
-                                <span class="doc-num">0.1.</span>
-                                <span class="doc-text">Forma ovlašćenja</span>
-                            </li>
-                            <li class="doc-item form-link" onclick="window.open('forma-ugovor.html', '_blank')">
-                                <span class="doc-num">0.2.</span>
-                                <span class="doc-text">Forma ugovora</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="phase-buttons">
-                        <button class="btn btn-secondary" onclick="alert('Funkcionalnost u razvoju')">Preuzmi PDF</button>
-                        <button class="btn btn-secondary" onclick="alert('Funkcionalnost u razvoju')">Pošalji mailu</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FAZA 1 -->
-            <div class="phase-item">
-                <div class="phase-number">1</div>
-                <div class="phase-content">
-                    <div class="phase-header">
-                        <div>
-                            <h3 class="phase-title">Izgradnja proizvodnog objekta</h3>
-                            <p class="phase-description">Potvrda o usklađenosti instalacija kupca-proizvodjača sa uslovima priklučenja.</p>
-                        </div>
-                        <span class="phase-status">Čeka se</span>
-                    </div>
-
-                    <div class="phase-docs-section">
-                        <h4 class="docs-title">Dokumentacija neophodno za priklučenje:</h4>
-                        <ul class="docs-list">
-                            <li class="doc-item form-link" onclick="window.open('forma-potvrda.html', '_blank')">
-                                <span class="doc-num">5.0.</span>
-                                <span class="doc-text">Potvrda o usklađenosti instalacija kupca-proizvodjača sa uslovima priklučenja.</span>
-                            </li>
-                            <li class="doc-item form-link" onclick="window.open('forma-potvrda.html', '_blank')">
-                                <span class="doc-num">5.1.</span>
-                                <span class="doc-text">Dodatak potvrdi sa podacima o invertorimima.</span>
-                            </li>
-                            <li class="doc-item form-link" onclick="window.open('forma-potvrda.html', '_blank')">
-                                <span class="doc-num">5.2.</span>
-                                <span class="doc-text">Dodatak potvrdi o karakteristikama, podešenju i funkcionalnom ispitivanju zaštitnih uređaja.</span>
-                            </li>
-                            <li class="doc-item upload-field">
-                                <span class="doc-num">5.3.</span>
-                                <span class="doc-text">Licenca odgovornog izvođača radova.</span>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="doc-5-3" accept=".pdf,.jpg,.png">
-                                    <span class="file-uploaded" id="status-5-3" style="display:none;"></span>
-                                </div>
-                            </li>
-                            <li class="doc-item upload-field">
-                                <span class="doc-num">5.4.</span>
-                                <span class="doc-text">Izveštaj o ispitivanju ispravnosti zaštitnog provodnika, glavnog i dodatnog provodnika sa izjednačavanjem potencijala.</span>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="doc-5-4" accept=".pdf,.jpg,.png">
-                                    <span class="file-uploaded" id="status-5-4" style="display:none;"></span>
-                                </div>
-                            </li>
-                            <li class="doc-item upload-field">
-                                <span class="doc-num">5.5.</span>
-                                <span class="doc-text">Izveštaj o izvršenom ispitivanju otpornosti izolacije električne instalacije.</span>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="doc-5-5" accept=".pdf,.jpg,.png">
-                                    <span class="file-uploaded" id="status-5-5" style="display:none;"></span>
-                                </div>
-                            </li>
-                            <li class="doc-item upload-field">
-                                <span class="doc-num">5.6.</span>
-                                <span class="doc-text">Izveštaj o izvršenom ispitivanju impedanse zaštitnog uzemljenja.</span>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="doc-5-6" accept=".pdf,.jpg,.png">
-                                    <span class="file-uploaded" id="status-5-6" style="display:none;"></span>
-                                </div>
-                            </li>
-                            <li class="doc-item upload-field">
-                                <span class="doc-num">5.7.</span>
-                                <span class="doc-text">Izveštaj o izvršenom ispitivanju funkcionalnosti zaštitnih i upravljačkih uređaja.</span>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="doc-5-7" accept=".pdf,.jpg,.png">
-                                    <span class="file-uploaded" id="status-5-7" style="display:none;"></span>
-                                </div>
-                            </li>
-                            <li class="doc-item upload-field">
-                                <span class="doc-num">5.8.</span>
-                                <span class="doc-text">Izjava o usaglašenosti proizvodnog objekta sa Mrežnim pravilima.</span>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="doc-5-8" accept=".pdf,.jpg,.png">
-                                    <span class="file-uploaded" id="status-5-8" style="display:none;"></span>
-                                </div>
-                            </li>
-                            <li class="doc-item upload-field">
-                                <span class="doc-num">5.9.</span>
-                                <span class="doc-text">Jednopolna šema proizvodnog objekta do mernog mesta, overena od strane odgovornog Izvođača radova.</span>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="doc-5-9" accept=".pdf,.jpg,.png">
-                                    <span class="file-uploaded" id="status-5-9" style="display:none;"></span>
-                                </div>
-                            </li>
-                            <li class="doc-item upload-field">
-                                <span class="doc-num">5.10.</span>
-                                <span class="doc-text">Tropolna šema proizvodnog objekta do mernog mesta sa urtanim zaštitnim provodnikom, overena od strane odgovornog Izvođača radova.</span>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="doc-5-10" accept=".pdf,.jpg,.png">
-                                    <span class="file-uploaded" id="status-5-10" style="display:none;"></span>
-                                </div>
-                            </li>
-                            <li class="doc-item upload-field">
-                                <span class="doc-num">5.11.</span>
-                                <span class="doc-text">Sertifikate o usaglašenosti ugrađenog tipa invertora sa standardom SRPS EN 50549-1:2020.</span>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="doc-5-11" accept=".pdf,.jpg,.png">
-                                    <span class="file-uploaded" id="status-5-11" style="display:none;"></span>
-                                </div>
-                            </li>
-                            <li class="doc-item upload-field">
-                                <span class="doc-num">5.12.</span>
-                                <span class="doc-text">Sertifikate o usaglašenosti, po relevantnim standardima za spojni prekidač, ukoliko nije deo invertora.</span>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="doc-5-12" accept=".pdf,.jpg,.png">
-                                    <span class="file-uploaded" id="status-5-12" style="display:none;"></span>
-                                </div>
-                            </li>
-                            <li class="doc-item upload-field">
-                                <span class="doc-num">5.13.</span>
-                                <span class="doc-text">Sertifikate o usaglašenosti, po relevantnim standardima za zaštitni uređaj sistemske zaštite, ukoliko nije deo invertora.</span>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="doc-5-13" accept=".pdf,.jpg,.png">
-                                    <span class="file-uploaded" id="status-5-13" style="display:none;"></span>
-                                </div>
-                            </li>
-                            <li class="doc-item upload-field">
-                                <span class="doc-num">5.14.</span>
-                                <span class="doc-text">Kataloške podatke za invertor, spojni prekidač (ukoliko nije deo invertora), zaštitni uređaj sistemske zaštite (ukoliko nije deo invertora).</span>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="doc-5-14" accept=".pdf,.jpg,.png">
-                                    <span class="file-uploaded" id="status-5-14" style="display:none;"></span>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="phase-buttons">
-                        <button class="btn btn-secondary" onclick="alert('Funkcionalnost u razvoju')">Preuzmi PDF</button>
-                        <button class="btn btn-secondary" onclick="alert('Funkcionalnost u razvoju')">Pošalji mailu</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FAZA 2 -->
-            <div class="phase-item">
-                <div class="phase-number">2</div>
-                <div class="phase-content">
-                    <div class="phase-header">
-                        <div>
-                            <h3 class="phase-title">Prilagođenje mernog mesta</h3>
-                            <p class="phase-description">Zahtev za prilagođenje mernog mesta sa svim potrebnim informacijama.</p>
-                        </div>
-                        <span class="phase-status">Čeka se</span>
-                    </div>
-
-                    <div class="phase-docs-section">
-                        <h4 class="docs-title">Potrebna dokumentacija:</h4>
-                        <ul class="docs-list">
-                            <li class="doc-item form-link" onclick="window.open('forma-zahtev.html', '_blank')">
-                                <span class="doc-num">6.1.</span>
-                                <span class="doc-text">Zahtev za prilagođenje mernog mesta</span>
-                            </li>
-                            <li class="doc-item upload-field">
-                                <span class="doc-num">6.2.</span>
-                                <span class="doc-text">Dokaz o uplati potrebnih troškova</span>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="doc-6-2" accept=".pdf,.jpg,.png">
-                                    <span class="file-uploaded" id="status-6-2" style="display:none;"></span>
-                                </div>
-                            </li>
-                            <li class="doc-item upload-field">
-                                <span class="doc-num">6.3.</span>
-                                <span class="doc-text">Atesti za ugrađenu opremu i uređaje</span>
-                                <div class="file-input-wrapper">
-                                    <input type="file" id="doc-6-3" accept=".pdf,.jpg,.png">
-                                    <span class="file-uploaded" id="status-6-3" style="display:none;"></span>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="phase-buttons">
-                        <button class="btn btn-secondary" onclick="alert('Funkcionalnost u razvoju')">Preuzmi PDF</button>
-                        <button class="btn btn-secondary" onclick="alert('Funkcionalnost u razvoju')">Pošalji mailu</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FAZA 3 -->
-            <div class="phase-item">
-                <div class="phase-number">3</div>
-                <div class="phase-content">
-                    <div class="phase-header">
-                        <div>
-                            <h3 class="phase-title">Zaključivanje ugovora</h3>
-                            <p class="phase-description">Ugovor o potpunom snabdevanju sa neto obračunom.</p>
-                        </div>
-                        <span class="phase-status">Čeka se</span>
-                    </div>
-
-                    <div class="phase-docs-section">
-                        <h4 class="docs-title">Potrebna dokumentacija:</h4>
-                        <ul class="docs-list">
-                            <li class="doc-item form-link" onclick="window.open('forma-zahtev-ugovora.html', '_blank')">
-                                <span class="doc-num">7.1.</span>
-                                <span class="doc-text">Zahtev za zaključenje ugovora o potpunom snabdevanju sa neto obračunom</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="phase-buttons">
-                        <button class="btn btn-secondary" onclick="alert('Funkcionalnost u razvoju')">Preuzmi PDF</button>
-                        <button class="btn btn-secondary" onclick="alert('Funkcionalnost u razvoju')">Pošalji mailu</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FAZA 4 -->
-            <div class="phase-item">
-                <div class="phase-number">4</div>
-                <div class="phase-content">
-                    <div class="phase-header">
-                        <div>
-                            <h3 class="phase-title">Upis u registar</h3>
-                            <p class="phase-description">Finalna registracija kao kupac-proizvodjač u registru Elektrodistribucije Srbije.</p>
-                        </div>
-                        <span class="phase-status">Čeka se</span>
-                    </div>
-
-                    <div class="phase-buttons">
-                        <button class="btn btn-disabled" disabled>Forma nije dostupna</button>
-                    </div>
-                </div>
-            </div>
+    <div class="content">
+        <div class="page-header">
+            <h1 class="page-title">Projekti Dokumentacije</h1>
+            <p class="page-subtitle">Upravljaj svim projektima dokumentacije za kupce do 10,8 kW</p>
         </div>
-    </section>
-</main>
 
-<footer>
-    <p>GO4 - DOC Portal © 2024 | Powered by GO4ENERGY</p>
-</footer>
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Pretraži kupce, PIB, email...">
+            </div>
+            <button class="btn btn-primary" id="addProjectBtn">+ Dodaj novi projekt</button>
+        </div>
+
+        <div class="projects-table">
+            <table id="projectsTable">
+                <thead>
+                    <tr>
+                        <th>Kupac</th>
+                        <th>PIB</th>
+                        <th>Lokacija</th>
+                        <th>kW</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Dinamički sadržaj -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-title">Nema projekata</div>
+            <p class="empty-state-text">Još uvijek nema kreiranih projekata. Dodaj prvi projekt dokumentacije.</p>
+            <button class="btn btn-primary" id="emptyAddBtn">+ Dodaj novi projekt</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>GO4 - Dokumentacioni Portal © 2024 | Powered by GO4ENERGY</p>
+    </footer>
+</div>
+
+<!-- MODAL ZA DODAVANJE NOVOG PROJEKTA -->
+<div id="projectModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button class="modal-close" id="closeModal">&times;</button>
+            <h2 class="modal-title">Kreiraj Novi Projekt</h2>
+        </div>
+
+        <form id="projectForm">
+            <div class="form-group">
+                <label class="form-label">Odaberi Kupca</label>
+                <select id="kupacSelect" class="form-select" required>
+                    <option value="">-- Odaberi kupca --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Naziv Projekta</label>
+                <input type="text" id="projectName" class="form-input" placeholder="npr. Solarni sistem - Villa M." required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Instalirana Snaga (kW)</label>
+                <input type="number" id="projectkW" class="form-input" placeholder="npr. 8.5" step="0.1" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Lokacija</label>
+                <input type="text" id="projectLocation" class="form-input" placeholder="npr. Beograd" required>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn" id="cancelBtn">Otkaži</button>
+                <button type="submit" class="btn btn-primary">Kreiraj Projekt</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script>
-const fileInputs = document.querySelectorAll('input[type="file"]');
-fileInputs.forEach(input => {
-    input.addEventListener('change', function() {
-        const statusId = 'status-' + this.id.substring(4);
-        const statusEl = document.getElementById(statusId);
-        const docItem = this.closest('.doc-item');
-        
-        if (this.files.length > 0) {
-            statusEl.textContent = 'Uploadovan: ' + this.files[0].name;
-            statusEl.style.display = 'flex';
-            docItem.classList.add('uploaded');
+    const modal = document.getElementById('projectModal');
+    const addProjectBtn = document.getElementById('addProjectBtn');
+    const emptyAddBtn = document.getElementById('emptyAddBtn');
+    const closeModal = document.getElementById('closeModal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const projectForm = document.getElementById('projectForm');
+    const tableBody = document.getElementById('tableBody');
+    const searchInput = document.getElementById('searchInput');
+    const emptyState = document.getElementById('emptyState');
+    const kupacSelect = document.getElementById('kupacSelect');
+    const sidebar = document.getElementById('sidebar');
+    const menuBtn = document.getElementById('menuBtn');
+
+    // Učitaj kupce iz kupci.html
+    function loadKupci() {
+        const kupci = JSON.parse(localStorage.getItem('kupci') || '[]');
+        kupacSelect.innerHTML = '<option value="">-- Odaberi kupca --</option>';
+        kupci.forEach(kupac => {
+            const option = document.createElement('option');
+            option.value = JSON.stringify({id: kupac.id, ime: kupac.ime, prezime: kupac.prezime, pib: kupac.pib, lokacija: kupac.lokacija});
+            option.textContent = `${kupac.ime} ${kupac.prezime} (${kupac.pib})`;
+            kupacSelect.appendChild(option);
+        });
+    }
+
+    // Učitaj projekte
+    function loadProjects() {
+        const projects = JSON.parse(localStorage.getItem('projects_10_8kw') || '[]');
+        tableBody.innerHTML = '';
+
+        if (projects.length === 0) {
+            emptyState.style.display = 'block';
+            document.querySelector('.projects-table').style.display = 'none';
         } else {
-            statusEl.style.display = 'none';
-            docItem.classList.remove('uploaded');
+            emptyState.style.display = 'none';
+            document.querySelector('.projects-table').style.display = 'block';
+
+            projects.forEach(project => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="project-name">${project.kupac.ime} ${project.kupac.prezime}</td>
+                    <td>${project.kupac.pib}</td>
+                    <td>${project.lokacija}</td>
+                    <td>${project.kw} kW</td>
+                    <td><span class="status-badge status-${project.status}">${project.status === 'active' ? 'Aktivno' : project.status === 'completed' ? 'Završeno' : 'Nacrt'}</span></td>
+                    <td><button type="button" class="action-btn" onclick="openPortal('${project.id}')">Otvori →</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    }
+
+    // Otvori portal sa 5 faza
+    function openPortal(projectId) {
+        window.location.href = `/doc-portal-1/portal/${projectId}`;
+    }
+
+    // Otvori modal
+    function openModal() {
+        loadKupci();
+        modal.style.display = 'block';
+    }
+
+    // Zatvori modal
+    function closeModalWindow() {
+        modal.style.display = 'none';
+    }
+
+    // Event listeneri
+    addProjectBtn.addEventListener('click', openModal);
+    emptyAddBtn.addEventListener('click', openModal);
+    closeModal.addEventListener('click', closeModalWindow);
+    cancelBtn.addEventListener('click', closeModalWindow);
+
+    // Submit forma
+    projectForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const kupacData = JSON.parse(kupacSelect.value);
+        const newProject = {
+            id: `project_${Date.now()}`,
+            kupac: {
+                id: kupacData.id,
+                ime: kupacData.ime,
+                prezime: kupacData.prezime,
+                pib: kupacData.pib
+            },
+            naziv: document.getElementById('projectName').value,
+            kw: parseFloat(document.getElementById('projectkW').value),
+            lokacija: document.getElementById('projectLocation').value,
+            status: 'draft',
+            createdAt: new Date().toISOString()
+        };
+
+        const projects = JSON.parse(localStorage.getItem('projects_10_8kw') || '[]');
+        projects.push(newProject);
+        localStorage.setItem('projects_10_8kw', JSON.stringify(projects));
+
+        closeModalWindow();
+        projectForm.reset();
+        loadProjects();
+    });
+
+    // Pretraga
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const projects = JSON.parse(localStorage.getItem('projects_10_8kw') || '[]');
+        
+        tableBody.innerHTML = '';
+        const filtered = projects.filter(p => 
+            p.kupac.ime.toLowerCase().includes(searchTerm) ||
+            p.kupac.prezime.toLowerCase().includes(searchTerm) ||
+            p.kupac.pib.includes(searchTerm) ||
+            p.lokacija.toLowerCase().includes(searchTerm)
+        );
+
+        if (filtered.length === 0) {
+            emptyState.style.display = 'block';
+            document.querySelector('.projects-table').style.display = 'none';
+        } else {
+            emptyState.style.display = 'none';
+            document.querySelector('.projects-table').style.display = 'block';
+            
+            filtered.forEach(project => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="project-name">${project.kupac.ime} ${project.kupac.prezime}</td>
+                    <td>${project.kupac.pib}</td>
+                    <td>${project.lokacija}</td>
+                    <td>${project.kw} kW</td>
+                    <td><span class="status-badge status-${project.status}">${project.status === 'active' ? 'Aktivno' : project.status === 'completed' ? 'Završeno' : 'Nacrt'}</span></td>
+                    <td><button type="button" class="action-btn" onclick="openPortal('${project.id}')">Otvori →</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
         }
     });
-});
+
+    // Mobile menu
+    menuBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('hidden');
+    });
+
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('hidden');
+            }
+        });
+    });
+
+    // Zatvori modal kada se klikne van njega
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeModalWindow();
+        }
+    });
+
+    // Učitaj projekte na početku
+    loadProjects();
 </script>
 
 </body>

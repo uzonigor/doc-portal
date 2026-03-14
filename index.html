@@ -17,454 +17,499 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'General Sans', sans-serif;
-            background: #f7fafc;
-            color: #2d3748;
+            background: #fafbfc;
+            color: #4a5568;
             font-size: 16px;
         }
         
-        /* HEADER */
-        header {
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
             background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 32px 40px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border-right: 1px solid #e2e8f0;
+            padding: 32px 24px;
+            overflow-y: auto;
+            z-index: 1000;
         }
         
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
+        .sidebar-logo {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
+            margin-bottom: 48px;
+            text-decoration: none;
+            color: inherit;
         }
         
-        .logo-icon {
-            width: 40px;
-            height: 40px;
+        .sidebar-logo-icon {
+            width: 32px;
+            height: 32px;
             background: linear-gradient(135deg, #d4a853 0%, #c99a3f 100%);
             clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 75% 50%, 100% 75%, 25% 100%, 0% 75%, 25% 50%);
+            flex-shrink: 0;
         }
         
-        /* HERO */
-        .hero {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 40px;
-            text-align: center;
-        }
-        
-        /* KUPCI SECTION */
-        .kupci-section {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 80px 40px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-        
-        .section-label {
-            font-size: 16px;
+        .sidebar-logo-text {
+            font-size: 13px;
             font-weight: 600;
-            color: #718096;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 48px;
-            text-align: center;
+            color: #2d3748;
         }
         
-        .kupci-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .kupci-card {
-            background: #ffffff;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 60px 40px;
-            text-align: center;
-            transition: all 0.3s;
-            cursor: pointer;
-            text-decoration: none;
+        .sidebar-nav {
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            gap: 8px;
+        }
+        
+        .nav-item {
+            display: flex;
             align-items: center;
-            min-height: 260px;
-        }
-        
-        .kupci-card:hover {
-            border-color: #d4a853;
-            box-shadow: 0 8px 24px rgba(212, 168, 83, 0.15);
-            transform: translateY(-4px);
-        }
-        
-        .kupci-icon {
-            font-size: 70px;
-            margin-bottom: 28px;
-        }
-        
-        .kupci-title {
-            font-size: 34px;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 16px;
-        }
-        
-        .kupci-description {
-            font-size: 17px;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            text-decoration: none;
             color: #718096;
-            line-height: 1.7;
-            max-width: 450px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
         }
         
-        /* PORTALI SECTION */
-        .portali-section {
-            max-width: 1400px;
+        .nav-item:hover {
+            background: #f7fafc;
+            color: #2d3748;
+        }
+        
+        .nav-item.active {
+            background: #fef5e7;
+            color: #d4a853;
+        }
+        
+        .nav-icon {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* TOP BAR */
+        .top-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .top-bar-content {
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 80px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .portali-label {
-            font-size: 16px;
+        .top-bar-title {
+            font-size: 18px;
             font-weight: 600;
-            color: #718096;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 28px;
-            text-align: center;
-        }
-        
-        .portali-subtitle {
-            font-size: 30px;
-            font-weight: 600;
-            margin-bottom: 56px;
             color: #2d3748;
-            text-align: center;
         }
         
-        .options-grid {
+        .top-bar-menu {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #2d3748;
+        }
+        
+        /* CONTENT */
+        .content {
+            flex: 1;
+            padding: 48px 40px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* DASHBOARD TITLE */
+        .dashboard-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+        
+        .dashboard-subtitle {
+            font-size: 15px;
+            color: #718096;
+            margin-bottom: 48px;
+        }
+        
+        /* SECTION */
+        .dashboard-section {
+            margin-bottom: 64px;
+        }
+        
+        .section-header {
+            margin-bottom: 32px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 6px;
+        }
+        
+        .section-description {
+            font-size: 14px;
+            color: #a0aec0;
+        }
+        
+        /* GRID */
+        .cards-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 44px;
-            margin-bottom: 60px;
+            gap: 24px;
         }
         
-        /* DESKTOP - 3 KOLONE */
-        @media (min-width: 1920px) {
-            .options-grid {
+        @media (min-width: 1024px) {
+            .cards-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
         
-        /* TABLET/iPad - 1 KOLONA */
-        @media (max-width: 1366px) {
-            .options-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .option-card {
+        /* CARD */
+        .card {
             background: #ffffff;
-            border: 2px solid #e2e8f0;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 32px;
-            text-align: center;
-            transition: all 0.3s;
-            cursor: pointer;
             text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: auto;
+            min-height: 260px;
         }
         
-        .option-card:hover {
+        .card:hover {
             border-color: #d4a853;
-            box-shadow: 0 8px 24px rgba(212, 168, 83, 0.15);
-            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(212, 168, 83, 0.12);
+            transform: translateY(-2px);
         }
         
-        .option-number {
-            font-size: 48px;
-            font-weight: 700;
-            color: #d4a853;
-            margin-bottom: 12px;
-        }
-        
-        .option-subtitle {
-            font-size: 28px;
-            font-weight: 700;
-            color: #085158;
-            margin-bottom: 12px;
-            padding: 12px 16px;
-            background: #f0fdf4;
-            border-radius: 8px;
-        }
-        
-        .option-description {
-            font-size: 15px;
-            color: #718096;
-            margin-bottom: 16px;
-            line-height: 1.6;
-            flex-grow: 1;
-        }
-        
-        .option-button {
-            background: #085158;
-            color: white;
-            border: none;
-            padding: 14px 24px;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            width: 100%;
-        }
-        
-        .option-button:active {
-            transform: scale(0.98);
-        }
-        
-        .option-card:hover .option-button {
-            background: #d4a853;
-        }
-        
-        /* INFO SECTION */
-        .info-section {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 68px 44px;
-            background: #f0fdf4;
-            border-radius: 12px;
-            text-align: center;
-        }
-        
-        .info-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #2d3748;
+        .card-header {
             margin-bottom: 20px;
         }
         
-        .info-text {
-            font-size: 17px;
-            color: #718096;
-            line-height: 1.8;
+        .card-number {
+            font-size: 48px;
+            font-weight: 800;
+            color: #d4a853;
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        
+        .card-description {
+            font-size: 13px;
+            color: #a0aec0;
+            line-height: 1.6;
+            flex-grow: 1;
+            margin-bottom: 20px;
+        }
+        
+        .card-footer {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #d4a853;
+        }
+        
+        /* SINGLE CARD */
+        .single-card-wrapper {
+            max-width: 380px;
+        }
+        
+        .card-icon {
+            font-size: 44px;
+            margin-bottom: 16px;
+        }
+        
+        /* EMPTY STATE */
+        .empty-section {
+            padding: 48px 40px;
+            text-align: center;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+        }
+        
+        .empty-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        
+        .empty-text {
+            font-size: 13px;
+            color: #a0aec0;
         }
         
         /* FOOTER */
         footer {
-            background: #f7fafc;
-            border-top: 1px solid #e2e8f0;
-            padding: 44px 40px;
+            padding: 32px 40px;
             text-align: center;
-            font-size: 15px;
-            color: #718096;
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: auto;
         }
         
-        /* TABLET OPTIMIZATION - iPad Air 11" */
-        /* TABLET - iPad Air 11" Portrait */
-        @media (min-width: 1024px) and (max-width: 1366px) {
-            body {
-                font-size: 16px;
-            }
-            
-            header {
-                padding: 24px 40px;
-            }
-            
-            .kupci-section {
-                padding: 80px 60px;
-            }
-            
-            .portali-section {
-                padding: 80px 60px;
-            }
-            
-            .kupci-card {
-                padding: 60px 50px;
-                min-height: 250px;
-            }
-            
-            .kupci-icon {
-                font-size: 64px;
-            }
-            
-            .kupci-title {
-                font-size: 32px;
-                margin-bottom: 16px;
-            }
-            
-            .kupci-description {
-                font-size: 16px;
-            }
-            
-            .portali-title {
-                font-size: 28px;
-                margin-bottom: 50px;
-            }
-            
-            .section-label {
-                font-size: 15px;
-                margin-bottom: 40px;
-            }
-            
-            .option-card {
-                padding: 50px;
-                min-height: 420px;
-            }
-            
-            .option-number {
-                font-size: 56px;
-            }
-            
-            .option-title {
-                font-size: 22px;
-            }
-            
-            .option-subtitle {
-                font-size: 32px;
+        /* MOBILE */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
                 padding: 20px;
-            }
-            
-            .option-description {
-                font-size: 16px;
-                margin-bottom: 40px;
-            }
-            
-            .option-button {
-                padding: 14px 28px;
-                font-size: 16px;
-            }
-            
-            .info-section {
-                padding: 80px 60px;
-                margin: 0;
-            }
-            
-            .info-title {
-                font-size: 24px;
                 margin-bottom: 20px;
             }
             
-            .info-text {
-                font-size: 16px;
-                line-height: 1.8;
-            }
-        }
-        
-        /* SMALLER SCREENS */
-        @media (max-width: 768px) {
-            header {
-                padding: 24px 20px;
+            .sidebar.hidden {
+                display: none;
             }
             
-            .kupci-section {
-                padding: 60px 20px;
+            .main-content {
+                margin-left: 0;
             }
             
-            .portali-section {
-                padding: 60px 20px;
+            .top-bar-menu {
+                display: block;
             }
             
-            .kupci-card {
-                padding: 48px 28px;
+            .top-bar {
+                padding: 16px 20px;
             }
             
-            .option-card {
-                padding: 40px;
+            .content {
+                padding: 32px 20px;
+            }
+            
+            .dashboard-title {
+                font-size: 28px;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                padding: 24px;
                 min-height: auto;
             }
             
-            .info-section {
-                margin: 0 20px;
-                padding: 50px 30px;
+            .sidebar-nav {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .nav-item {
+                justify-content: center;
+                text-align: center;
+            }
+            
+            .nav-icon {
+                width: 100%;
             }
         }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="header-content">
-        <div class="logo-icon"></div>
+<div class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-logo">
+        <div class="sidebar-logo-icon"></div>
+        <div class="sidebar-logo-text">GO4<br>Portal</div>
+    </a>
+    
+    <nav class="sidebar-nav">
+        <a href="/" class="nav-item active">
+            <span class="nav-icon">■</span>
+            <span>Dashboard</span>
+        </a>
+        <a href="/kupci" class="nav-item">
+            <span class="nav-icon">◎</span>
+            <span>Kupci</span>
+        </a>
+        <a href="/doc-portal-1/" class="nav-item">
+            <span class="nav-icon">▢</span>
+            <span>Dokumenti</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">⚙</span>
+            <span>Postavke</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">?</span>
+            <span>Pomoć</span>
+        </a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="top-bar-title">Portal</div>
+            <button class="top-bar-menu" id="menuBtn">☰</button>
+        </div>
     </div>
-</header>
 
-<main>
-    <section class="hero">
-    </section>
+    <div class="content">
+        <h1 class="dashboard-title">Dokumentacioni Portal</h1>
+        <p class="dashboard-subtitle">Upravljanje ishodovanjem dokumentacije i bazom kupaca</p>
 
-    <!-- KUPCI SEKCIJA - ODVOJENA -->
-    <section class="kupci-section">
-        <div class="section-label">Upravljanje</div>
-        
-        <div class="kupci-container">
-            <a href="/kupci" class="kupci-card">
-                <div class="kupci-icon">👥</div>
-                <h2 class="kupci-title">Kupci</h2>
-                <p class="kupci-description">Upravljaj bazom kupaca i investitora. Dodaj nove, izmeni ili izbriši postojeće kupce.</p>
-            </a>
-        </div>
-    </section>
-
-    <!-- PORTALI SEKCIJA - 3 NAČINA -->
-    <section class="portali-section">
-        <div class="portali-label">Dokumentacioni Portali</div>
-        <h2 class="portali-subtitle">Izaberi kategoriju prema instaliranoj snazi:</h2>
-        
-        <div class="options-grid">
-            <!-- NAČIN 1 -->
-            <a href="/doc-portal-1/" class="option-card">
-                <div>
-                    <div class="option-number">I</div>
-                    <div class="option-subtitle">Do 10,8 kW</div>
-                    <div class="option-description">
+        <!-- SEKCIJA 1: ISHODOVANJE DOKUMENTACIJE -->
+        <section class="dashboard-section">
+            <div class="section-header">
+                <h2 class="section-title">Ishodovanje Dokumentacije</h2>
+                <p class="section-description">Uputi dokumentaciju prema instaliranoj snazi kupca</p>
+            </div>
+            
+            <div class="cards-grid">
+                <!-- NAČIN 1 -->
+                <a href="/doc-portal-1/" class="card">
+                    <div class="card-header">
+                        <div class="card-number">I</div>
+                        <h3 class="card-title">Do 10,8 kW</h3>
+                    </div>
+                    <p class="card-description">
                         Za kupce-proizvodjače sa instaliranom snagom do 10,8 kilovat
+                    </p>
+                    <div class="card-footer">
+                        <span>Otvori</span>
+                        <span>→</span>
                     </div>
-                </div>
-                <button class="option-button">Započni dokumentovanje →</button>
-            </a>
+                </a>
 
-            <!-- NAČIN 2 -->
-            <a href="/doc-portal-2/" class="option-card">
-                <div>
-                    <div class="option-number">II</div>
-                    <div class="option-subtitle">Do 50 kW</div>
-                    <div class="option-description">
+                <!-- NAČIN 2 -->
+                <a href="/doc-portal-2/" class="card">
+                    <div class="card-header">
+                        <div class="card-number">II</div>
+                        <h3 class="card-title">Do 50 kW</h3>
+                    </div>
+                    <p class="card-description">
                         Za kupce-proizvodjače sa instaliranom snagom između 10,8 i 50 kilovat
+                    </p>
+                    <div class="card-footer">
+                        <span>Otvori</span>
+                        <span>→</span>
                     </div>
-                </div>
-                <button class="option-button">Započni dokumentovanje →</button>
-            </a>
+                </a>
 
-            <!-- NAČIN 3 -->
-            <a href="/doc-portal-3/" class="option-card">
-                <div>
-                    <div class="option-number">III</div>
-                    <div class="option-subtitle">50-150 kW</div>
-                    <div class="option-description">
+                <!-- NAČIN 3 -->
+                <a href="/doc-portal-3/" class="card">
+                    <div class="card-header">
+                        <div class="card-number">III</div>
+                        <h3 class="card-title">50-150 kW</h3>
+                    </div>
+                    <p class="card-description">
                         Za kupce-proizvodjače sa instaliranom snagom između 50 i 150 kilovat
+                    </p>
+                    <div class="card-footer">
+                        <span>Otvori</span>
+                        <span>→</span>
                     </div>
-                </div>
-                <button class="option-button">Započni dokumentovanje →</button>
-            </a>
-        </div>
-    </section>
+                </a>
+            </div>
+        </section>
 
-    <section class="info-section">
-        <h3 class="info-title">ℹ️ Važne informacije</h3>
-        <p class="info-text">
-            Svi procesi dokumentovanja su dostupni onlajn. Dokumenta će biti prikupljena i prosleđena Elektrodistribuciji Srbije automatski. 
-            Ostanite sa nama tokom celog procesa od početka do kraja.
-        </p>
-    </section>
-</main>
+        <!-- SEKCIJA 2: UPRAVLJANJE KUPCIMA -->
+        <section class="dashboard-section">
+            <div class="section-header">
+                <h2 class="section-title">Upravljanje Kupcima</h2>
+                <p class="section-description">Centralna baza podataka za sve kupce i investitore</p>
+            </div>
+            
+            <div class="single-card-wrapper">
+                <a href="/kupci" class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Baza Kupaca</h3>
+                    </div>
+                    <p class="card-description">
+                        Dodaj, izmeni ili upravljaj bazom kupaca i investitora na jednom mjestu
+                    </p>
+                    <div class="card-footer">
+                        <span>Otvori</span>
+                        <span>→</span>
+                    </div>
+                </a>
+            </div>
+        </section>
 
-<footer>
-    <p>GO4 - Dokumentacioni Portal © 2024 | Powered by GO4ENERGY</p>
-</footer>
+        <!-- SEKCIJA 3: PROŠIRENJE -->
+        <section class="dashboard-section">
+            <div class="section-header">
+                <h2 class="section-title">Nadolazeće Funkcionalnosti</h2>
+                <p class="section-description">Nove mogućnosti koje se brzo dolaze</p>
+            </div>
+            
+            <div class="empty-section">
+                <div class="empty-title">Nove Funkcionalnosti</div>
+                <p class="empty-text">Uskoro će biti dostupne dodatne opcije za monitoring, analitiku i naprednu upravljanje</p>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>GO4 - Dokumentacioni Portal © 2024 | Powered by GO4ENERGY</p>
+    </footer>
+</div>
+
+<script>
+    const menuBtn = document.getElementById('menuBtn');
+    const sidebar = document.getElementById('sidebar');
+    
+    menuBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('hidden');
+    });
+    
+    // Close sidebar when nav item is clicked on mobile
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('hidden');
+            }
+        });
+    });
+</script>
 
 </body>
 </html>
