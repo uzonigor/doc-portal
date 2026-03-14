@@ -380,11 +380,32 @@
             border-color: #b3d9ff;
             color: #0369a1;
             font-weight: 500;
+            display: flex !important;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px !important;
         }
         
         .doc-item.form-link:hover {
             background: #e0efff;
             border-color: #7db3e8;
+        }
+        
+        .doc-pdf-btn {
+            padding: 6px 12px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+        
+        .doc-pdf-btn:hover {
+            background: #059669;
         }
         
         .doc-item.upload-field {
@@ -610,6 +631,28 @@
         </div>
     </div>
 
+    <!-- TEMPLATE EDITOR MODAL -->
+    <div id="templateModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 8px; padding: 32px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <h2 style="font-size: 20px; font-weight: 600; color: #2d3748; margin-bottom: 16px;">Uredi Template</h2>
+            <p id="modalDocName" style="font-size: 14px; color: #718096; margin-bottom: 20px;"></p>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 14px; font-weight: 600; color: #2d3748; margin-bottom: 8px;">Template Tekst:</label>
+                <textarea id="templateText" style="width: 100%; min-height: 200px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-family: monospace; font-size: 12px;" placeholder="Uredi template..."></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 12px;">
+                <button onclick="saveTemplate()" style="padding: 10px 20px; background: #085158; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                    Spremi
+                </button>
+                <button onclick="closeTemplateEditor()" style="padding: 10px 20px; background: #e2e8f0; color: #2d3748; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                    Zatvori
+                </button>
+            </div>
+        </div>
+    </div>
+
     <footer>
         <p>GO4 - Dokumentacioni Portal © 2024 | Powered by GO4ENERGY</p>
     </footer>
@@ -804,9 +847,14 @@
                                     ${phase.docs.map(doc => {
                                         if (doc.type === 'form') {
                                             return `
-                                                <li class="doc-item form-link" onclick="window.open('${doc.file}', '_blank')">
-                                                    <span class="doc-num">${doc.num}</span>
-                                                    <span class="doc-text">${doc.text}</span>
+                                                <li class="doc-item form-link" onclick="openTemplateEditor('${doc.num}', '${doc.text}')">
+                                                    <div style="display: flex; gap: 10px; align-items: center; flex: 1;">
+                                                        <span class="doc-num">${doc.num}</span>
+                                                        <span class="doc-text">${doc.text}</span>
+                                                    </div>
+                                                    <button class="doc-pdf-btn" onclick="event.stopPropagation(); downloadFormPDF(${projectId}, '${doc.num.replace(/\./g, '_')}')">
+                                                        📥 Preuzmи
+                                                    </button>
                                                 </li>
                                             `;
                                         } else if (doc.type === 'upload') {
@@ -913,6 +961,72 @@
             console.error('Error completing phase:', error);
             alert('Greška: ' + error.message);
         }
+    }
+
+    // Download PDF direktno
+    async function downloadFormPDF(projectId, docNum) {
+        try {
+            // Konvertuj docNum iz "0_1" u "forma-ovlascenja"
+            let formaType = 'forma-ovlascenja';
+            if (docNum === '0_2') formaType = 'forma-ugovor';
+            else if (docNum === '5_0') formaType = 'forma-potvrda';
+            else if (docNum === '6_1') formaType = 'forma-zahtev';
+            else if (docNum === '7_1') formaType = 'forma-zahtev-ugovora';
+            
+            const url = `/api/pdf/${formaType}/${projectId}`;
+            
+            // Kreiraj link i pokreni download
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${formaType}-${projectId}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Error downloading PDF:', error);
+            alert('Greška pri preuzimanju PDF-a: ' + error.message);
+        }
+    }
+
+    // Otvori template editor
+    function openTemplateEditor(docNum, docText) {
+        const modal = document.getElementById('templateModal');
+        const docNameEl = document.getElementById('modalDocName');
+        const textareaEl = document.getElementById('templateText');
+        
+        // Učitaj template iz baze ili localStorage
+        const templateContent = localStorage.getItem(`template_${docNum}`) || 'Template tekst će biti učitan...';
+        
+        docNameEl.textContent = `Dokument: ${docNum} - ${docText}`;
+        textareaEl.value = templateContent;
+        
+        // Prikaži modal kao flexbox
+        modal.style.display = 'flex';
+    }
+
+    // Zatvori template editor
+    function closeTemplateEditor() {
+        const modal = document.getElementById('templateModal');
+        modal.style.display = 'none';
+    }
+
+    // Spremi template
+    function saveTemplate() {
+        const docNameEl = document.getElementById('modalDocName');
+        const textareaEl = document.getElementById('templateText');
+        
+        // Provjeri da li su polja popunjena
+        if (!textareaEl.value.trim()) {
+            alert('Template ne može biti prazan!');
+            return;
+        }
+        
+        // Spremi u localStorage (kasnije možemo u bazu)
+        const docNum = docNameEl.textContent.split(':')[1].split('-')[0].trim();
+        localStorage.setItem(`template_${docNum}`, textareaEl.value);
+        
+        alert('Template je spremljen!');
+        closeTemplateEditor();
     }
 
     // Mobile menu
