@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GO4 - Upravljanje Kupcima</title>
+    <title>Upravljanje Kupcima - GO4 Portal</title>
     <style>
         * {
             margin: 0;
@@ -11,602 +11,787 @@
             box-sizing: border-box;
         }
         
+        html {
+            scroll-behavior: smooth;
+        }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f7fafc;
-            color: #2d3748;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'General Sans', sans-serif;
+            background: #fafbfc;
+            color: #4a5568;
             font-size: 16px;
         }
         
-        /* HEADER */
-        header {
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
             background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 32px 40px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border-right: 1px solid #e2e8f0;
+            padding: 32px 24px;
+            overflow-y: auto;
+            z-index: 1000;
         }
         
-        .header-content {
-            max-width: 1400px;
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 48px;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .sidebar-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #d4a853 0%, #c99a3f 100%);
+            clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 75% 50%, 100% 75%, 25% 100%, 0% 75%, 25% 50%);
+            flex-shrink: 0;
+        }
+        
+        .sidebar-logo-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #718096;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .nav-item:hover {
+            background: #f7fafc;
+            color: #2d3748;
+        }
+        
+        .nav-item.active {
+            background: #fef5e7;
+            color: #d4a853;
+        }
+        
+        .nav-icon {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* TOP BAR */
+        .top-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .top-bar-content {
+            max-width: 1200px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
-        .logo {
+        .top-bar-title {
             font-size: 18px;
             font-weight: 600;
             color: #2d3748;
-            display: flex;
-            align-items: center;
-            gap: 12px;
         }
         
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #d4a853 0%, #c99a3f 100%);
-            clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 75% 50%, 100% 75%, 25% 100%, 0% 75%, 25% 50%);
+        .top-bar-menu {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #2d3748;
         }
         
-        .breadcrumb {
-            font-size: 14px;
-            color: #718096;
-        }
-        
-        .breadcrumb a {
-            color: #d4a853;
-            text-decoration: none;
-        }
-        
-        /* MAIN */
-        main {
-            max-width: 1200px;
-            margin: 0 auto;
+        /* CONTENT */
+        .content {
+            flex: 1;
             padding: 48px 40px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* HEADER */
+        .page-header {
+            margin-bottom: 48px;
         }
         
         .page-title {
-            font-size: 38px;
-            font-weight: 600;
-            margin-bottom: 48px;
+            font-size: 36px;
+            font-weight: 700;
             color: #2d3748;
+            margin-bottom: 8px;
         }
         
-        /* SECTIONS */
-        .section {
+        .page-subtitle {
+            font-size: 15px;
+            color: #718096;
+        }
+        
+        /* CONTROLS */
+        .controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            align-items: center;
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 44px;
-            margin-bottom: 36px;
-        }
-        
-        .section-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 32px;
-            color: #2d3748;
-        }
-        
-        /* FORM */
-        .form-group {
-            margin-bottom: 28px;
-        }
-        
-        label {
-            display: block;
-            font-size: 16px;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 12px;
-        }
-        
-        input, textarea {
-            width: 100%;
-            padding: 16px 14px;
-            border: 1px solid #cbd5e0;
             border-radius: 8px;
-            font-size: 16px;
-            font-family: inherit;
+            padding: 0 16px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            border: none;
+            background: none;
+            font-size: 14px;
             color: #2d3748;
-        }
-        
-        input:focus, textarea:focus {
             outline: none;
-            border-color: #d4a853;
-            box-shadow: 0 0 0 4px rgba(212, 168, 83, 0.1);
+            padding: 12px 0;
         }
         
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
+        .search-box input::placeholder {
+            color: #a0aec0;
         }
         
         .btn {
-            padding: 14px 28px;
-            font-size: 16px;
-            font-weight: 600;
-            border: none;
+            padding: 12px 24px;
+            border: 1px solid #e2e8f0;
             border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
+            background: #ffffff;
+            color: #2d3748;
+        }
+        
+        .btn:hover {
+            border-color: #cbd5e0;
+            background: #f7fafc;
         }
         
         .btn-primary {
             background: #085158;
             color: white;
+            border-color: #085158;
         }
         
         .btn-primary:hover {
             background: #d4a853;
+            border-color: #d4a853;
         }
         
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
-        
-        .btn-danger {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 8px 16px;
-            font-size: 14px;
-        }
-        
-        .btn-danger:hover {
-            background: #fecaca;
-        }
-        
-        /* SEARCH */
-        .search-container {
-            display: flex;
-            gap: 18px;
-            align-items: flex-end;
-            margin-bottom: 20px;
-        }
-        
-        .search-container input {
-            padding: 16px 14px;
-            font-size: 16px;
-        }
-        
-        #searchResults {
-            margin-top: 16px;
-            font-size: 16px;
-            color: #718096;
-        }
-        
-        /* TABLICA */
-        .table-container {
-            overflow-x: auto;
+        /* TABLE */
+        .projects-table {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 16px;
+        }
+        
+        thead {
+            background: #f7fafc;
+            border-bottom: 1px solid #e2e8f0;
         }
         
         th {
-            background: #f7fafc;
-            padding: 16px;
+            padding: 16px 20px;
             text-align: left;
+            font-size: 13px;
             font-weight: 600;
             color: #4a5568;
-            border-bottom: 2px solid #e2e8f0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         td {
-            padding: 16px;
+            padding: 16px 20px;
             border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
             color: #2d3748;
         }
         
-        tr:hover {
+        tbody tr:hover {
             background: #f7fafc;
+            cursor: pointer;
         }
         
-        .kupac-id {
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .kupac-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            color: #d4a853;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .action-btn:hover {
+            color: #085158;
+        }
+        
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        
+        .empty-state-text {
             font-size: 14px;
             color: #718096;
-            font-family: monospace;
+            margin-bottom: 24px;
         }
         
-        .no-data {
-            text-align: center;
-            padding: 48px 20px;
-            color: #718096;
-            font-size: 16px;
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.2s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background-color: #fefeff;
+            margin: 80px auto;
+            padding: 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            margin-bottom: 24px;
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .modal-close {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            color: #a0aec0;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        
+        .modal-close:hover {
+            color: #2d3748;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #2d3748;
+            font-family: inherit;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #d4a853;
+            box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+            justify-content: flex-end;
         }
         
         /* FOOTER */
         footer {
-            background: #f7fafc;
-            border-top: 1px solid #e2e8f0;
-            padding: 44px 40px;
+            padding: 32px 40px;
             text-align: center;
-            font-size: 14px;
-            color: #718096;
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: auto;
         }
         
-        /* TABLET - iPad Air 11" */
-        @media (min-width: 1024px) and (max-width: 1366px) {
-            body {
-                font-size: 16px;
-            }
-            
-            main {
-                padding: 60px 80px;
-            }
-            
-            .page-title {
-                font-size: 36px;
-                margin-bottom: 40px;
-            }
-            
-            .section {
-                padding: 40px;
-                margin-bottom: 40px;
-                border-radius: 12px;
-            }
-            
-            .section-title {
-                font-size: 24px;
-                margin-bottom: 28px;
-            }
-            
-            label {
-                font-size: 16px;
-                margin-bottom: 10px;
-            }
-            
-            input, textarea {
-                padding: 12px 14px;
-                font-size: 16px;
-            }
-            
-            .form-row {
-                grid-template-columns: 1fr 1fr;
-                gap: 28px;
-            }
-            
-            .btn {
-                padding: 12px 24px;
-                font-size: 16px;
-            }
-            
-            table {
-                font-size: 16px;
-            }
-            
-            th {
-                padding: 16px;
-                font-size: 16px;
-            }
-            
-            td {
-                padding: 16px;
-                font-size: 15px;
-            }
-            
-            .search-container {
-                gap: 20px;
-            }
-            
-            .search-container button {
-                width: auto;
-            }
-        }
-        
-        /* SMALLER TABLETS */
+        /* MOBILE */
         @media (max-width: 768px) {
-            main {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .sidebar.hidden {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .top-bar-menu {
+                display: block;
+            }
+            
+            .content {
                 padding: 32px 20px;
             }
             
             .page-title {
                 font-size: 28px;
-                margin-bottom: 36px;
+                margin-bottom: 12px;
             }
             
-            .section {
-                padding: 32px 24px;
-                margin-bottom: 24px;
+            .page-subtitle {
+                font-size: 13px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                min-width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 12px 10px;
             }
             
             .form-row {
                 grid-template-columns: 1fr;
             }
             
-            .search-container {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .search-container button {
-                width: 100%;
-            }
-            
-            table {
-                font-size: 14px;
-            }
-            
-            th, td {
-                padding: 12px 8px;
+            .modal-content {
+                margin: 40px auto;
+                padding: 28px;
+                width: 95%;
             }
         }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="header-content">
-        <div class="logo">
-            <div class="logo-icon"></div>
-        </div>
-        <div class="breadcrumb">
-            <a href="/">← Nazad na početak</a>
+<div class="sidebar" id="sidebar">
+    <a href="/" class="sidebar-logo">
+        <div class="sidebar-logo-icon"></div>
+        <div class="sidebar-logo-text">GO4<br>Portal</div>
+    </a>
+    
+    <nav class="sidebar-nav">
+        <a href="/" class="nav-item">
+            <span class="nav-icon">■</span>
+            <span>Dashboard</span>
+        </a>
+        <a href="/kupci" class="nav-item active">
+            <span class="nav-icon">◎</span>
+            <span>Kupci</span>
+        </a>
+        <a href="/doc-portal-1/" class="nav-item">
+            <span class="nav-icon">▢</span>
+            <span>Dokumenti</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">⚙</span>
+            <span>Postavke</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">?</span>
+            <span>Pomoć</span>
+        </a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="top-bar-title">Upravljanje Kupcima</div>
+            <button class="top-bar-menu" id="menuBtn">☰</button>
         </div>
     </div>
-</header>
 
-<main>
-    <h1 class="page-title">Upravljanje Kupcima</h1>
+    <div class="content">
+        <div class="page-header">
+            <h1 class="page-title">Baza Kupaca</h1>
+            <p class="page-subtitle">Upravljaj svim kupcima i investitorima na jednom mjestu</p>
+        </div>
 
-    <!-- SEARCH/FILTER SEKCIJA -->
-    <section class="section" style="margin-bottom: 36px;">
-        <div class="search-container">
-            <div style="flex: 1;">
-                <label for="searchInput" style="display: block; margin-bottom: 12px;">Pretraži kupce:</label>
-                <input 
-                    type="text" 
-                    id="searchInput" 
-                    placeholder="Pretraži po imenu, prezimenu, email-u ili PIB-u..."
-                >
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Pretraži kupce, PIB, email...">
             </div>
-            <button class="btn btn-primary" onclick="resetSearch()">Očisti</button>
-            <button class="btn btn-primary" onclick="scrollToForm()" style="background: #d4a853;">+ Dodaj kupca</button>
+            <button class="btn btn-primary" id="addKupacBtn">+ Dodaj novog kupca</button>
         </div>
-        <p id="searchResults"></p>
-    </section>
 
-    <!-- FORMA ZA DODAVANJE KUPCA - SKRIVENA -->
-    <section class="section hidden-form" id="formaSekcija">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h2 class="section-title" style="margin-bottom: 0;">Dodaj novog kupca</h2>
-            <button class="btn btn-danger" onclick="closeForm()" style="background: #cbd5e0; color: #2d3748;">✕ Zatvori</button>
+        <div class="projects-table">
+            <table id="kupcitable">
+                <thead>
+                    <tr>
+                        <th>Kupac</th>
+                        <th>PIB</th>
+                        <th>Email</th>
+                        <th>Telefon</th>
+                        <th>kW</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Dinamički sadržaj -->
+                </tbody>
+            </table>
         </div>
-        
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-title">Nema kupaca</div>
+            <p class="empty-state-text">Još uvijek nema kreiranih kupaca. Dodaj prvog kupca.</p>
+            <button class="btn btn-primary" id="emptyAddBtn">+ Dodaj novog kupca</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>GO4 - Dokumentacioni Portal © 2024 | Powered by GO4ENERGY</p>
+    </footer>
+</div>
+
+<!-- MODAL ZA DODAVANJE NOVOG KUPCA -->
+<div id="kupacModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button class="modal-close" id="closeModal">&times;</button>
+            <h2 class="modal-title">Dodaj Novog Kupca</h2>
+        </div>
+
         <form id="kupacForm">
             <div class="form-row">
                 <div class="form-group">
-                    <label for="ime">Ime</label>
-                    <input type="text" id="ime" name="ime" required>
+                    <label class="form-label">Ime</label>
+                    <input type="text" id="ime" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label for="prezime">Prezime</label>
-                    <input type="text" id="prezime" name="prezime" required>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="pib">PIB</label>
-                    <input type="text" id="pib" name="pib" required>
-                </div>
-                <div class="form-group">
-                    <label for="maticniBroj">Matrični broj</label>
-                    <input type="text" id="maticniBroj" name="maticniBroj">
+                    <label class="form-label">Prezime</label>
+                    <input type="text" id="prezime" class="form-input" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required>
+                    <label class="form-label">PIB</label>
+                    <input type="text" id="pib" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label for="telefonski">Telefonski broj</label>
-                    <input type="tel" id="telefonski" name="telefonski">
+                    <label class="form-label">Matrični Broj</label>
+                    <input type="text" id="maticniBroj" class="form-input">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Telefon</label>
+                    <input type="tel" id="telefonski" class="form-input">
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="adresa">Adresa</label>
-                <input type="text" id="adresa" name="adresa" required>
+                <label class="form-label">Adresa</label>
+                <input type="text" id="adresa" class="form-input" required>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="mesto">Mjesto</label>
-                    <input type="text" id="mesto" name="mesto" required>
+                    <label class="form-label">Mjesto</label>
+                    <input type="text" id="mesto" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label for="kw">Instalirano (kW)</label>
-                    <input type="number" id="kw" name="kw" step="0.1" required>
+                    <label class="form-label">Instalirano (kW)</label>
+                    <input type="number" id="kw" class="form-input" step="0.1" required>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary">Dodaj kupca</button>
+            <div class="modal-footer">
+                <button type="button" class="btn" id="cancelBtn">Otkaži</button>
+                <button type="submit" class="btn btn-primary">Dodaj Kupca</button>
+            </div>
         </form>
-    </section>
-
-    <!-- LISTA KUPACA -->
-    <section class="section">
-        <h2 class="section-title">Lista kupaca</h2>
-        
-        <div class="table-container">
-            <table id="kupcitable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Ime i Prezime</th>
-                        <th>Email</th>
-                        <th>Telefon</th>
-                        <th>kW</th>
-                        <th>Akcija</th>
-                    </tr>
-                </thead>
-                <tbody id="kupciBodies">
-                    <tr><td colspan="6" class="no-data">Nema kupaca. Dodaj prvog kupca gore.</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-</main>
-
-<footer>
-    <p>GO4 - Dokumentacioni Portal © 2024 | Powered by GO4ENERGY</p>
-</footer>
-
-<style>
-    .hidden-form {
-        display: none;
-    }
-    
-    .hidden-form.show {
-        display: block;
-    }
-</style>
+    </div>
+</div>
 
 <script>
-// Ucitaj kupce iz localStorage
-function loadKupci() {
-    const kupciBodies = document.getElementById('kupciBodies');
-    const kupci = JSON.parse(localStorage.getItem('kupci')) || [];
-    
-    if (kupci.length === 0) {
-        kupciBodies.innerHTML = '<tr><td colspan="6" class="no-data">Nema kupaca. Dodaj prvog kupca gore.</td></tr>';
-        return;
+    const modal = document.getElementById('kupacModal');
+    const addKupacBtn = document.getElementById('addKupacBtn');
+    const emptyAddBtn = document.getElementById('emptyAddBtn');
+    const closeModal = document.getElementById('closeModal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const kupacForm = document.getElementById('kupacForm');
+    const tableBody = document.getElementById('tableBody');
+    const searchInput = document.getElementById('searchInput');
+    const emptyState = document.getElementById('emptyState');
+    const sidebar = document.getElementById('sidebar');
+    const menuBtn = document.getElementById('menuBtn');
+
+    // Učitaj kupce
+    function loadKupci() {
+        const kupci = JSON.parse(localStorage.getItem('kupci') || '[]');
+        tableBody.innerHTML = '';
+
+        if (kupci.length === 0) {
+            emptyState.style.display = 'block';
+            document.querySelector('.projects-table').style.display = 'none';
+        } else {
+            emptyState.style.display = 'none';
+            document.querySelector('.projects-table').style.display = 'block';
+
+            kupci.forEach(kupac => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="kupac-name">${kupac.ime} ${kupac.prezime}</td>
+                    <td>${kupac.pib}</td>
+                    <td>${kupac.email}</td>
+                    <td>${kupac.telefonski || '-'}</td>
+                    <td>${kupac.kw} kW</td>
+                    <td><button type="button" class="action-btn" onclick="obrisiKupca('${kupac.id}')">Obriši</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
     }
-    
-    kupciBodies.innerHTML = kupci.map(kupac => `
-        <tr>
-            <td><span class="kupac-id">${kupac.id}</span></td>
-            <td>${kupac.ime} ${kupac.prezime}</td>
-            <td>${kupac.email}</td>
-            <td>${kupac.telefonski || '-'}</td>
-            <td>${kupac.kw} kW</td>
-            <td>
-                <button class="btn btn-danger" onclick="obrisiKupca('${kupac.id}')">Obriši</button>
-            </td>
-        </tr>
-    `).join('');
-}
 
-// Dodaj novog kupca
-document.getElementById('kupacForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const kupac = {
-        id: 'kupac_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-        ime: document.getElementById('ime').value,
-        prezime: document.getElementById('prezime').value,
-        pib: document.getElementById('pib').value,
-        maticniBroj: document.getElementById('maticniBroj').value,
-        email: document.getElementById('email').value,
-        telefonski: document.getElementById('telefonski').value,
-        adresa: document.getElementById('adresa').value,
-        mesto: document.getElementById('mesto').value,
-        kw: parseFloat(document.getElementById('kw').value),
-        datumKreiran: new Date().toISOString()
-    };
-    
-    const kupci = JSON.parse(localStorage.getItem('kupci')) || [];
-    kupci.push(kupac);
-    localStorage.setItem('kupci', JSON.stringify(kupci));
-    
-    this.reset();
-    loadKupci();
-    closeForm();
-    alert('Kupac je uspješno dodan!');
-});
+    // Obriši kupca
+    function obrisiKupca(id) {
+        if (confirm('Sigurno želiš obrisati ovog kupca?')) {
+            const kupci = JSON.parse(localStorage.getItem('kupci') || '[]');
+            const filtrirani = kupci.filter(k => k.id !== id);
+            localStorage.setItem('kupci', JSON.stringify(filtrirani));
+            loadKupci();
+        }
+    }
 
-// Obriši kupca
-function obrisiKupca(id) {
-    if (confirm('Sigurno želiš obrisati ovog kupca?')) {
-        const kupci = JSON.parse(localStorage.getItem('kupci')) || [];
-        const filtrirani = kupci.filter(k => k.id !== id);
-        localStorage.setItem('kupci', JSON.stringify(filtrirani));
+    // Otvori modal
+    function openModal() {
+        modal.style.display = 'block';
+    }
+
+    // Zatvori modal
+    function closeModalWindow() {
+        modal.style.display = 'none';
+    }
+
+    // Event listeneri
+    addKupacBtn.addEventListener('click', openModal);
+    emptyAddBtn.addEventListener('click', openModal);
+    closeModal.addEventListener('click', closeModalWindow);
+    cancelBtn.addEventListener('click', closeModalWindow);
+
+    // Submit forma
+    kupacForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const newKupac = {
+            id: `kupac_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            ime: document.getElementById('ime').value,
+            prezime: document.getElementById('prezime').value,
+            pib: document.getElementById('pib').value,
+            maticniBroj: document.getElementById('maticniBroj').value,
+            email: document.getElementById('email').value,
+            telefonski: document.getElementById('telefonski').value,
+            adresa: document.getElementById('adresa').value,
+            mesto: document.getElementById('mesto').value,
+            kw: parseFloat(document.getElementById('kw').value),
+            datumKreiran: new Date().toISOString()
+        };
+
+        const kupci = JSON.parse(localStorage.getItem('kupci') || '[]');
+        kupci.push(newKupac);
+        localStorage.setItem('kupci', JSON.stringify(kupci));
+
+        closeModalWindow();
+        kupacForm.reset();
         loadKupci();
-        alert('Kupac je obrisan!');
-    }
-}
-
-// Search/Filter funkcionalnost
-const searchInput = document.getElementById('searchInput');
-const searchResults = document.getElementById('searchResults');
-
-searchInput.addEventListener('input', function() {
-    const searchTerm = this.value.toLowerCase().trim();
-    
-    if (searchTerm === '') {
-        resetSearch();
-        return;
-    }
-    
-    const kupci = JSON.parse(localStorage.getItem('kupci')) || [];
-    const filtrirani = kupci.filter(kupac => {
-        return (
-            kupac.ime.toLowerCase().includes(searchTerm) ||
-            kupac.prezime.toLowerCase().includes(searchTerm) ||
-            kupac.email.toLowerCase().includes(searchTerm) ||
-            kupac.pib.toLowerCase().includes(searchTerm)
-        );
     });
-    
-    const kupciBodies = document.getElementById('kupciBodies');
-    if (filtrirani.length === 0) {
-        kupciBodies.innerHTML = '<tr><td colspan="6" class="no-data">Nema rezultata. Pokušaj sa drugačijim pojmom.</td></tr>';
-        searchResults.textContent = `Nema kupaca koji odgovaraju: "${searchTerm}"`;
-    } else {
-        kupciBodies.innerHTML = filtrirani.map(kupac => `
-            <tr>
-                <td><span class="kupac-id">${kupac.id}</span></td>
-                <td>${kupac.ime} ${kupac.prezime}</td>
-                <td>${kupac.email}</td>
-                <td>${kupac.telefonski || '-'}</td>
-                <td>${kupac.kw} kW</td>
-                <td>
-                    <button class="btn btn-danger" onclick="obrisiKupca('${kupac.id}')">Obriši</button>
-                </td>
-            </tr>
-        `).join('');
-        searchResults.textContent = `Pronađeni kupci: ${filtrirani.length}`;
-    }
-});
 
-// Reset search
-function resetSearch() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('searchResults').textContent = '';
+    // Pretraga
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const kupci = JSON.parse(localStorage.getItem('kupci') || '[]');
+        
+        tableBody.innerHTML = '';
+        const filtered = kupci.filter(k => 
+            k.ime.toLowerCase().includes(searchTerm) ||
+            k.prezime.toLowerCase().includes(searchTerm) ||
+            k.pib.includes(searchTerm) ||
+            k.email.toLowerCase().includes(searchTerm)
+        );
+
+        if (filtered.length === 0) {
+            emptyState.style.display = 'block';
+            document.querySelector('.projects-table').style.display = 'none';
+        } else {
+            emptyState.style.display = 'none';
+            document.querySelector('.projects-table').style.display = 'block';
+            
+            filtered.forEach(kupac => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="kupac-name">${kupac.ime} ${kupac.prezime}</td>
+                    <td>${kupac.pib}</td>
+                    <td>${kupac.email}</td>
+                    <td>${kupac.telefonski || '-'}</td>
+                    <td>${kupac.kw} kW</td>
+                    <td><button type="button" class="action-btn" onclick="obrisiKupca('${kupac.id}')">Obriši</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    });
+
+    // Mobile menu
+    menuBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('hidden');
+    });
+
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('hidden');
+            }
+        });
+    });
+
+    // Zatvori modal kada se klikne van njega
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeModalWindow();
+        }
+    });
+
+    // Učitaj kupce na početku
     loadKupci();
-}
-
-// Otvori formu
-function openForm() {
-    const formaSekcija = document.getElementById('formaSekcija');
-    formaSekcija.classList.add('show');
-    setTimeout(() => {
-        formaSekcija.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-}
-
-// Zatvori formu
-function closeForm() {
-    const formaSekcija = document.getElementById('formaSekcija');
-    formaSekcija.classList.remove('show');
-}
-
-// Scroll to form za dodavanje kupca
-function scrollToForm() {
-    openForm();
-}
-
-// Ucitaj kupce na stranici load
-loadKupci();
 </script>
 
 </body>
