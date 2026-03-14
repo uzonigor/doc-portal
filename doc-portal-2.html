@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GO4 - Dokumentacioni Portal - Način 2</title>
+    <title>Dokumentacija Do 50 kW - GO4 Portal</title>
     <style>
         * {
             margin: 0;
@@ -11,200 +11,371 @@
             box-sizing: border-box;
         }
         
+        html {
+            scroll-behavior: smooth;
+        }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f7fafc;
-            color: #2d3748;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'General Sans', sans-serif;
+            background: #fafbfc;
+            color: #4a5568;
             font-size: 16px;
         }
         
-        header {
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
             background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 32px 40px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border-right: 1px solid #e2e8f0;
+            padding: 32px 24px;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: width 0.3s ease;
         }
         
-        .header-content {
-            max-width: 1400px;
+        .sidebar.collapsed {
+            width: 70px;
+            padding: 24px 12px;
+        }
+        
+        .sidebar-toggle {
+            position: absolute;
+            top: 32px;
+            right: -40px;
+            width: 32px;
+            height: 32px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2d3748;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+        
+        .sidebar-toggle:hover {
+            background: #f7fafc;
+            border-color: #cbd5e0;
+        }
+        
+        .sidebar-logo-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #2d3748;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar.collapsed .sidebar-logo-text {
+            opacity: 0;
+            display: none;
+        }
+        
+        .nav-item span:last-child {
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar.collapsed .nav-item span:last-child {
+            opacity: 0;
+            display: none;
+        }
+        
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 48px;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .sidebar-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #d4a853 0%, #c99a3f 100%);
+            clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 75% 50%, 100% 75%, 25% 100%, 0% 75%, 25% 50%);
+            flex-shrink: 0;
+        }
+        
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #718096;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .nav-item:hover {
+            background: #f7fafc;
+            color: #2d3748;
+        }
+        
+        .nav-item.active {
+            background: #fef5e7;
+            color: #d4a853;
+        }
+        
+        .nav-icon {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .main-content.sidebar-collapsed {
+            margin-left: 70px;
+        }
+        
+        /* TOP BAR */
+        .top-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 20px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .top-bar-content {
+            max-width: 1200px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #d4a853 0%, #c99a3f 100%);
-            clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 75% 50%, 100% 75%, 25% 100%, 0% 75%, 25% 50%);
-        }
-        
-        .breadcrumb {
-            font-size: 14px;
-            color: #718096;
-        }
-        
-        .breadcrumb a {
-            color: #d4a853;
-            text-decoration: none;
-        }
-        
-        main {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 48px 40px;
-            text-align: center;
-        }
-        
-        .container {
-            background: #ffffff;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 80px 50px;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        
-        h1 {
-            font-size: 42px;
+        .top-bar-title {
+            font-size: 18px;
             font-weight: 600;
-            margin-bottom: 20px;
             color: #2d3748;
         }
         
-        .subtitle {
-            font-size: 28px;
-            font-weight: 600;
-            color: #085158;
-            margin-bottom: 32px;
-        }
-        
-        .description {
-            font-size: 18px;
-            color: #718096;
-            line-height: 1.8;
-            margin-bottom: 48px;
-        }
-        
-        .status {
-            background: #fef5e7;
-            border: 2px solid #d4a853;
-            border-radius: 8px;
-            padding: 28px;
-            margin-bottom: 48px;
-            font-size: 16px;
-            color: #7d5c0f;
-        }
-        
-        .button {
-            background: #085158;
-            color: white;
+        .top-bar-menu {
+            display: none;
+            background: none;
             border: none;
-            padding: 16px 40px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 24px;
             cursor: pointer;
-            transition: all 0.2s;
-            display: inline-block;
-            text-decoration: none;
+            color: #2d3748;
         }
         
-        .button:hover {
-            background: #d4a853;
+        /* CONTENT */
+        .content {
+            flex: 1;
+            padding: 48px 40px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
         }
         
-        footer {
-            background: #f7fafc;
-            border-top: 1px solid #e2e8f0;
-            padding: 44px 40px;
-            text-align: center;
-            font-size: 14px;
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 16px;
+        }
+        
+        .page-subtitle {
+            font-size: 15px;
             color: #718096;
-            margin-top: 60px;
+            margin-bottom: 48px;
         }
         
-        /* TABLET - iPad Air 11" */
-        @media (min-width: 1024px) and (max-width: 1366px) {
-            body {
-                font-size: 16px;
-            }
-            
-            main {
-                padding: 60px 80px;
-            }
-            
-            .container {
-                padding: 80px 60px;
-                max-width: 700px;
-            }
-            
-            h1 {
-                font-size: 48px;
-            }
-            
-            .subtitle {
-                font-size: 24px;
-            }
-            
-            .description {
-                font-size: 18px;
-            }
-            
-            .button {
-                padding: 14px 32px;
-                font-size: 16px;
-            }
+        .placeholder-box {
+            background: #ffffff;
+            border: 2px dashed #e2e8f0;
+            border-radius: 12px;
+            padding: 80px 40px;
+            text-align: center;
         }
         
-        /* RESPONSIVE */
+        .placeholder-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+        }
+        
+        .placeholder-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 12px;
+        }
+        
+        .placeholder-text {
+            font-size: 16px;
+            color: #718096;
+            line-height: 1.6;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        /* FOOTER */
+        footer {
+            padding: 32px 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: auto;
+        }
+        
+        /* MOBILE */
         @media (max-width: 768px) {
-            main {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .sidebar.hidden {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .top-bar-menu {
+                display: block;
+            }
+            
+            .content {
                 padding: 32px 20px;
             }
             
-            .container {
-                padding: 50px 30px;
-            }
-            
-            h1 {
-                font-size: 32px;
+            .page-title {
+                font-size: 28px;
             }
         }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="header-content">
-        <div class="logo-icon"></div>
-        <div class="breadcrumb">
-            <a href="/">← Nazad na početak</a>
+<div class="sidebar" id="sidebar">
+    <button class="sidebar-toggle" id="sidebarToggle" title="Sklopi/Otvori">◀</button>
+    <a href="/" class="sidebar-logo">
+        <div class="sidebar-logo-icon"></div>
+        <div class="sidebar-logo-text">GO4<br>Portal</div>
+    </a>
+    
+    <nav class="sidebar-nav">
+        <a href="/" class="nav-item">
+            <span class="nav-icon">■</span>
+            <span>Dashboard</span>
+        </a>
+        <a href="/kupci" class="nav-item">
+            <span class="nav-icon">◎</span>
+            <span>Kupci</span>
+        </a>
+        <a href="/doc-portal-2/" class="nav-item active">
+            <span class="nav-icon">▢</span>
+            <span>Dokumenti</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">⚙</span>
+            <span>Postavke</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">?</span>
+            <span>Pomoć</span>
+        </a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="top-bar-title">Dokumentacija - Do 50 kW</div>
+            <button class="top-bar-menu" id="menuBtn">☰</button>
         </div>
     </div>
-</header>
 
-<main>
-    <div class="container">
-        <h1>Način 2</h1>
-        <div class="subtitle">Do 50 kW</div>
+    <div class="content">
+        <h1 class="page-title">Način 2 - Do 50 kW</h1>
+        <p class="page-subtitle">Portal za kupce-proizvodjače sa instaliranom snagom između 10,8 i 50 kilovat</p>
         
-        <div class="description">
-            Dokumentacioni portal za kupce-proizvodjače sa instaliranom snagom fotonaponskih modula između 10,8 i 50 kilovat.
+        <div class="placeholder-box">
+            <div class="placeholder-icon">🚀</div>
+            <h2 class="placeholder-title">Portal je u razvoju</h2>
+            <p class="placeholder-text">Dokumentacioni portal za Način 2 je u fazi razvoja. Uskoro će biti dostupan kompletan sistem za upravljanje dokumentacijom i ishodovanje zahtjeva.</p>
         </div>
-        
-        <div class="status">
-            ⚙️ Ova sekcija je trenutno u razvoju. Vraćajte se uskoro za detaljne instrukcije i forme.
-        </div>
-        
-        <a href="/" class="button">← Nazad na početak</a>
     </div>
-</main>
 
-<footer>
-    <p>GO4 - Dokumentacioni Portal © 2024 | Powered by GO4ENERGY</p>
-</footer>
+    <footer>
+        <p>GO4 - Dokumentacioni Portal © 2024 | Powered by GO4ENERGY</p>
+    </footer>
+</div>
+
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const menuBtn = document.getElementById('menuBtn');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const mainContent = document.querySelector('.main-content');
+    
+    // Učitaj stanje sidebar-a iz localStorage
+    function initSidebar() {
+        const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (isCollapsed) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('sidebar-collapsed');
+            sidebarToggle.textContent = '▶';
+        }
+    }
+
+    // Toggle sidebar collapse
+    sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('sidebar-collapsed');
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem('sidebarCollapsed', isCollapsed);
+        sidebarToggle.textContent = isCollapsed ? '▶' : '◀';
+    });
+    
+    // Mobile menu
+    menuBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('hidden');
+    });
+
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('hidden');
+            }
+        });
+    });
+    
+    // Inicijalizuj sidebar
+    initSidebar();
+</script>
 
 </body>
 </html>

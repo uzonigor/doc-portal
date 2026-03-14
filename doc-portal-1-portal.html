@@ -34,6 +34,39 @@
             padding: 32px 24px;
             overflow-y: auto;
             z-index: 1000;
+            transition: width 0.3s ease, margin-left 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            width: 70px;
+            padding: 24px 12px;
+        }
+        
+        .sidebar-toggle {
+            position: absolute;
+            top: 32px;
+            right: -40px;
+            width: 32px;
+            height: 32px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2d3748;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+        
+        .sidebar-toggle:hover {
+            background: #f7fafc;
+            border-color: #cbd5e0;
+        }
+        
+        .sidebar.collapsed .sidebar-toggle {
+            right: -40px;
         }
         
         .sidebar-logo {
@@ -57,6 +90,21 @@
             font-size: 13px;
             font-weight: 600;
             color: #2d3748;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar.collapsed .sidebar-logo-text {
+            opacity: 0;
+            display: none;
+        }
+        
+        .nav-item span:last-child {
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar.collapsed .nav-item span:last-child {
+            opacity: 0;
+            display: none;
         }
         
         .sidebar-nav {
@@ -101,6 +149,11 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .main-content.sidebar-collapsed {
+            margin-left: 70px;
         }
         
         /* TOP BAR */
@@ -407,6 +460,7 @@
 <body>
 
 <div class="sidebar" id="sidebar">
+    <button class="sidebar-toggle" id="sidebarToggle" title="Sklopi/Otvori">◀</button>
     <a href="/" class="sidebar-logo">
         <div class="sidebar-logo-icon"></div>
         <div class="sidebar-logo-text">GO4<br>Portal</div>
@@ -465,9 +519,30 @@
 <script>
     const sidebar = document.getElementById('sidebar');
     const menuBtn = document.getElementById('menuBtn');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const mainContent = document.querySelector('.main-content');
     const projectTitle = document.getElementById('projectTitle');
     const projectInfo = document.getElementById('projectInfo');
     const timeline = document.getElementById('timeline');
+
+    // Učitaj stanje sidebar-a iz localStorage
+    function initSidebar() {
+        const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (isCollapsed) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('sidebar-collapsed');
+            sidebarToggle.textContent = '▶';
+        }
+    }
+
+    // Toggle sidebar
+    sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('sidebar-collapsed');
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem('sidebarCollapsed', isCollapsed);
+        sidebarToggle.textContent = isCollapsed ? '▶' : '◀';
+    });
 
     // Uzmi projectId iz URL-a
     function getProjectId() {
@@ -664,6 +739,9 @@
 
     // Učitaj projekat
     loadProject();
+    
+    // Inicijalizuj sidebar
+    initSidebar();
 </script>
 
 </body>
