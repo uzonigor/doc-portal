@@ -71,6 +71,11 @@ app.get('/doc-portal-1', (req, res) => {
     res.sendFile(path.join(__dirname, 'doc-portal-1.html'));
 });
 
+// Način 1 - Portal sa 5 faza - Dinamički projekat
+app.get('/doc-portal-1/portal/:projectId', (req, res) => {
+    res.sendFile(path.join(__dirname, 'doc-portal-1-portal.html'));
+});
+
 // Način 2 - Do 50 kW
 app.get('/doc-portal-2', (req, res) => {
     res.sendFile(path.join(__dirname, 'doc-portal-2.html'));
