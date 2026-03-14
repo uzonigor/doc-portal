@@ -615,6 +615,9 @@
     </footer>
 </div>
 
+<!-- Load PDF Helper Functions -->
+<script src="/pdf-helper.js"></script>
+
 <script>
     const sidebar = document.getElementById('sidebar');
     const menuBtn = document.getElementById('menuBtn');
@@ -835,6 +838,14 @@
                             ${phase.status === 'active' && !phase.completed ? `
                                 <button class="btn btn-success" onclick="completePhase(${phase.apiId}, ${phase.id}, '${projectId}')">
                                     Označi kao Gotovo
+                                </button>
+                            ` : ''}
+                            ${phase.id === 0 ? `
+                                <button class="btn btn-secondary" onclick="downloadPDF(${projectId}, 'forma-ovlascenja')">
+                                    📥 Preuzmи Ovlašćenje
+                                </button>
+                                <button class="btn btn-secondary" onclick="downloadPDF(${projectId}, 'forma-ugovor')">
+                                    📥 Preuzmи Ugovor
                                 </button>
                             ` : ''}
                         </div>
