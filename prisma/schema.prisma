@@ -39,6 +39,7 @@ model Projekat {
   status          String    @default("draft")
   faze            Faza[]
   dokumenti       Dokument[]
+  templateVersioni TemplateVersion[]
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -81,4 +82,17 @@ model Dokument {
   updatedAt       DateTime  @updatedAt
 
   @@map("dokumenti")
+}
+
+model TemplateVersion {
+  id              Int       @id @default(autoincrement())
+  projekat        Projekat  @relation(fields: [projektaId], references: [id], onDelete: Cascade)
+  projektaId      Int
+  docNum          String    // 0_1, 0_2, 5_0, 6_1, 7_1
+  content         String    @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([projektaId, docNum])
+  @@map("template_versions")
 }

@@ -9,6 +9,7 @@ import kupciRouter from './routes/kupci.js';
 import projektiRouter from './routes/projekti.js';
 import fazeRouter from './routes/faze.js';
 import pdfRouter from './routes/pdf.js';
+import templatesRouter from './routes/templates.js';
 
 // Import legacy routes (ako trebaju)
 // import formsRouter from './routes/forms.js';
@@ -69,6 +70,9 @@ app.use('/api/pdf', (req, res, next) => {
     next();
 });
 app.use('/api/pdf', pdfRouter);
+
+// Templates routes - za spremi prilagođenih šablona
+app.use('/api/templates', templatesRouter);
 
 // ============================================
 // FRONTEND ROUTES

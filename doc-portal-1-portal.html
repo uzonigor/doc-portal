@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Ishodovanja - GO4</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -502,13 +503,48 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'General Sans', sans-serif;
         }
         
         .modal-content h2 {
-            font-size: 22px;
+            font-size: 28px;
             font-weight: 700;
             color: #085158;
-            margin: 0 0 20px 0;
+            margin: 0 0 24px 0;
+        }
+        
+        .modal-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .modal-toggle-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .modal-toggle-btn {
+            padding: 8px 16px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #718096;
+        }
+        
+        .modal-toggle-btn.active {
+            background: #085158;
+            color: white;
+            border-color: #085158;
+        }
+        
+        .modal-toggle-btn:hover {
+            border-color: #cbd5e0;
         }
         
         .modal-editor-container {
@@ -526,8 +562,8 @@
             flex-direction: column;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
-            background: #f7fafc;
             overflow: hidden;
+            background: white;
         }
         
         .modal-section-header {
@@ -536,70 +572,49 @@
             font-size: 14px;
             font-weight: 700;
             color: #2d3748;
-            background: #edf2f7;
+            background: #f7fafc;
         }
         
         .modal-section-content {
             flex: 1;
-            padding: 16px;
+            padding: 20px;
             overflow-y: auto;
-            background: white;
         }
         
         #templatePreview {
-            font-family: 'Times New Roman', 'DejaVu Serif', serif;
+            font-family: 'Segoe UI', 'Helvetica', Arial, sans-serif;
             font-size: 13px;
             line-height: 1.8;
             color: #2d3748;
             white-space: pre-wrap;
             word-wrap: break-word;
-            padding: 12px;
-            background: #f7fafc;
-            border-radius: 4px;
+            padding: 20px;
+            background: white;
             min-height: 300px;
         }
         
-        #templateFields {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .template-placeholder {
+            background: #fef5e7;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-weight: 700;
+            color: #c99a3f;
         }
         
-        .template-field {
-            background: #ffffff;
+        #templateEditor {
+            width: 100%;
+            min-height: 300px;
+            padding: 16px;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
-            padding: 12px;
-            transition: all 0.2s;
-        }
-        
-        .template-field:hover {
-            border-color: #cbd5e0;
-            background: #f7fafc;
-        }
-        
-        .template-field-label {
-            display: block;
-            font-size: 11px;
-            font-weight: 700;
-            color: #d4a853;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
-        }
-        
-        .template-field input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #cbd5e0;
-            border-radius: 4px;
-            font-size: 13px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
             color: #2d3748;
-            background: white;
-            font-family: inherit;
+            resize: vertical;
         }
         
-        .template-field input:focus {
+        #templateEditor:focus {
             outline: none;
             border-color: #d4a853;
             box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.1);
@@ -774,35 +789,29 @@
 <!-- TEMPLATE EDITOR MODAL -->
 <div id="templateModal">
     <div class="modal-content">
-        <div style="position: relative;">
-            <h2>Uredi Šablon Dokumenta</h2>
+        <div style="position: relative; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="margin: 0;">Upravljanje Šablonom</h2>
+            <div style="display: flex; gap: 8px;">
+                <button class="modal-toggle-btn active" id="previewToggle" onclick="switchMode('preview')">Pregled</button>
+                <button class="modal-toggle-btn" id="editToggle" onclick="switchMode('edit')">Uredi</button>
+            </div>
             <button class="modal-close-btn" onclick="closeTemplateEditor()">✕</button>
         </div>
         
-        <div class="modal-editor-container">
-            <!-- PREVIEW SEKCIJA -->
-            <div class="modal-section">
-                <div class="modal-section-header">📄 PREGLED DOKUMENTA</div>
-                <div class="modal-section-content">
-                    <div id="templatePreview" style="padding: 12px; background: white; border-radius: 4px;">
-                        Učitavanje...
-                    </div>
-                </div>
-            </div>
-            
-            <!-- POLJA ZA EDITOVANJE SEKCIJA -->
-            <div class="modal-section">
-                <div class="modal-section-header">✏️ VRIJEDNOSTI POLJA</div>
-                <div class="modal-section-content">
-                    <div id="templateFields">
-                        Učitavanje polja...
-                    </div>
-                </div>
+        <!-- PREVIEW MODE -->
+        <div id="previewMode" style="display: block; flex: 1; overflow: hidden;">
+            <div id="templatePreview" style="font-family: 'Times New Roman', serif; font-size: 13px; line-height: 1.8; color: #2d3748; white-space: pre-wrap; word-wrap: break-word; padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; height: calc(100% - 60px); overflow-y: auto;">
+                Učitavanje...
             </div>
         </div>
         
+        <!-- EDIT MODE -->
+        <div id="editMode" style="display: none; flex: 1; overflow: hidden;">
+            <textarea id="templateEditor" style="width: 100%; height: 100%; padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.6; color: #2d3748; resize: none;" placeholder="Uredi sadržaj šablona..."></textarea>
+        </div>
+        
         <div class="modal-footer">
-            <button class="btn-save" onclick="saveTemplate()">✓ Spremi Promjene</button>
+            <button class="btn-save" onclick="saveTemplateChanges()">✓ Spremi Promjene</button>
             <button class="btn-cancel" onclick="closeTemplateEditor()">Otkazi</button>
         </div>
     </div>
@@ -846,10 +855,16 @@
         return null;
     }
 
+    // Globalne varijable
+    let currentProjectId = null;
+    let currentProjectData = null;
+
     // Učitaj projekat
     async function loadProject() {
         try {
             const projectId = getProjectId();
+            currentProjectId = projectId;
+            
             if (!projectId) {
                 window.location.href = '/doc-portal-1/';
                 return;
@@ -867,6 +882,7 @@
             }
             
             const project = await response.json();
+            currentProjectData = project; // Spremi globalnu varijablu
 
             projectTitle.textContent = project.naziv;
             projectInfo.innerHTML = `
@@ -1017,45 +1033,81 @@
         }).join('');
     }
 
-    // Download PDF
+    // Download PDF sa html2pdf (pravilni Unicode znakovi)
     async function downloadPDF(projectId, formaType) {
         try {
             console.log('Download initiated:', { projectId, formaType });
-            const url = `/api/pdf/${formaType}/${projectId}`;
-            console.log('Fetching PDF from:', url);
             
-            const response = await fetch(url);
-            console.log('PDF response status:', response.status);
-            console.log('PDF response headers:', response.headers);
+            // Mapiranje formaType na docNum
+            const formaTypeMap = {
+                'forma-ovlascenja': '0_1',
+                'forma-ugovor': '0_2',
+                'forma-potvrda': '5_0',
+                'forma-zahtev': '6_1',
+                'forma-zahtev-ugovora': '7_1'
+            };
             
-            if (!response.ok) {
-                console.error('Response not ok');
-                try {
-                    const error = await response.json();
-                    throw new Error(error.error || `HTTP ${response.status}`);
-                } catch {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
+            const docNum = formaTypeMap[formaType] || formaType;
+            
+            // Učitaj template sa projectId - API će provjeriti custom verziju prvo
+            const templateUrl = `/api/pdf/template/${docNum}?projectId=${projectId}`;
+            console.log('Fetching template from:', templateUrl);
+            
+            const templateResponse = await fetch(templateUrl);
+            if (!templateResponse.ok) {
+                const error = await templateResponse.json();
+                throw new Error(error.error || 'Template nije pronađen');
             }
             
-            const contentType = response.headers.get('content-type');
-            console.log('Content-Type:', contentType);
+            const templateData = await templateResponse.json();
+            let htmlContent = templateData.content;
+            const isCustom = templateData.custom;
             
-            const blob = await response.blob();
-            console.log('Blob size:', blob.size, 'bytes');
+            console.log('Using template:', isCustom ? 'CUSTOM VERSION' : 'ORIGINAL TEMPLATE');
             
-            if (blob.size === 0) {
-                throw new Error('PDF je prazan');
+            // Pripremi varijable
+            const today = new Date();
+            const formattedDate = `${today.getDate()}.${(today.getMonth() + 1).toString().padStart(2, '0')}.${today.getFullYear()}`;
+            
+            const variables = {
+                kupac_naziv: currentProjectData.kupac.naziv || '',
+                kupac_adresa: currentProjectData.kupac.adresa || '',
+                kupac_mjesto: currentProjectData.kupac.mjesto || '',
+                kupac_mb: currentProjectData.kupac.mbKompanije || currentProjectData.kupac.licniId || '-',
+                kupac_pib: currentProjectData.kupac.pib || currentProjectData.kupac.jmbg || '-',
+                kupac_direktor: currentProjectData.kupac.direktor || currentProjectData.kupac.prezime || '',
+                projekt_naziv: currentProjectData.naziv || '',
+                projekt_snaga: currentProjectData.snaga || '0',
+                projekt_lokacija: currentProjectData.lokacija || '',
+                datum: formattedDate
+            };
+            
+            console.log('Template variables:', variables);
+            
+            // Zamijeni placeholders
+            for (const [key, value] of Object.entries(variables)) {
+                const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+                htmlContent = htmlContent.replace(regex, value);
             }
             
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = `${formaType}-${projectId}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(downloadUrl);
+            // Kreiraj element sa HTML sadržajem
+            const element = document.createElement('div');
+            element.innerHTML = htmlContent;
+            
+            // Generiši PDF sa html2pdf
+            const opt = {
+                margin: 10,
+                filename: `${formaType}-${projectId}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+            
+            if (!window.html2pdf) {
+                throw new Error('html2pdf library nije učitana');
+            }
+            
+            await window.html2pdf().set(opt).from(element).save();
             
             console.log('PDF download completed');
         } catch (error) {
@@ -1065,8 +1117,9 @@
     }
 
     // Globalne varijable za template editor
-    let currentTemplateContent = '';
     let currentTemplateDocNum = '';
+    let currentRawTemplate = '';
+    let templateVariables = {};
 
     // Otvori template editor
     async function openTemplateEditor(docNum, docText) {
@@ -1074,122 +1127,190 @@
         const previewEl = document.getElementById('templatePreview');
         
         currentTemplateDocNum = docNum.replace(/\./g, '_');
-        previewEl.textContent = 'Učitavanje template-a...';
+        previewEl.textContent = 'Učitavanje...';
         modal.style.display = 'flex';
         
+        // Reset toggle buttons
+        document.getElementById('previewToggle').classList.add('active');
+        document.getElementById('editToggle').classList.remove('active');
+        document.getElementById('previewMode').style.display = 'grid';
+        document.getElementById('editMode').style.display = 'none';
+        
         try {
-            const url = `/api/pdf/template/${currentTemplateDocNum}`;
-            console.log('Fetching template:', url);
+            if (!currentProjectData) {
+                throw new Error('Projekat podaci nisu dostupni');
+            }
             
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('Template nije pronađen');
+            // Učitaj template
+            const templateUrl = `/api/pdf/template/${currentTemplateDocNum}`;
+            const templateResponse = await fetch(templateUrl);
+            if (!templateResponse.ok) throw new Error('Template nije pronađen');
             
-            const data = await response.json();
-            currentTemplateContent = data.content;
-            console.log('Template loaded, extracting fields...');
+            const templateData = await templateResponse.json();
+            currentRawTemplate = templateData.content;
             
-            renderTemplateEditor(data.content);
+            // Pripremi varijable
+            const today = new Date();
+            const formattedDate = `${today.getDate()}.${(today.getMonth() + 1).toString().padStart(2, '0')}.${today.getFullYear()}`;
+            
+            templateVariables = {
+                kupac_naziv: currentProjectData.kupac.naziv || '',
+                kupac_adresa: currentProjectData.kupac.adresa || '',
+                kupac_mjesto: currentProjectData.kupac.mjesto || '',
+                kupac_mb: currentProjectData.kupac.mbKompanije || currentProjectData.kupac.licniId || '-',
+                kupac_pib: currentProjectData.kupac.pib || currentProjectData.kupac.jmbg || '-',
+                kupac_direktor: currentProjectData.kupac.direktor || currentProjectData.kupac.prezime || '',
+                projekt_naziv: currentProjectData.naziv || '',
+                projekt_snaga: currentProjectData.snaga || '0',
+                projekt_lokacija: currentProjectData.lokacija || '',
+                datum: formattedDate
+            };
+            
+            // Prikaži preview
+            renderTemplatePreview();
+            
+            // Učitaj u editor textarea
+            document.getElementById('templateEditor').value = currentRawTemplate;
+            
         } catch (error) {
             console.error('Template error:', error);
             previewEl.textContent = `Greška: ${error.message}`;
         }
     }
 
-    // Renderuj editor sa preview i fields
-    function renderTemplateEditor(htmlContent) {
-        const fieldsEl = document.getElementById('templateFields');
+    // Prebaci između moda
+    function switchMode(mode) {
+        const previewToggle = document.getElementById('previewToggle');
+        const editToggle = document.getElementById('editToggle');
+        const previewMode = document.getElementById('previewMode');
+        const editMode = document.getElementById('editMode');
+        
+        if (mode === 'preview') {
+            previewToggle.classList.add('active');
+            editToggle.classList.remove('active');
+            previewMode.style.display = 'grid';
+            editMode.style.display = 'none';
+        } else {
+            previewToggle.classList.remove('active');
+            editToggle.classList.add('active');
+            previewMode.style.display = 'none';
+            editMode.style.display = 'block';
+        }
+    }
+
+    // Renderuj preview sa boldiranim vrijednostima
+    function renderTemplatePreview() {
         const previewEl = document.getElementById('templatePreview');
         
-        // Provjeri sve {{placeholder}} u template-u
-        const placeholderRegex = /\{\{([^}]+)\}\}/g;
-        const placeholders = [];
-        let match;
+        // Koristi trenutni content iz textarea-a ako je editovan
+        const currentContent = document.getElementById('templateEditor').value || currentRawTemplate;
         
-        while ((match = placeholderRegex.exec(htmlContent)) !== null) {
-            if (!placeholders.includes(match[1])) {
-                placeholders.push(match[1]);
-            }
+        // Zamijeni {{placeholders}} sa vrijednostima
+        let processedText = currentContent;
+        
+        for (const [key, value] of Object.entries(templateVariables)) {
+            const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+            processedText = processedText.replace(regex, value);
         }
         
-        console.log('Found placeholders:', placeholders);
+        // Ekstraktujem CSS iz <style> taga
+        const styleMatch = processedText.match(/<style[\s\S]*?<\/style>/gi);
+        let cssContent = '';
+        if (styleMatch) {
+            cssContent = styleMatch[0]
+                .replace(/<style[\s\S]*?>/gi, '')
+                .replace(/<\/style>/gi, '');
+        }
         
-        // Uklanja HTML tagove i prikaži samo tekst
-        let plainText = htmlContent
-            .replace(/<[^>]*>/g, '')
-            .replace(/&nbsp;/g, ' ')
-            .replace(/&quot;/g, '"')
-            .replace(/&amp;/g, '&')
+        // Modifikujem CSS da se primjenjuje na sve elemente u preview-u
+        if (cssContent) {
+            // Zamijeni body sa #templatePreview i sve njegove direktne child selektore
+            cssContent = cssContent
+                .replace(/body\s*\{/gi, '#templatePreview {')
+                // Za sve klase, dodaj #templatePreview ispred ako nisu već
+                .replace(/^(\s*)\.([a-zA-Z])/gm, '#templatePreview .$2');
+        }
+        
+        // Uklanjam sve HTML wrapper tagove (html, head, body, style)
+        let htmlContent = processedText
+            .replace(/<\?xml[\s\S]*?\?>/gi, '')
+            .replace(/<!DOCTYPE[\s\S]*?>/gi, '')
+            .replace(/<html[\s\S]*?>/gi, '')
+            .replace(/<head[\s\S]*?<\/head>/gi, '')
+            .replace(/<body[\s\S]*?>/gi, '')
+            .replace(/<\/body>/gi, '')
+            .replace(/<\/html>/gi, '')
+            .replace(/<meta[\s\S]*?>/gi, '')
+            .replace(/<style[\s\S]*?<\/style>/gi, '')
             .trim();
         
-        // Prikaži preview
-        previewEl.textContent = plainText;
+        // Očisti previewEl
+        previewEl.innerHTML = '';
         
-        // Kreiraj editable fields
-        if (placeholders.length === 0) {
-            fieldsEl.innerHTML = '<p style="color: #a0aec0; font-style: italic;">Nema polja za editovanje</p>';
-            return;
+        // Dodaj ili ažuriraj style element u document head
+        let styleEl = document.getElementById('templatePreviewStyle');
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = 'templatePreviewStyle';
+            document.head.appendChild(styleEl);
         }
         
-        fieldsEl.innerHTML = placeholders.map(placeholder => {
-            const savedValue = localStorage.getItem(`field_${currentTemplateDocNum}_${placeholder}`) || '';
-            return `
-                <div class="template-field">
-                    <label class="template-field-label">{{${placeholder}}}</label>
-                    <input type="text" 
-                        id="field-${placeholder}" 
-                        placeholder="Unesite vrijednost" 
-                        value="${savedValue}"
-                        oninput="updatePreview()"
-                        autocomplete="off">
-                </div>
-            `;
-        }).join('');
+        if (cssContent) {
+            styleEl.textContent = cssContent;
+        }
         
-        // Prvi update preview-a
-        updatePreview();
+        // Prikaži HTML sadržaj sa formatiranjem (CSS će biti primjenjen kroz head style)
+        previewEl.innerHTML = htmlContent;
     }
 
-    // Update preview sa vrijednostima iz fields
-    function updatePreview() {
-        const previewEl = document.getElementById('templatePreview');
-        const fieldsInputs = document.querySelectorAll('#templateFields input');
-        
-        let previewText = currentTemplateContent
-            .replace(/<[^>]*>/g, '')
-            .replace(/&nbsp;/g, ' ')
-            .replace(/&quot;/g, '"')
-            .replace(/&amp;/g, '&');
-        
-        // Zamijeni placeholders sa vrijednostima iz inputs
-        fieldsInputs.forEach(input => {
-            const fieldName = input.id.replace('field-', '');
-            const value = input.value || `[${fieldName}]`;
-            previewText = previewText.replace(`{{${fieldName}}}`, value);
-        });
-        
-        previewEl.textContent = previewText.trim();
-    }
-
-    // Spremi template sa field vrijednostima
-    function saveTemplate() {
-        const fieldsInputs = document.querySelectorAll('#templateFields input');
-        
-        let savedCount = 0;
-        fieldsInputs.forEach(input => {
-            const fieldName = input.id.replace('field-', '');
-            const value = input.value;
-            localStorage.setItem(`field_${currentTemplateDocNum}_${fieldName}`, value);
-            savedCount++;
-        });
-        
-        alert(`Promjene su spremljene! (${savedCount} polja)`);
-        closeTemplateEditor();
+    // Spremi promjene (samo osvježi preview)
+    async function saveTemplateChanges() {
+        try {
+            const editorContent = document.getElementById('templateEditor').value;
+            
+            if (!editorContent || editorContent.trim() === '') {
+                alert('Šablon ne može biti prazan');
+                return;
+            }
+            
+            // Spremi u bazu
+            const projectId = currentProjectId;
+            const response = await fetch(`/api/templates/${projectId}/${currentTemplateDocNum}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    content: editorContent
+                })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Greška pri spremanju');
+            }
+            
+            // Osvježi raw template sa novim sadržajem
+            currentRawTemplate = editorContent;
+            
+            // Osvježi preview
+            renderTemplatePreview();
+            
+            // Prebaci na preview
+            switchMode('preview');
+            
+            alert('✓ Šablon je uspješno spreman u bazu!');
+            
+        } catch (error) {
+            console.error('Save error:', error);
+            alert('Greška pri spremanju: ' + error.message);
+        }
     }
 
     function closeTemplateEditor() {
         document.getElementById('templateModal').style.display = 'none';
-        currentTemplateContent = '';
         currentTemplateDocNum = '';
+        currentRawTemplate = '';
     }
 
     async function completePhase(faseId, fazaBroj, projectId) {

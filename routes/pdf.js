@@ -98,12 +98,12 @@ router.get('/forma-ovlascenja/:projektId', async (req, res) => {
         doc.pipe(res);
         
         // Dodaj sadržaj u PDF - koristi Times-Roman font (ima Cyrillic podrsku)
-        doc.fontSize(16).font('Times-Roman').text('OVLAŠĆENJE / PUNOMOĆ', { align: 'center' });
+        doc.fontSize(16).font('Helvetica').text('OVLAŠĆENJE / PUNOMOĆ', { align: 'center' });
         doc.moveDown();
         
         // Glavni tekst
         const fontSize = 11;
-        doc.fontSize(fontSize).font('Times-Roman');
+        doc.fontSize(fontSize).font('Helvetica');
         
         // Prvi paragraf - Davalac ovlašćenja
         const davalacText = `${variables.kupac_naziv}, ${variables.kupac_adresa}, ${variables.kupac_mjesto}, matični broj: ${variables.kupac_mb}, PIB: ${variables.kupac_pib} ovlašćuje:`;
@@ -116,14 +116,14 @@ router.get('/forma-ovlascenja/:projektId', async (req, res) => {
         doc.moveDown(2);
         
         // Lokacija i datum
-        doc.fontSize(fontSize).font('Times-Roman');
+        doc.fontSize(fontSize).font('Helvetica');
         doc.text(`U ${variables.kupac_mjesto}, ${variables.datum} godine`);
         doc.moveDown(2);
         
         // Potpis sekcija
-        doc.fontSize(fontSize).font('Times-Roman').text('Davalac ovlašćenja:', { indent: 40 });
+        doc.fontSize(fontSize).font('Helvetica').text('Davalac ovlašćenja:', { indent: 40 });
         doc.moveDown(3);
-        doc.fontSize(fontSize).font('Times-Roman').text('______________________________', { indent: 40 });
+        doc.fontSize(fontSize).font('Helvetica').text('______________________________', { indent: 40 });
         doc.fontSize(fontSize - 1).text(variables.kupac_direktor, { indent: 40 });
         
         // Završi PDF
@@ -187,13 +187,13 @@ router.get('/forma-ugovor/:projektId', async (req, res) => {
         
         doc.pipe(res);
         
-        doc.fontSize(16).font('Times-Roman').text('UGOVOR O ISHODOVANJU', { align: 'center' });
+        doc.fontSize(16).font('Helvetica').text('UGOVOR O ISHODOVANJU', { align: 'center' });
         doc.moveDown();
-        doc.fontSize(11).font('Times-Roman').text(`${variables.kupac_naziv} u ${variables.kupac_mjestu}, ${variables.datum}. godine`);
+        doc.fontSize(11).font('Helvetica').text(`${variables.kupac_naziv} u ${variables.kupac_mjestu}, ${variables.datum}. godine`);
         doc.moveDown(2);
         
         const tekst = `Ovaj dokument potvrđuje da je ${variables.kupac_naziv} započeo proces ishodovanja dozvola za priključenje solarne elektrane snage ${variables.projekt_snaga} kW na lokaciji ${variables.kupac_adresa}.`;
-        doc.fontSize(11).font('Times-Roman').text(tekst);
+        doc.fontSize(11).font('Helvetica').text(tekst);
         
         doc.end();
         
@@ -206,9 +206,11 @@ router.get('/forma-ugovor/:projektId', async (req, res) => {
 });
 
 // GET /api/pdf/template/:docNum - Učitaj template tekst za editovanje
+// Prvo provjerava custom verziju, zatim fallback na originalni template
 router.get('/template/:docNum', async (req, res) => {
     try {
-        const { docNum } = req.params;
+        const { docNum, projectId } = req.query;
+        const docNumParam = req.params.docNum;
         
         // Mapa dokumenata na template fajlove
         const templateMap = {
@@ -219,11 +221,34 @@ router.get('/template/:docNum', async (req, res) => {
             '7_1': 'forma-zahtev-ugovora-template.html'
         };
         
-        const templateFile = templateMap[docNum];
+        const templateFile = templateMap[docNumParam];
         if (!templateFile) {
             return res.status(404).json({ error: 'Template nije pronađen' });
         }
         
+        // Ako je proslijeđen projectId, prvo provjeri custom verziju
+        let content = null;
+        if (projectId) {
+            try {
+                const customVersion = await prisma.templateVersion.findUnique({
+                    where: {
+                        projektaId_docNum: {
+                            projektaId: parseInt(projectId),
+                            docNum: docNumParam
+                        }
+                    }
+                });
+                
+                if (customVersion) {
+                    console.log(`Using custom template version for project ${projectId}, doc ${docNumParam}`);
+                    return res.json({ content: customVersion.content, custom: true });
+                }
+            } catch (dbError) {
+                console.log('Custom version not found, using original template');
+            }
+        }
+        
+        // Fallback na originalni template fajl
         const templatePath = path.join(__dirname, '../templates', templateFile);
         
         // Provjeri da li template postoji
@@ -232,8 +257,8 @@ router.get('/template/:docNum', async (req, res) => {
         }
         
         // Učitaj i vrati template sadržaj
-        const content = fs.readFileSync(templatePath, 'utf-8');
-        res.json({ content });
+        content = fs.readFileSync(templatePath, 'utf-8');
+        res.json({ content, custom: false });
         
     } catch (error) {
         console.error('Error loading template:', error);
