@@ -65,10 +65,6 @@
             border-color: #cbd5e0;
         }
         
-        .sidebar.collapsed .sidebar-toggle {
-            right: -40px;
-        }
-        
         .sidebar-logo {
             display: flex;
             align-items: center;
@@ -94,15 +90,6 @@
         }
         
         .sidebar.collapsed .sidebar-logo-text {
-            opacity: 0;
-            display: none;
-        }
-        
-        .nav-item span:last-child {
-            transition: opacity 0.3s ease;
-        }
-        
-        .sidebar.collapsed .nav-item span:last-child {
             opacity: 0;
             display: none;
         }
@@ -380,10 +367,7 @@
             border-color: #b3d9ff;
             color: #0369a1;
             font-weight: 500;
-            display: flex !important;
-            align-items: center;
             justify-content: space-between;
-            padding: 10px 12px !important;
         }
         
         .doc-item.form-link:hover {
@@ -391,33 +375,10 @@
             border-color: #7db3e8;
         }
         
-        .doc-pdf-btn {
-            padding: 6px 12px;
-            background: #10b981;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-left: auto;
-        }
-        
-        .doc-pdf-btn:hover {
-            background: #059669;
-        }
-        
         .doc-item.upload-field {
             flex-direction: column;
             align-items: flex-start;
             padding: 12px;
-        }
-        
-        .doc-item.uploaded {
-            background: #f0fdf4 !important;
-            border-color: #bbf7d0 !important;
-            color: #15803d;
         }
         
         .doc-num {
@@ -430,6 +391,23 @@
         .doc-text {
             flex: 1;
             font-size: 13px;
+        }
+        
+        .doc-pdf-btn {
+            padding: 6px 12px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .doc-pdf-btn:hover {
+            background: #059669;
         }
         
         .file-input-wrapper {
@@ -446,21 +424,6 @@
             cursor: pointer;
             color: #718096;
             background: #ffffff;
-        }
-        
-        .file-uploaded {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 6px;
-            font-size: 12px;
-            color: #15803d;
-            font-weight: 500;
-        }
-        
-        .file-uploaded::before {
-            content: '✓';
-            font-weight: bold;
         }
         
         /* PHASE ACTIONS */
@@ -509,9 +472,196 @@
             background: #059669;
         }
         
-        .btn:disabled, .btn-primary:disabled {
+        .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+        
+        /* MODAL */
+        #templateModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 1000px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .modal-content h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #085158;
+            margin: 0 0 20px 0;
+        }
+        
+        .modal-editor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            flex: 1;
+            min-height: 400px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        
+        .modal-section {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f7fafc;
+            overflow: hidden;
+        }
+        
+        .modal-section-header {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #2d3748;
+            background: #edf2f7;
+        }
+        
+        .modal-section-content {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            background: white;
+        }
+        
+        #templatePreview {
+            font-family: 'Times New Roman', 'DejaVu Serif', serif;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #2d3748;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 4px;
+            min-height: 300px;
+        }
+        
+        #templateFields {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .template-field {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px;
+            transition: all 0.2s;
+        }
+        
+        .template-field:hover {
+            border-color: #cbd5e0;
+            background: #f7fafc;
+        }
+        
+        .template-field-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #d4a853;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+        
+        .template-field input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #2d3748;
+            background: white;
+            font-family: inherit;
+        }
+        
+        .template-field input:focus {
+            outline: none;
+            border-color: #d4a853;
+            box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.1);
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .modal-footer button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .modal-footer .btn-save {
+            background: #085158;
+            color: white;
+            flex: 1;
+        }
+        
+        .modal-footer .btn-save:hover {
+            background: #d4a853;
+        }
+        
+        .modal-footer .btn-cancel {
+            background: #e2e8f0;
+            color: #2d3748;
+            padding: 12px 24px;
+        }
+        
+        .modal-footer .btn-cancel:hover {
+            background: #cbd5e0;
+        }
+        
+        .modal-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #a0aec0;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .modal-close-btn:hover {
+            color: #2d3748;
         }
         
         /* FOOTER */
@@ -558,21 +708,6 @@
             .project-info {
                 flex-direction: column;
                 gap: 12px;
-            }
-            
-            .timeline-item {
-                padding-left: 60px;
-                margin-bottom: 40px;
-            }
-            
-            .timeline-number {
-                width: 44px;
-                height: 44px;
-                font-size: 16px;
-            }
-            
-            .timeline::before {
-                left: 22px;
             }
         }
     </style>
@@ -631,35 +766,47 @@
         </div>
     </div>
 
-    <!-- TEMPLATE EDITOR MODAL -->
-    <div id="templateModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
-        <div style="background: white; border-radius: 8px; padding: 32px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
-            <h2 style="font-size: 20px; font-weight: 600; color: #2d3748; margin-bottom: 16px;">Uredi Template</h2>
-            <p id="modalDocName" style="font-size: 14px; color: #718096; margin-bottom: 20px;"></p>
-            
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; font-size: 14px; font-weight: 600; color: #2d3748; margin-bottom: 8px;">Template Tekst:</label>
-                <textarea id="templateText" style="width: 100%; min-height: 200px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-family: monospace; font-size: 12px;" placeholder="Uredi template..."></textarea>
-            </div>
-            
-            <div style="display: flex; gap: 12px;">
-                <button onclick="saveTemplate()" style="padding: 10px 20px; background: #085158; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                    Spremi
-                </button>
-                <button onclick="closeTemplateEditor()" style="padding: 10px 20px; background: #e2e8f0; color: #2d3748; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                    Zatvori
-                </button>
-            </div>
-        </div>
-    </div>
-
     <footer>
         <p>GO4 - Dokumentacioni Portal © 2024 | Powered by GO4ENERGY</p>
     </footer>
 </div>
 
-<!-- Load PDF Helper Functions -->
-<script src="/pdf-helper.js"></script>
+<!-- TEMPLATE EDITOR MODAL -->
+<div id="templateModal">
+    <div class="modal-content">
+        <div style="position: relative;">
+            <h2>Uredi Šablon Dokumenta</h2>
+            <button class="modal-close-btn" onclick="closeTemplateEditor()">✕</button>
+        </div>
+        
+        <div class="modal-editor-container">
+            <!-- PREVIEW SEKCIJA -->
+            <div class="modal-section">
+                <div class="modal-section-header">📄 PREGLED DOKUMENTA</div>
+                <div class="modal-section-content">
+                    <div id="templatePreview" style="padding: 12px; background: white; border-radius: 4px;">
+                        Učitavanje...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- POLJA ZA EDITOVANJE SEKCIJA -->
+            <div class="modal-section">
+                <div class="modal-section-header">✏️ VRIJEDNOSTI POLJA</div>
+                <div class="modal-section-content">
+                    <div id="templateFields">
+                        Učitavanje polja...
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn-save" onclick="saveTemplate()">✓ Spremi Promjene</button>
+            <button class="btn-cancel" onclick="closeTemplateEditor()">Otkazi</button>
+        </div>
+    </div>
+</div>
 
 <script>
     const sidebar = document.getElementById('sidebar');
@@ -670,7 +817,7 @@
     const projectInfo = document.getElementById('projectInfo');
     const timeline = document.getElementById('timeline');
 
-    // Učitaj stanje sidebar-a iz localStorage
+    // Sidebar toggle
     function initSidebar() {
         const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
         if (isCollapsed) {
@@ -680,7 +827,6 @@
         }
     }
 
-    // Toggle sidebar
     sidebarToggle.addEventListener('click', () => {
         sidebar.classList.toggle('collapsed');
         mainContent.classList.toggle('sidebar-collapsed');
@@ -689,7 +835,7 @@
         sidebarToggle.textContent = isCollapsed ? '▶' : '◀';
     });
 
-    // Uzmi projectId iz URL-a
+    // Get projectId from URL
     function getProjectId() {
         const path = window.location.pathname;
         const parts = path.split('/');
@@ -700,7 +846,7 @@
         return null;
     }
 
-    // Učitaj projekat sa API-ja
+    // Učitaj projekat
     async function loadProject() {
         try {
             const projectId = getProjectId();
@@ -709,7 +855,6 @@
                 return;
             }
 
-            // Učitaj projekat sa API-ja
             const response = await fetch(`/api/projekti/${projectId}`);
             
             if (!response.ok) {
@@ -723,7 +868,6 @@
             
             const project = await response.json();
 
-            // Prikaži informacije o projektu
             projectTitle.textContent = project.naziv;
             projectInfo.innerHTML = `
                 <div class="info-item">
@@ -744,7 +888,6 @@
                 </div>
             `;
 
-            // Kreiraj timeline sa fazama iz API-ja
             renderPhases(projectId, project.faze);
         } catch (error) {
             console.error('Error loading project:', error);
@@ -753,15 +896,15 @@
         }
     }
 
-    // Predefinisane faze sa dokumentima (iste za sve projekte)
+    // Faze definition
     const PHASE_DEFINITIONS = [
         {
             id: 0,
             title: 'Priprema Dokumentacije',
             description: 'Osnovne forme ovlašćenja i ugovore potrebne za početak',
             docs: [
-                { num: '0.1', text: 'Forma ovlašćenja', type: 'form', file: 'forma-ovlascenja.html' },
-                { num: '0.2', text: 'Forma ugovora', type: 'form', file: 'forma-ugovor.html' }
+                { num: '0.1', text: 'Forma ovlašćenja', type: 'form', file: 'forma-ovlascenja' },
+                { num: '0.2', text: 'Forma ugovora', type: 'form', file: 'forma-ugovor' }
             ]
         },
         {
@@ -769,31 +912,18 @@
             title: 'Izgradnja Proizvodnog Objekta',
             description: 'Dokumentacija o izgradnji i instalaciji solarnog sistema',
             docs: [
-                { num: '5.0', text: 'Potvrda o usklađenosti instalacija kupca-proizvodjača sa uslovima priklučenja', type: 'form', file: 'forma-potvrda.html' },
-                { num: '5.1', text: 'Dodatak potvrdi sa podacima o invertorimima', type: 'form', file: 'forma-potvrda.html' },
-                { num: '5.2', text: 'Dodatak potvrdi o karakteristikama, podešenju i funkcionalnom ispitivanju zaštitnih uređaja', type: 'form', file: 'forma-potvrda.html' },
-                { num: '5.3', text: 'Licenca odgovornog izvođača radova', type: 'upload', id: 'doc-5-3' },
-                { num: '5.4', text: 'Izveštaj o ispitivanju ispravnosti zaštitnog provodnika, glavnog i dodatnog provodnika sa izjednačavanjem potencijala', type: 'upload', id: 'doc-5-4' },
-                { num: '5.5', text: 'Izveštaj o izvršenom ispitivanju otpornosti izolacije električne instalacije', type: 'upload', id: 'doc-5-5' },
-                { num: '5.6', text: 'Izveštaj o izvršenom ispitivanju impedanse zaštitnog uzemljenja', type: 'upload', id: 'doc-5-6' },
-                { num: '5.7', text: 'Izveštaj o izvršenom ispitivanju funkcionalnosti zaštitnih i upravljačkih uređaja', type: 'upload', id: 'doc-5-7' },
-                { num: '5.8', text: 'Izjava o usaglašenosti proizvodnog objekta sa Mrežnim pravilima', type: 'upload', id: 'doc-5-8' },
-                { num: '5.9', text: 'Jednopolna šema proizvodnog objekta do mernog mesta, overena od strane odgovornog Izvođača radova', type: 'upload', id: 'doc-5-9' },
-                { num: '5.10', text: 'Tropolna šema proizvodnog objekta do mernog mesta sa urtanim zaštitnim provodnikom, overena od strane odgovornog Izvođača radova', type: 'upload', id: 'doc-5-10' },
-                { num: '5.11', text: 'Sertifikate o usaglašenosti ugrađenog tipa invertora sa standardom SRPS EN 50549-1:2020', type: 'upload', id: 'doc-5-11' },
-                { num: '5.12', text: 'Sertifikate o usaglašenosti, po relevantnim standardima za spojni prekidač, ukoliko nije deo invertora', type: 'upload', id: 'doc-5-12' },
-                { num: '5.13', text: 'Sertifikate o usaglašenosti, po relevantnim standardima za zaštitni uređaj sistemske zaštite, ukoliko nije deo invertora', type: 'upload', id: 'doc-5-13' },
-                { num: '5.14', text: 'Kataloške podatke za invertor, spojni prekidač (ukoliko nije deo invertora), zaštitni uređaj sistemske zaštite (ukoliko nije deo invertora)', type: 'upload', id: 'doc-5-14' }
+                { num: '5.0', text: 'Potvrda o usklađenosti', type: 'form', file: 'forma-potvrda' },
+                { num: '5.3', text: 'Licenca odgovornog izvođača', type: 'upload' },
+                { num: '5.4', text: 'Izveštaj ispitivanja', type: 'upload' }
             ]
         },
         {
             id: 2,
             title: 'Prilagođenje Mernog Mjesta',
-            description: 'Procedure za prilagođenje mjernog mjesta za proizvodnju',
+            description: 'Procedure za prilagođenje mernog mjesta',
             docs: [
-                { num: '6.1', text: 'Zahtev za prilagođenje mernog mesta', type: 'form', file: 'forma-zahtev.html' },
-                { num: '6.2', text: 'Dokaz o uplati potrebnih troškova', type: 'upload', id: 'doc-6-2' },
-                { num: '6.3', text: 'Atesti za ugrađenu opremu i uređaje', type: 'upload', id: 'doc-6-3' }
+                { num: '6.1', text: 'Zahtev za prilagođenje', type: 'form', file: 'forma-zahtev' },
+                { num: '6.2', text: 'Dokaz uplata', type: 'upload' }
             ]
         },
         {
@@ -801,7 +931,7 @@
             title: 'Zaključivanje Ugovora',
             description: 'Konačni ugovori sa elektrodistribucijom',
             docs: [
-                { num: '7.1', text: 'Zahtev za zaključenje ugovora o potpunom snabdevanju sa neto obračunom', type: 'form', file: 'forma-zahtev-ugovora.html' }
+                { num: '7.1', text: 'Zahtev za zaključenje ugovora', type: 'form', file: 'forma-zahtev-ugovora' }
             ]
         },
         {
@@ -812,9 +942,8 @@
         }
     ];
 
-    // Renderuj faze - kombinuj API podatke sa predefinisanim fazama
+    // Renderuj faze
     function renderPhases(projectId, apiFaze) {
-        // Kombinuj API faze sa predefinisanim fazama i dokumentima
         const phases = PHASE_DEFINITIONS.map(phaseDef => {
             const apiPhase = apiFaze.find(f => f.fazaBroj === phaseDef.id) || {};
             return {
@@ -828,6 +957,32 @@
         timeline.innerHTML = phases.map(phase => {
             const statusClass = phase.completed ? 'completed' : phase.status === 'active' ? 'active' : 'disabled';
             const statusText = phase.completed ? 'Završeno' : phase.status === 'active' ? 'U toku' : 'Čeka se';
+
+            const docsHTML = phase.docs.map(doc => {
+                if (doc.type === 'form') {
+                    return `
+                        <li class="doc-item form-link" onclick="openTemplateEditor('${doc.num}', '${doc.text}')">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <span class="doc-num">${doc.num}</span>
+                                <span class="doc-text">${doc.text}</span>
+                            </div>
+                            <button class="doc-pdf-btn" onclick="event.stopPropagation(); downloadPDF(${projectId}, '${doc.file}')">📥 PDF</button>
+                        </li>
+                    `;
+                } else {
+                    return `
+                        <li class="doc-item upload-field">
+                            <div style="display: flex; gap: 10px; width: 100%;">
+                                <span class="doc-num">${doc.num}</span>
+                                <span class="doc-text">${doc.text}</span>
+                            </div>
+                            <div class="file-input-wrapper">
+                                <input type="file" accept=".pdf,.jpg,.png,.jpeg">
+                            </div>
+                        </li>
+                    `;
+                }
+            }).join('');
 
             return `
                 <div class="timeline-item ${statusClass}">
@@ -843,142 +998,56 @@
                         ${phase.docs.length > 0 ? `
                             <div class="docs-section">
                                 <strong>Potrebni dokumenti:</strong>
-                                <ul class="docs-list">
-                                    ${phase.docs.map(doc => {
-                                        if (doc.type === 'form') {
-                                            return `
-                                                <li class="doc-item form-link" onclick="openTemplateEditor('${doc.num}', '${doc.text}')">
-                                                    <div style="display: flex; gap: 10px; align-items: center; flex: 1;">
-                                                        <span class="doc-num">${doc.num}</span>
-                                                        <span class="doc-text">${doc.text}</span>
-                                                    </div>
-                                                    <button class="doc-pdf-btn" onclick="event.stopPropagation(); downloadFormPDF(${projectId}, '${doc.num.replace(/\./g, '_')}')">
-                                                        📥 Preuzmи
-                                                    </button>
-                                                </li>
-                                            `;
-                                        } else if (doc.type === 'upload') {
-                                            return `
-                                                <li class="doc-item upload-field">
-                                                    <div style="display: flex; gap: 10px; width: 100%;">
-                                                        <span class="doc-num">${doc.num}</span>
-                                                        <span class="doc-text">${doc.text}</span>
-                                                    </div>
-                                                    <div class="file-input-wrapper">
-                                                        <input type="file" id="${doc.id}" accept=".pdf,.jpg,.png,.jpeg">
-                                                        <span class="file-uploaded" id="status-${doc.id}" style="display:none;"></span>
-                                                    </div>
-                                                </li>
-                                            `;
-                                        }
-                                    }).join('')}
-                                </ul>
+                                <ul class="docs-list">${docsHTML}</ul>
                             </div>
                         ` : ''}
                         <div class="phase-actions">
                             ${phase.status === 'active' || phase.status === 'completed' ? `
-                                <button class="btn btn-primary" onclick="openPhase(${phase.id}, '${projectId}')">
-                                    Otvori Fazu
-                                </button>
+                                <button class="btn btn-primary" onclick="alert('Otvori faza ${phase.id}')">Otvori Fazu</button>
                             ` : `
                                 <button class="btn" disabled>Otvori Fazu</button>
                             `}
                             ${phase.status === 'active' && !phase.completed ? `
-                                <button class="btn btn-success" onclick="completePhase(${phase.apiId}, ${phase.id}, '${projectId}')">
-                                    Označi kao Gotovo
-                                </button>
+                                <button class="btn btn-success" onclick="completePhase(${phase.apiId}, ${phase.id}, ${projectId})">Označi kao Gotovo</button>
                             ` : ''}
                         </div>
                     </div>
                 </div>
             `;
         }).join('');
-
-        // Inicijalizuj upload listeners
-        setTimeout(() => {
-            initializeUploadListeners();
-        }, 100);
     }
 
-    // Inicijalizuj upload listeners
-    function initializeUploadListeners() {
-        const fileInputs = document.querySelectorAll('input[type="file"]');
-        fileInputs.forEach(input => {
-            input.addEventListener('change', function() {
-                const statusId = 'status-' + this.id;
-                const statusEl = document.getElementById(statusId);
-                const docItem = this.closest('.doc-item');
-                
-                if (this.files.length > 0) {
-                    statusEl.textContent = 'Uploadovan: ' + this.files[0].name;
-                    statusEl.style.display = 'flex';
-                    docItem.classList.add('uploaded');
-                } else {
-                    statusEl.style.display = 'none';
-                    docItem.classList.remove('uploaded');
-                }
-            });
-        });
-    }
-
-    // Otvori fazu
-    function openPhase(phaseId, projectId) {
-        alert(`Otvaraj faza ${phaseId} za projekat ${projectId}`);
-        // Ovdje će biti logika za otvaranje forme za tu fazu
-    }
-
-    // Označi fazu kao gotovu - koristi API
-    async function completePhase(faseId, fazaBroj, projectId) {
+    // Download PDF
+    async function downloadPDF(projectId, formaType) {
         try {
-            const response = await fetch(`/api/faze/${faseId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    completed: true
-                })
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Greška pri ažuriranju faze');
-            }
-
-            console.log('Faza je označena kao gotova:', faseId);
-            
-            // Ponovno učitaj projekat (što će refresh-ati faze)
-            loadProject();
-        } catch (error) {
-            console.error('Error completing phase:', error);
-            alert('Greška: ' + error.message);
-        }
-    }
-
-    // Download PDF direktno
-    async function downloadFormPDF(projectId, docNum) {
-        try {
-            // Konvertuj docNum iz "0_1" u "forma-ovlascenja"
-            let formaType = 'forma-ovlascenja';
-            if (docNum === '0_2') formaType = 'forma-ugovor';
-            else if (docNum === '5_0') formaType = 'forma-potvrda';
-            else if (docNum === '6_1') formaType = 'forma-zahtev';
-            else if (docNum === '7_1') formaType = 'forma-zahtev-ugovora';
-            
+            console.log('Download initiated:', { projectId, formaType });
             const url = `/api/pdf/${formaType}/${projectId}`;
+            console.log('Fetching PDF from:', url);
             
-            console.log('Downloading from:', url);
-            
-            // Preuzmi PDF kao blob
             const response = await fetch(url);
+            console.log('PDF response status:', response.status);
+            console.log('PDF response headers:', response.headers);
             
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                console.error('Response not ok');
+                try {
+                    const error = await response.json();
+                    throw new Error(error.error || `HTTP ${response.status}`);
+                } catch {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
             }
+            
+            const contentType = response.headers.get('content-type');
+            console.log('Content-Type:', contentType);
             
             const blob = await response.blob();
+            console.log('Blob size:', blob.size, 'bytes');
             
-            // Kreiraj download link
+            if (blob.size === 0) {
+                throw new Error('PDF je prazan');
+            }
+            
             const downloadUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = downloadUrl;
@@ -986,77 +1055,158 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
-            // Oslobodi URL
             window.URL.revokeObjectURL(downloadUrl);
             
-            console.log('PDF preuzet:', link.download);
-            
+            console.log('PDF download completed');
         } catch (error) {
-            console.error('Error downloading PDF:', error);
-            alert('Greška pri preuzimanju PDF-a:\n' + error.message);
+            console.error('Download error:', error);
+            alert('Greška pri preuzimanju:\n' + error.message);
         }
     }
+
+    // Globalne varijable za template editor
+    let currentTemplateContent = '';
+    let currentTemplateDocNum = '';
 
     // Otvori template editor
     async function openTemplateEditor(docNum, docText) {
         const modal = document.getElementById('templateModal');
-        const docNameEl = document.getElementById('modalDocName');
-        const textareaEl = document.getElementById('templateText');
+        const previewEl = document.getElementById('templatePreview');
         
-        docNameEl.textContent = `Dokument: ${docNum} - ${docText}`;
-        textareaEl.value = 'Učitavanje...';
-        
-        // Prikaži modal kao flexbox
+        currentTemplateDocNum = docNum.replace(/\./g, '_');
+        previewEl.textContent = 'Učitavanje template-a...';
         modal.style.display = 'flex';
         
         try {
-            // Učitaj template sa API-ja
-            const response = await fetch(`/api/pdf/template/${docNum.replace(/\./g, '_')}`);
+            const url = `/api/pdf/template/${currentTemplateDocNum}`;
+            console.log('Fetching template:', url);
             
-            if (!response.ok) {
-                throw new Error('Template nije pronađen');
-            }
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Template nije pronađen');
             
             const data = await response.json();
-            textareaEl.value = data.content || 'Template je prazan';
+            currentTemplateContent = data.content;
+            console.log('Template loaded, extracting fields...');
             
+            renderTemplateEditor(data.content);
         } catch (error) {
-            console.error('Error loading template:', error);
-            textareaEl.value = `Greška: ${error.message}`;
+            console.error('Template error:', error);
+            previewEl.textContent = `Greška: ${error.message}`;
         }
     }
 
-    // Zatvori template editor
-    function closeTemplateEditor() {
-        const modal = document.getElementById('templateModal');
-        modal.style.display = 'none';
-    }
-
-    // Spremi template
-    function saveTemplate() {
-        const docNameEl = document.getElementById('modalDocName');
-        const textareaEl = document.getElementById('templateText');
+    // Renderuj editor sa preview i fields
+    function renderTemplateEditor(htmlContent) {
+        const fieldsEl = document.getElementById('templateFields');
+        const previewEl = document.getElementById('templatePreview');
         
-        // Provjeri da li su polja popunjena
-        if (!textareaEl.value.trim()) {
-            alert('Template ne može biti prazan!');
+        // Provjeri sve {{placeholder}} u template-u
+        const placeholderRegex = /\{\{([^}]+)\}\}/g;
+        const placeholders = [];
+        let match;
+        
+        while ((match = placeholderRegex.exec(htmlContent)) !== null) {
+            if (!placeholders.includes(match[1])) {
+                placeholders.push(match[1]);
+            }
+        }
+        
+        console.log('Found placeholders:', placeholders);
+        
+        // Uklanja HTML tagove i prikaži samo tekst
+        let plainText = htmlContent
+            .replace(/<[^>]*>/g, '')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&quot;/g, '"')
+            .replace(/&amp;/g, '&')
+            .trim();
+        
+        // Prikaži preview
+        previewEl.textContent = plainText;
+        
+        // Kreiraj editable fields
+        if (placeholders.length === 0) {
+            fieldsEl.innerHTML = '<p style="color: #a0aec0; font-style: italic;">Nema polja za editovanje</p>';
             return;
         }
         
+        fieldsEl.innerHTML = placeholders.map(placeholder => {
+            const savedValue = localStorage.getItem(`field_${currentTemplateDocNum}_${placeholder}`) || '';
+            return `
+                <div class="template-field">
+                    <label class="template-field-label">{{${placeholder}}}</label>
+                    <input type="text" 
+                        id="field-${placeholder}" 
+                        placeholder="Unesite vrijednost" 
+                        value="${savedValue}"
+                        oninput="updatePreview()"
+                        autocomplete="off">
+                </div>
+            `;
+        }).join('');
+        
+        // Prvi update preview-a
+        updatePreview();
+    }
+
+    // Update preview sa vrijednostima iz fields
+    function updatePreview() {
+        const previewEl = document.getElementById('templatePreview');
+        const fieldsInputs = document.querySelectorAll('#templateFields input');
+        
+        let previewText = currentTemplateContent
+            .replace(/<[^>]*>/g, '')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&quot;/g, '"')
+            .replace(/&amp;/g, '&');
+        
+        // Zamijeni placeholders sa vrijednostima iz inputs
+        fieldsInputs.forEach(input => {
+            const fieldName = input.id.replace('field-', '');
+            const value = input.value || `[${fieldName}]`;
+            previewText = previewText.replace(`{{${fieldName}}}`, value);
+        });
+        
+        previewEl.textContent = previewText.trim();
+    }
+
+    // Spremi template sa field vrijednostima
+    function saveTemplate() {
+        const fieldsInputs = document.querySelectorAll('#templateFields input');
+        
+        let savedCount = 0;
+        fieldsInputs.forEach(input => {
+            const fieldName = input.id.replace('field-', '');
+            const value = input.value;
+            localStorage.setItem(`field_${currentTemplateDocNum}_${fieldName}`, value);
+            savedCount++;
+        });
+        
+        alert(`Promjene su spremljene! (${savedCount} polja)`);
+        closeTemplateEditor();
+    }
+
+    function closeTemplateEditor() {
+        document.getElementById('templateModal').style.display = 'none';
+        currentTemplateContent = '';
+        currentTemplateDocNum = '';
+    }
+
+    async function completePhase(faseId, fazaBroj, projectId) {
         try {
-            // Ekstraktuj docNum iz docName (npr. "Dokument: 0.1 - Forma ovlašćenja" → "0.1")
-            const match = docNameEl.textContent.match(/Dokument: ([\d.]+)/);
-            const docNum = match ? match[1].replace(/\./g, '_') : 'unknown';
+            const response = await fetch(`/api/faze/${faseId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ completed: true })
+            });
             
-            // Spremi u localStorage
-            localStorage.setItem(`template_${docNum}`, textareaEl.value);
-            
-            alert('Template je spremljen uspješno!');
-            closeTemplateEditor();
+            if (response.ok) {
+                loadProject();
+            } else {
+                alert('Greška pri ažuriranju faze');
+            }
         } catch (error) {
-            console.error('Error saving template:', error);
-            alert('Greška pri spremanju template-a: ' + error.message);
+            alert('Greška: ' + error.message);
         }
     }
 
@@ -1065,18 +1215,8 @@
         sidebar.classList.toggle('hidden');
     });
 
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.add('hidden');
-            }
-        });
-    });
-
-    // Učitaj projekat
+    // Init
     loadProject();
-    
-    // Inicijalizuj sidebar
     initSidebar();
 </script>
 

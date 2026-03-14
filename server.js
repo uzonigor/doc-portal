@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import kupciRouter from './routes/kupci.js';
 import projektiRouter from './routes/projekti.js';
 import fazeRouter from './routes/faze.js';
+import pdfRouter from './routes/pdf.js';
 
 // Import legacy routes (ako trebaju)
 // import formsRouter from './routes/forms.js';
@@ -61,6 +62,13 @@ app.use('/api/projekti', projektiRouter);
 
 // Faze routes
 app.use('/api/faze', fazeRouter);
+
+// PDF routes - sa logging middleware
+app.use('/api/pdf', (req, res, next) => {
+    console.log(`[PDF] ${req.method} ${req.path}`, { params: req.params, time: new Date().toISOString() });
+    next();
+});
+app.use('/api/pdf', pdfRouter);
 
 // ============================================
 // FRONTEND ROUTES

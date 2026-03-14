@@ -10,30 +10,28 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
-// Helper funkcija za učitavanje i procesiranje HTML template-a
-function loadAndProcessTemplate(templatePath, variables) {
-    let html = fs.readFileSync(templatePath, 'utf-8');
-    
-    // Zamijeni sve {{placeholder}} sa vrijednostima iz variables objekta
-    Object.keys(variables).forEach(key => {
-        const regex = new RegExp(`{{${key}}}`, 'g');
-        html = html.replace(regex, variables[key] || '');
-    });
-    
-    return html;
-}
-
-// Helper funkcija za konverziju HTML-a u obican text za PDFKit
+// Pomoćna funkcija za HTML to plain text konverziju
 function htmlToText(html) {
-    // Uklanja HTML tagove i čuva samo tekst
     return html
-        .replace(/<style[^>]*>.*?<\/style>/gs, '')
-        .replace(/<[^>]+>/g, '')
+        .replace(/<[^>]*>/g, '')
         .replace(/&nbsp;/g, ' ')
         .replace(/&quot;/g, '"')
-        .replace(/&#039;/g, "'")
+        .replace(/&apos;/g, "'")
         .replace(/&amp;/g, '&')
         .trim();
+}
+
+// Pomoćna funkcija za učitavanje i procesiranje template-a
+function loadAndProcessTemplate(templatePath, variables) {
+    let template = fs.readFileSync(templatePath, 'utf-8');
+    
+    // Zamijeni sve {{placeholder}} sa vrijednostima
+    for (const [key, value] of Object.entries(variables)) {
+        const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+        template = template.replace(regex, value || '');
+    }
+    
+    return template;
 }
 
 // GET /api/pdf/forma-ovlascenja/:projektId
@@ -64,6 +62,7 @@ router.get('/forma-ovlascenja/:projektId', async (req, res) => {
             kupac_direktor: projekt.kupac.direktor || projekt.kupac.prezime || '',
             projekt_naziv: projekt.naziv || '',
             projekt_snaga: projekt.snaga || '0',
+            projekt_lokacija: projekt.lokacija || '',
             datum: formattedDate
         };
         
@@ -71,49 +70,60 @@ router.get('/forma-ovlascenja/:projektId', async (req, res) => {
         const templatePath = path.join(__dirname, '../templates/forma-ovlascenja-template.html');
         const processedHtml = loadAndProcessTemplate(templatePath, variables);
         
-        // Konvertuj HTML u obican tekst
-        const plainText = htmlToText(processedHtml);
-        
         // Kreiraj PDF sa PDFKit
         const doc = new PDFDocument({
             bufferPages: true,
-            margin: 40
+            margin: 40,
+            size: 'A4',
+            info: {
+                Title: 'Ovlašćenje',
+                Author: 'GO4ENERGY',
+                Subject: 'Forma ovlašćenja za prosumera'
+            }
+        });
+        
+        // Error handling
+        doc.on('error', (err) => {
+            console.error('PDFKit error:', err);
+            if (!res.headersSent) {
+                res.status(500).json({ error: 'PDF generation error: ' + err.message });
+            }
         });
         
         // Postavi response headers
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="ovlascenje-${projektId}.pdf"`);
+        res.setHeader('Content-Type', 'application/pdf; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''ovlascenje-${projektId}.pdf`);
         
         // Pipe PDF u response
         doc.pipe(res);
         
-        // Dodaj sadržaj u PDF
-        doc.fontSize(14).font('Helvetica-Bold').text('OVLAŠĆENJE / PUNOMOĆ', { align: 'center' });
+        // Dodaj sadržaj u PDF - koristi Times-Roman font (ima Cyrillic podrsku)
+        doc.fontSize(16).font('Times-Roman').text('OVLAŠĆENJE / PUNOMOĆ', { align: 'center' });
         doc.moveDown();
         
-        // Glavni tekst - dijelovi sa indentacijom
+        // Glavni tekst
         const fontSize = 11;
-        doc.fontSize(fontSize).font('Helvetica');
+        doc.fontSize(fontSize).font('Times-Roman');
         
         // Prvi paragraf - Davalac ovlašćenja
         const davalacText = `${variables.kupac_naziv}, ${variables.kupac_adresa}, ${variables.kupac_mjesto}, matični broj: ${variables.kupac_mb}, PIB: ${variables.kupac_pib} ovlašćuje:`;
-        doc.text(davalacText, { align: 'justify', width: 480 });
+        doc.text(davalacText, { align: 'left', width: 480 });
         doc.moveDown();
         
         // Drugi paragraf - Ovlašteno lice
         const ovlascenoText = `GO4ENERGY DOO, Cara Dušana 68, Pančevo, PIB: 114374550, MB: 22013980 i Uzon Igora, br.lk.: 008296970, JMBG: 1106993860022, da u naše ime preduzme sve potrebne radnje pred nadležnim državnim i upravnim organima, organima lokalne samouprave i javnim preduzećima radi ishodovanja rešenja „Odobrenje za priključenje" solarne elektrane ${variables.projekt_naziv} snage ${variables.projekt_snaga} kW.`;
-        doc.text(ovlascenoText, { align: 'justify', width: 480 });
+        doc.text(ovlascenoText, { align: 'left', width: 480 });
         doc.moveDown(2);
         
         // Lokacija i datum
-        doc.fontSize(fontSize).font('Helvetica');
+        doc.fontSize(fontSize).font('Times-Roman');
         doc.text(`U ${variables.kupac_mjesto}, ${variables.datum} godine`);
         doc.moveDown(2);
         
         // Potpis sekcija
-        doc.fontSize(fontSize).font('Helvetica-Bold').text('Davalac ovlašćenja:', { indent: 40 });
+        doc.fontSize(fontSize).font('Times-Roman').text('Davalac ovlašćenja:', { indent: 40 });
         doc.moveDown(3);
-        doc.fontSize(fontSize).font('Helvetica').text('______________________________', { indent: 40 });
+        doc.fontSize(fontSize).font('Times-Roman').text('______________________________', { indent: 40 });
         doc.fontSize(fontSize - 1).text(variables.kupac_direktor, { indent: 40 });
         
         // Završi PDF
@@ -121,7 +131,9 @@ router.get('/forma-ovlascenja/:projektId', async (req, res) => {
         
     } catch (error) {
         console.error('Error generating PDF:', error);
-        res.status(500).json({ error: error.message });
+        if (!res.headersSent) {
+            res.status(500).json({ error: error.message });
+        }
     }
 });
 
@@ -130,7 +142,7 @@ router.get('/forma-ugovor/:projektId', async (req, res) => {
     try {
         const { projektId } = req.params;
         
-        // Učitaj projekat sa kupcima
+        // Učitaj projekat
         const projekt = await prisma.projekat.findUnique({
             where: { id: parseInt(projektId) },
             include: { kupac: true }
@@ -140,7 +152,6 @@ router.get('/forma-ugovor/:projektId', async (req, res) => {
             return res.status(404).json({ error: 'Projekat nije pronađen' });
         }
         
-        // Pripremi varijable za template
         const today = new Date();
         const formattedDate = `${today.getDate()}.${(today.getMonth() + 1).toString().padStart(2, '0')}.${today.getFullYear()}`;
         
@@ -150,84 +161,47 @@ router.get('/forma-ugovor/:projektId', async (req, res) => {
             kupac_mjesto: projekt.kupac.mjesto || '',
             kupac_mb: projekt.kupac.mbKompanije || projekt.kupac.licniId || '-',
             kupac_pib: projekt.kupac.pib || projekt.kupac.jmbg || '-',
-            kupac_direktor: projekt.kupac.direktor || projekt.kupac.prezime || '',
-            kupac_email: projekt.kupac.email || '-',
-            kupac_telefon: projekt.kupac.telefon || '-',
+            datum: formattedDate,
             projekt_naziv: projekt.naziv || '',
-            projekt_snaga: projekt.snaga || '0',
-            projekt_lokacija: projekt.lokacija || '',
-            datum: formattedDate
+            projekt_snaga: projekt.snaga || '0'
         };
         
-        // Kreiraj PDF sa PDFKit
+        const templatePath = path.join(__dirname, '../templates/forma-ugovor-template.html');
+        const processedHtml = loadAndProcessTemplate(templatePath, variables);
+        
         const doc = new PDFDocument({
             bufferPages: true,
-            margin: 40
+            margin: 40,
+            size: 'A4'
         });
         
-        // Postavi response headers
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="ugovor-${projektId}.pdf"`);
+        doc.on('error', (err) => {
+            console.error('PDFKit error:', err);
+            if (!res.headersSent) {
+                res.status(500).json({ error: 'PDF generation error' });
+            }
+        });
         
-        // Pipe PDF u response
+        res.setHeader('Content-Type', 'application/pdf; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''ugovor-${projektId}.pdf`);
+        
         doc.pipe(res);
         
-        // Dodaj sadržaj u PDF
-        doc.fontSize(14).font('Helvetica-Bold').text('UGOVOR', { align: 'center' });
-        doc.fontSize(11).font('Helvetica').text('O IZVRŠAVANJU RADNJI PREDUSLOV ZA PRIKLJUČENJE ELEKTRANE NA MREŽI', { align: 'center' });
+        doc.fontSize(16).font('Times-Roman').text('UGOVOR O ISHODOVANJU', { align: 'center' });
         doc.moveDown();
-        
-        // Glavni tekst
-        const fontSize = 11;
-        doc.fontSize(fontSize).font('Helvetica');
-        
-        // Prva klauzula
-        const clause1 = `1. UGOVARAČI: Ugovor se zaključuje između GO4ENERGY DOO, Cara Dušana 68, Pančevo, PIB: 114374550, MB: 22013980, kao pružaoca usluga (u daljem tekstu: "Izvođač"), i ${variables.kupac_naziv}, ${variables.kupac_adresa}, ${variables.kupac_mjesto}, PIB/JMBG: ${variables.kupac_pib}, kao naručioca radnji (u daljem tekstu: "Naručilac").`;
-        doc.text(clause1, { align: 'justify', width: 480 });
-        doc.moveDown();
-        
-        // Druga klauzula
-        const clause2 = `2. PREDMET UGOVORA: Predmet ovog ugovora je izvršavanje svih potrebnih radnji i aktivnosti neophodnih za ishodovanje rešenja „Odobrenje za priključenje" solarne elektrane kapaciteta ${variables.projekt_snaga} kW, lokalizovane u ${variables.projekt_lokacija}.`;
-        doc.text(clause2, { align: 'justify', width: 480 });
-        doc.moveDown();
-        
-        // Treća klauzula
-        const clause3 = `3. OBAVEZE IZVOĐAČA: Izvođač se obavezuje da preduzme sve potrebne radnje pred nadležnim državnim i upravnim organima, organima lokalne samouprave i javnim preduzećima radi ishodovanja odobrenja za priključenje, kao i da preda sve potrebnu dokumentaciju.`;
-        doc.text(clause3, { align: 'justify', width: 480 });
-        doc.moveDown();
-        
-        // Četvrta klauzula
-        const clause4 = `4. OBAVEZE NARUČIOCA: Naručilac se obavezuje da pravovremeno dostavi sve potrebne podatke i dokumentaciju koju Izvođač zahteva, kao i da snosi sve potrebne troškove za ishodovanje odobrenja.`;
-        doc.text(clause4, { align: 'justify', width: 480 });
-        doc.moveDown();
-        
-        // Lokacija i datum
-        doc.moveDown();
-        doc.fontSize(fontSize).font('Helvetica');
-        doc.text(`U ${variables.kupac_mjesto}, ${variables.datum} godine`);
+        doc.fontSize(11).font('Times-Roman').text(`${variables.kupac_naziv} u ${variables.kupac_mjestu}, ${variables.datum}. godine`);
         doc.moveDown(2);
         
-        // Potpisi
-        doc.fontSize(fontSize).font('Helvetica-Bold').text('IZVOĐAČ:', { indent: 20 });
-        doc.moveDown(3);
-        doc.fontSize(fontSize).font('Helvetica').text('______________________________', { indent: 20 });
-        doc.fontSize(fontSize - 1).text('GO4ENERGY DOO', { indent: 20 });
-        doc.fontSize(fontSize - 1).text('Uzon Igor', { indent: 20 });
+        const tekst = `Ovaj dokument potvrđuje da je ${variables.kupac_naziv} započeo proces ishodovanja dozvola za priključenje solarne elektrane snage ${variables.projekt_snaga} kW na lokaciji ${variables.kupac_adresa}.`;
+        doc.fontSize(11).font('Times-Roman').text(tekst);
         
-        doc.moveDown(4);
-        
-        doc.fontSize(fontSize).font('Helvetica-Bold').text('NARUČILAC:', { indent: 20 });
-        doc.moveDown(3);
-        doc.fontSize(fontSize).font('Helvetica').text('______________________________', { indent: 20 });
-        doc.fontSize(fontSize - 1).text(variables.kupac_direktor, { indent: 20 });
-        doc.fontSize(fontSize - 1).text(variables.kupac_naziv, { indent: 20 });
-        
-        // Završi PDF
         doc.end();
         
     } catch (error) {
-        console.error('Error generating PDF:', error);
-        res.status(500).json({ error: error.message });
+        console.error('Error:', error);
+        if (!res.headersSent) {
+            res.status(500).json({ error: error.message });
+        }
     }
 });
 
