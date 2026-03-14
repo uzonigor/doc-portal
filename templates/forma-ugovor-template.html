@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            padding: 40px;
+            line-height: 1.6;
+            color: #000;
+            max-width: 800px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .content {
+            text-align: justify;
+            font-size: 12px;
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+        
+        .clause {
+            margin-bottom: 15px;
+            text-indent: 40px;
+        }
+        
+        .signature-section {
+            margin-top: 60px;
+        }
+        
+        .signature-title {
+            font-weight: bold;
+            margin-bottom: 40px;
+            font-size: 12px;
+        }
+        
+        .signature-line {
+            width: 200px;
+            border-top: 1px solid #000;
+            margin-top: 40px;
+            padding-top: 5px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">UGOVOR</div>
+    <div class="header">O IZVRŠAVANJU RADNJI PREDUSLOV ZA PRIKLJUČENJE ELEKTRANE NA MREŽI</div>
+    
+    <div class="content">
+        <div class="clause">
+            1. UGOVARAČI: Ugovor se zaključuje između GO4ENERGY DOO, Cara Dušana 68, Pančevo, PIB: 114374550, MB: 22013980, kao pružaoca usluga (u daljem tekstu: "Izvođač"), i {{kupac_naziv}}, {{kupac_adresa}}, {{kupac_mjesto}}, PIB/JMBG: {{kupac_pib}}, kao naručioca radnji (u daljem tekstu: "Naručilac").
+        </div>
+        
+        <div class="clause">
+            2. PREDMET UGOVORA: Predmet ovog ugovora je izvršavanje svih potrebnih radnji i aktivnosti neophodnih za ishodovanje rešenja „Odobrenje za priključenje" solarne elektrane kapaciteta {{projekt_snaga}} kW, lokalizovane u {{projekt_lokacija}}.
+        </div>
+        
+        <div class="clause">
+            3. OBAVEZE IZVOĐAČA: Izvođač se obavezuje da preduzme sve potrebne radnje pred nadležnim državnim i upravnim organima, organima lokalne samouprave i javnim preduzećima radi ishodovanja odobrenja za priključenje, kao i da preda sve potrebnu dokumentaciju.
+        </div>
+        
+        <div class="clause">
+            4. OBAVEZE NARUČIOCA: Naručilac se obavezuje da pravovremeno dostavi sve potrebne podatke i dokumentaciju koju Izvođač zahteva, kao i da snosi sve potrebne troškove za ishodovanje odobrenja.
+        </div>
+        
+        <div class="clause">
+            5. VREMENSKE ODREDBE: Izvođač će preduzeti sve potrebne radnje u roku od 30 dana od dana zaključenja ovog ugovora.
+        </div>
+        
+        <div class="clause">
+            6. NAKНADA: Naručilac se obavezuje da prosljeđi naknaду za vršenje poslova i troškove u skladu sa posebnom procenom.
+        </div>
+    </div>
+    
+    <div class="signature-section">
+        <div class="signature-title">IZVOĐAČ:</div>
+        <div class="signature-line">
+            GO4ENERGY DOO
+            Uzon Igor
+        </div>
+    </div>
+    
+    <div style="margin-top: 60px;">
+        <div class="signature-title">NARUČILAC:</div>
+        <div class="signature-line">
+            {{kupac_naziv}}
+            {{kupac_direktor}}
+        </div>
+    </div>
+</body>
+</html>

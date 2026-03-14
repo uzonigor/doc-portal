@@ -888,14 +888,6 @@
                                     Označi kao Gotovo
                                 </button>
                             ` : ''}
-                            ${phase.id === 0 ? `
-                                <button class="btn btn-secondary" onclick="downloadPDF(${projectId}, 'forma-ovlascenja')">
-                                    📥 Preuzmи Ovlašćenje
-                                </button>
-                                <button class="btn btn-secondary" onclick="downloadPDF(${projectId}, 'forma-ugovor')">
-                                    📥 Preuzmи Ugovor
-                                </button>
-                            ` : ''}
                         </div>
                     </div>
                 </div>
@@ -975,33 +967,64 @@
             
             const url = `/api/pdf/${formaType}/${projectId}`;
             
-            // Kreiraj link i pokreni download
+            console.log('Downloading from:', url);
+            
+            // Preuzmi PDF kao blob
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const blob = await response.blob();
+            
+            // Kreiraj download link
+            const downloadUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
-            link.href = url;
+            link.href = downloadUrl;
             link.download = `${formaType}-${projectId}.pdf`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            
+            // Oslobodi URL
+            window.URL.revokeObjectURL(downloadUrl);
+            
+            console.log('PDF preuzet:', link.download);
+            
         } catch (error) {
             console.error('Error downloading PDF:', error);
-            alert('Greška pri preuzimanju PDF-a: ' + error.message);
+            alert('Greška pri preuzimanju PDF-a:\n' + error.message);
         }
     }
 
     // Otvori template editor
-    function openTemplateEditor(docNum, docText) {
+    async function openTemplateEditor(docNum, docText) {
         const modal = document.getElementById('templateModal');
         const docNameEl = document.getElementById('modalDocName');
         const textareaEl = document.getElementById('templateText');
         
-        // Učitaj template iz baze ili localStorage
-        const templateContent = localStorage.getItem(`template_${docNum}`) || 'Template tekst će biti učitan...';
-        
         docNameEl.textContent = `Dokument: ${docNum} - ${docText}`;
-        textareaEl.value = templateContent;
+        textareaEl.value = 'Učitavanje...';
         
         // Prikaži modal kao flexbox
         modal.style.display = 'flex';
+        
+        try {
+            // Učitaj template sa API-ja
+            const response = await fetch(`/api/pdf/template/${docNum.replace(/\./g, '_')}`);
+            
+            if (!response.ok) {
+                throw new Error('Template nije pronađen');
+            }
+            
+            const data = await response.json();
+            textareaEl.value = data.content || 'Template je prazan';
+            
+        } catch (error) {
+            console.error('Error loading template:', error);
+            textareaEl.value = `Greška: ${error.message}`;
+        }
     }
 
     // Zatvori template editor
@@ -1021,12 +1044,20 @@
             return;
         }
         
-        // Spremi u localStorage (kasnije možemo u bazu)
-        const docNum = docNameEl.textContent.split(':')[1].split('-')[0].trim();
-        localStorage.setItem(`template_${docNum}`, textareaEl.value);
-        
-        alert('Template je spremljen!');
-        closeTemplateEditor();
+        try {
+            // Ekstraktuj docNum iz docName (npr. "Dokument: 0.1 - Forma ovlašćenja" → "0.1")
+            const match = docNameEl.textContent.match(/Dokument: ([\d.]+)/);
+            const docNum = match ? match[1].replace(/\./g, '_') : 'unknown';
+            
+            // Spremi u localStorage
+            localStorage.setItem(`template_${docNum}`, textareaEl.value);
+            
+            alert('Template je spremljen uspješno!');
+            closeTemplateEditor();
+        } catch (error) {
+            console.error('Error saving template:', error);
+            alert('Greška pri spremanju template-a: ' + error.message);
+        }
     }
 
     // Mobile menu

@@ -231,4 +231,40 @@ router.get('/forma-ugovor/:projektId', async (req, res) => {
     }
 });
 
+// GET /api/pdf/template/:docNum - Učitaj template tekst za editovanje
+router.get('/template/:docNum', async (req, res) => {
+    try {
+        const { docNum } = req.params;
+        
+        // Mapa dokumenata na template fajlove
+        const templateMap = {
+            '0_1': 'forma-ovlascenja-template.html',
+            '0_2': 'forma-ugovor-template.html',
+            '5_0': 'forma-potvrda-template.html',
+            '6_1': 'forma-zahtev-template.html',
+            '7_1': 'forma-zahtev-ugovora-template.html'
+        };
+        
+        const templateFile = templateMap[docNum];
+        if (!templateFile) {
+            return res.status(404).json({ error: 'Template nije pronađen' });
+        }
+        
+        const templatePath = path.join(__dirname, '../templates', templateFile);
+        
+        // Provjeri da li template postoji
+        if (!fs.existsSync(templatePath)) {
+            return res.status(404).json({ error: 'Template fajl nije pronađen' });
+        }
+        
+        // Učitaj i vrati template sadržaj
+        const content = fs.readFileSync(templatePath, 'utf-8');
+        res.json({ content });
+        
+    } catch (error) {
+        console.error('Error loading template:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;
