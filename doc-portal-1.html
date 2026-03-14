@@ -683,6 +683,9 @@
     const sidebarToggle = document.getElementById('sidebarToggle');
     const mainContent = document.querySelector('.main-content');
     
+    // Varijabla za čuvanje svih projekata (za search)
+    let allProjects = [];
+    
     // Učitaj stanje sidebar-a iz localStorage
     function initSidebar() {
         const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
@@ -702,42 +705,70 @@
         sidebarToggle.textContent = isCollapsed ? '▶' : '◀';
     });
 
-    // Učitaj kupce iz kupci.html
-    function loadKupci() {
-        const kupci = JSON.parse(localStorage.getItem('kupci') || '[]');
-        kupacSelect.innerHTML = '<option value="">-- Odaberi kupca --</option>';
-        kupci.forEach(kupac => {
-            const option = document.createElement('option');
-            option.value = JSON.stringify({id: kupac.id, ime: kupac.ime, prezime: kupac.prezime, pib: kupac.pib, lokacija: kupac.lokacija});
-            option.textContent = `${kupac.ime} ${kupac.prezime} (${kupac.pib})`;
-            kupacSelect.appendChild(option);
-        });
+    // Učitaj kupce sa API-ja
+    async function loadKupci() {
+        try {
+            const response = await fetch('/api/kupci');
+            
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+            
+            const kupci = await response.json();
+            kupacSelect.innerHTML = '<option value="">-- Odaberi kupca --</option>';
+            
+            kupci.forEach(kupac => {
+                const option = document.createElement('option');
+                option.value = kupac.id; // Spremi samo ID, nećemo trebati JSON
+                option.textContent = `${kupac.naziv} (${kupac.pib || kupac.jmbg || 'N/A'})`;
+                kupacSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading kupci:', error);
+            kupacSelect.innerHTML = '<option value="">Greška pri učitavanju kupaca</option>';
+        }
     }
 
-    // Učitaj projekte
-    function loadProjects() {
-        const projects = JSON.parse(localStorage.getItem('projects_10_8kw') || '[]');
-        tableBody.innerHTML = '';
+    // Učitaj projekte sa API-ja
+    async function loadProjects() {
+        try {
+            tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Učitavam...</td></tr>';
+            
+            const response = await fetch('/api/projekti');
+            
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+            
+            const projects = await response.json();
+            allProjects = projects; // Spremi za search
+            tableBody.innerHTML = '';
 
-        if (projects.length === 0) {
-            emptyState.style.display = 'block';
-            document.querySelector('.projects-table').style.display = 'none';
-        } else {
-            emptyState.style.display = 'none';
-            document.querySelector('.projects-table').style.display = 'block';
+            if (projects.length === 0) {
+                emptyState.style.display = 'block';
+                document.querySelector('.projects-table').style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                document.querySelector('.projects-table').style.display = 'block';
 
-            projects.forEach(project => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="project-name">${project.kupac.ime} ${project.kupac.prezime}</td>
-                    <td>${project.kupac.pib}</td>
-                    <td>${project.lokacija}</td>
-                    <td>${project.kw} kW</td>
-                    <td><span class="status-badge status-${project.status}">${project.status === 'active' ? 'Aktivno' : project.status === 'completed' ? 'Završeno' : 'Nacrt'}</span></td>
-                    <td><button type="button" class="action-btn" onclick="openPortal('${project.id}')">Otvori →</button></td>
-                `;
-                tableBody.appendChild(row);
-            });
+                projects.forEach(project => {
+                    const row = document.createElement('tr');
+                    const statusText = project.status === 'active' ? 'Aktivno' : project.status === 'completed' ? 'Završeno' : 'Nacrt';
+                    
+                    row.innerHTML = `
+                        <td class="project-name">${project.kupac.naziv}</td>
+                        <td>${project.kupac.pib || project.kupac.jmbg || '-'}</td>
+                        <td>${project.lokacija}</td>
+                        <td>${project.snaga} kW</td>
+                        <td><span class="status-badge status-${project.status}">${statusText}</span></td>
+                        <td><button type="button" class="action-btn" onclick="openPortal(${project.id})">Otvori →</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading projects:', error);
+            tableBody.innerHTML = `<tr><td colspan="6" style="color: red; text-align: center; padding: 20px;">Greška pri učitavanju projekata: ${error.message}</td></tr>`;
         }
     }
 
@@ -764,45 +795,60 @@
     cancelBtn.addEventListener('click', closeModalWindow);
 
     // Submit forma
-    projectForm.addEventListener('submit', (e) => {
+    projectForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const kupacData = JSON.parse(kupacSelect.value);
+        const kupacId = parseInt(kupacSelect.value);
+        
+        if (!kupacId) {
+            alert('Odaberi kupca!');
+            return;
+        }
+        
         const newProject = {
-            id: `project_${Date.now()}`,
-            kupac: {
-                id: kupacData.id,
-                ime: kupacData.ime,
-                prezime: kupacData.prezime,
-                pib: kupacData.pib
-            },
+            kupacId: kupacId,
             naziv: document.getElementById('projectName').value,
-            kw: parseFloat(document.getElementById('projectkW').value),
-            lokacija: document.getElementById('projectLocation').value,
-            status: 'draft',
-            createdAt: new Date().toISOString()
+            snaga: parseFloat(document.getElementById('projectkW').value),
+            lokacija: document.getElementById('projectLocation').value
         };
 
-        const projects = JSON.parse(localStorage.getItem('projects_10_8kw') || '[]');
-        projects.push(newProject);
-        localStorage.setItem('projects_10_8kw', JSON.stringify(projects));
+        try {
+            const response = await fetch('/api/projekti', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newProject)
+            });
 
-        closeModalWindow();
-        projectForm.reset();
-        loadProjects();
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Greška pri kreiranju projekta');
+            }
+
+            const createdProject = await response.json();
+            console.log('Projekat je kreiran:', createdProject);
+
+            closeModalWindow();
+            projectForm.reset();
+            loadProjects();
+        } catch (error) {
+            console.error('Error creating project:', error);
+            alert('Greška: ' + error.message);
+        }
     });
 
     // Pretraga
     searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
-        const projects = JSON.parse(localStorage.getItem('projects_10_8kw') || '[]');
         
         tableBody.innerHTML = '';
-        const filtered = projects.filter(p => 
-            p.kupac.ime.toLowerCase().includes(searchTerm) ||
-            p.kupac.prezime.toLowerCase().includes(searchTerm) ||
-            p.kupac.pib.includes(searchTerm) ||
-            p.lokacija.toLowerCase().includes(searchTerm)
+        const filtered = allProjects.filter(p => 
+            p.kupac.naziv.toLowerCase().includes(searchTerm) ||
+            (p.kupac.pib && p.kupac.pib.includes(searchTerm)) ||
+            (p.kupac.jmbg && p.kupac.jmbg.includes(searchTerm)) ||
+            p.lokacija.toLowerCase().includes(searchTerm) ||
+            p.naziv.toLowerCase().includes(searchTerm)
         );
 
         if (filtered.length === 0) {
@@ -814,13 +860,15 @@
             
             filtered.forEach(project => {
                 const row = document.createElement('tr');
+                const statusText = project.status === 'active' ? 'Aktivno' : project.status === 'completed' ? 'Završeno' : 'Nacrt';
+                
                 row.innerHTML = `
-                    <td class="project-name">${project.kupac.ime} ${project.kupac.prezime}</td>
-                    <td>${project.kupac.pib}</td>
+                    <td class="project-name">${project.kupac.naziv}</td>
+                    <td>${project.kupac.pib || project.kupac.jmbg || '-'}</td>
                     <td>${project.lokacija}</td>
-                    <td>${project.kw} kW</td>
-                    <td><span class="status-badge status-${project.status}">${project.status === 'active' ? 'Aktivno' : project.status === 'completed' ? 'Završeno' : 'Nacrt'}</span></td>
-                    <td><button type="button" class="action-btn" onclick="openPortal('${project.id}')">Otvori →</button></td>
+                    <td>${project.snaga} kW</td>
+                    <td><span class="status-badge status-${project.status}">${statusText}</span></td>
+                    <td><button type="button" class="action-btn" onclick="openPortal(${project.id})">Otvori →</button></td>
                 `;
                 tableBody.appendChild(row);
             });
