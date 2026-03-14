@@ -43,14 +43,11 @@
         }
         
         .sidebar-toggle {
-            position: absolute;
-            top: 32px;
-            right: -40px;
+            position: relative;
             width: 32px;
             height: 32px;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            background: transparent;
+            border: none;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -58,11 +55,38 @@
             color: #2d3748;
             font-size: 18px;
             transition: all 0.2s;
+            padding: 0;
+            flex-shrink: 0;
         }
         
         .sidebar-toggle:hover {
             background: #f7fafc;
-            border-color: #cbd5e0;
+            border-radius: 8px;
+        }
+        
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 48px;
+            gap: 8px;
+        }
+        
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: inherit;
+            flex: 1;
+        }
+        
+        .sidebar-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #d4a853 0%, #c99a3f 100%);
+            clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 75% 50%, 100% 75%, 25% 100%, 0% 75%, 25% 50%);
+            flex-shrink: 0;
         }
         
         .sidebar-logo-text {
@@ -77,6 +101,15 @@
             display: none;
         }
         
+        .sidebar.collapsed .sidebar-header {
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .sidebar.collapsed .sidebar-logo {
+            justify-content: center;
+        }
+        
         .nav-item span:last-child {
             transition: opacity 0.3s ease;
         }
@@ -84,23 +117,6 @@
         .sidebar.collapsed .nav-item span:last-child {
             opacity: 0;
             display: none;
-        }
-        
-        .sidebar-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 48px;
-            text-decoration: none;
-            color: inherit;
-        }
-        
-        .sidebar-logo-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, #d4a853 0%, #c99a3f 100%);
-            clip-path: polygon(25% 0%, 75% 0%, 100% 25%, 75% 50%, 100% 75%, 25% 100%, 0% 75%, 25% 50%);
-            flex-shrink: 0;
         }
         
         .sidebar-nav {
@@ -404,11 +420,13 @@
 <body>
 
 <div class="sidebar" id="sidebar">
-    <button class="sidebar-toggle" id="sidebarToggle" title="Sklopi/Otvori">◀</button>
-    <a href="/" class="sidebar-logo">
-        <div class="sidebar-logo-icon"></div>
-        <div class="sidebar-logo-text">GO4<br>Portal</div>
-    </a>
+    <div class="sidebar-header">
+        <a href="/" class="sidebar-logo">
+            <div class="sidebar-logo-icon"></div>
+            <div class="sidebar-logo-text">GO4<br>Portal</div>
+        </a>
+        <button class="sidebar-toggle" id="sidebarToggle" title="Sklopi/Otvori">◀</button>
+    </div>
     
     <nav class="sidebar-nav">
         <a href="/" class="nav-item active">
