@@ -496,7 +496,7 @@
         .modal-content {
             background: white;
             border-radius: 12px;
-            padding: 32px;
+            padding: 20px;
             max-width: 1000px;
             width: 100%;
             max-height: 90vh;
@@ -581,16 +581,77 @@
             overflow-y: auto;
         }
         
+        /* A4 Page Container */
+        .a4-page {
+            width: 210mm;
+            height: 297mm;
+            max-width: 100%;
+            max-height: calc(100vh - 300px);
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 10px auto;
+            padding: 15mm 20mm;
+            box-sizing: border-box;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            position: relative;
+        }
+        
+        /* Reset all default margins inside a4-page */
+        .a4-page * {
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Responsive A4 za iPad i malo manjih */
+        @media (max-width: 900px) {
+            .a4-page {
+                width: 100%;
+                max-height: calc(100vh - 280px);
+                margin: 5px;
+                padding: 12mm 15mm;
+            }
+        }
+        
+        /* Responsive A4 za male ekrane */
+        @media (max-width: 600px) {
+            .a4-page {
+                width: 100%;
+                height: auto;
+                max-height: calc(100vh - 250px);
+                margin: 5px;
+                padding: 10mm 12mm;
+            }
+        }
+        
+        /* Media print - adjust for actual printing */
+        @media print {
+            .a4-page {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 15mm 20mm;
+                box-shadow: none;
+                border: none;
+                max-width: 100%;
+                max-height: 100%;
+                page-break-after: always;
+            }
+        }
+        
         #templatePreview {
             font-family: 'Segoe UI', 'Helvetica', Arial, sans-serif;
-            font-size: 13px;
-            line-height: 1.8;
+            font-size: 12px;
+            line-height: 1.3;
             color: #2d3748;
-            white-space: pre-wrap;
+            white-space: normal;
             word-wrap: break-word;
-            padding: 20px;
-            background: white;
-            min-height: 300px;
+            background: transparent;
+            min-height: 0;
+            text-align: left;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
         
         .template-placeholder {
@@ -673,6 +734,7 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
+            z-index: 100;
         }
         
         .modal-close-btn:hover {
@@ -791,7 +853,7 @@
     <div class="modal-content">
         <div style="position: relative; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
             <h2 style="margin: 0;">Upravljanje Šablonom</h2>
-            <div style="display: flex; gap: 8px;">
+            <div style="display: flex; gap: 8px; align-items: center;">
                 <button class="modal-toggle-btn active" id="previewToggle" onclick="switchMode('preview')">Pregled</button>
                 <button class="modal-toggle-btn" id="editToggle" onclick="switchMode('edit')">Uredi</button>
             </div>
@@ -799,15 +861,17 @@
         </div>
         
         <!-- PREVIEW MODE -->
-        <div id="previewMode" style="display: block; flex: 1; overflow: hidden;">
-            <div id="templatePreview" style="font-family: 'Times New Roman', serif; font-size: 13px; line-height: 1.8; color: #2d3748; white-space: pre-wrap; word-wrap: break-word; padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; height: calc(100% - 60px); overflow-y: auto;">
-                Učitavanje...
+        <div id="previewMode" style="display: flex; flex: 1; overflow: auto; background: #f5f5f5; justify-content: center; align-items: flex-start;">
+            <div class="a4-page" id="a4Container">
+                <div id="templatePreview">
+                    Učitavanje...
+                </div>
             </div>
         </div>
         
         <!-- EDIT MODE -->
-        <div id="editMode" style="display: none; flex: 1; overflow: hidden;">
-            <textarea id="templateEditor" style="width: 100%; height: 100%; padding: 16px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.6; color: #2d3748; resize: none;" placeholder="Uredi sadržaj šablona..."></textarea>
+        <div id="editMode" style="display: none; flex: 1; overflow: hidden; background: white;">
+            <textarea id="templateEditor" style="width: 100%; height: 100%; padding: 12px; border: none; border-radius: 0; font-family: 'Monaco', 'Courier New', monospace; font-size: 11px; line-height: 1.5; color: #2d3748; resize: none; background: #fafafa;" placeholder="Uredi sadržaj šablona..."></textarea>
         </div>
         
         <div class="modal-footer">
@@ -1094,13 +1158,20 @@
             const element = document.createElement('div');
             element.innerHTML = htmlContent;
             
-            // Generiši PDF sa html2pdf
+            // Generiši PDF sa html2pdf - A4 format
+            // A4 container ima padding 15mm 20mm, PDF će dodati manji margin
             const opt = {
-                margin: 10,
+                margin: [5, 5, 5, 5],  // Minimalni margin - A4 padding je dovoljan
                 filename: `${formaType}-${projectId}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { 
+                    orientation: 'portrait', 
+                    unit: 'mm', 
+                    format: 'a4',
+                    compress: true
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
             
             if (!window.html2pdf) {
@@ -1126,14 +1197,19 @@
         const modal = document.getElementById('templateModal');
         const previewEl = document.getElementById('templatePreview');
         
+        // Resetuj state
         currentTemplateDocNum = docNum.replace(/\./g, '_');
+        currentRawTemplate = '';
         previewEl.textContent = 'Učitavanje...';
+        document.getElementById('templateEditor').value = '';
+        
+        // Prikaži modal
         modal.style.display = 'flex';
         
         // Reset toggle buttons
         document.getElementById('previewToggle').classList.add('active');
         document.getElementById('editToggle').classList.remove('active');
-        document.getElementById('previewMode').style.display = 'grid';
+        document.getElementById('previewMode').style.display = 'flex';
         document.getElementById('editMode').style.display = 'none';
         
         try {
@@ -1141,8 +1217,8 @@
                 throw new Error('Projekat podaci nisu dostupni');
             }
             
-            // Učitaj template
-            const templateUrl = `/api/pdf/template/${currentTemplateDocNum}`;
+            // Učitaj template sa projectId
+            const templateUrl = `/api/pdf/template/${currentTemplateDocNum}?projectId=${currentProjectId}`;
             const templateResponse = await fetch(templateUrl);
             if (!templateResponse.ok) throw new Error('Template nije pronađen');
             
@@ -1188,13 +1264,13 @@
         if (mode === 'preview') {
             previewToggle.classList.add('active');
             editToggle.classList.remove('active');
-            previewMode.style.display = 'grid';
+            previewMode.style.display = 'flex';
             editMode.style.display = 'none';
         } else {
             previewToggle.classList.remove('active');
             editToggle.classList.add('active');
             previewMode.style.display = 'none';
-            editMode.style.display = 'block';
+            editMode.style.display = 'flex';
         }
     }
 
@@ -1242,6 +1318,10 @@
             .replace(/<\/html>/gi, '')
             .replace(/<meta[\s\S]*?>/gi, '')
             .replace(/<style[\s\S]*?<\/style>/gi, '')
+            // Normalizuj whitespace - ukloni lijepo formatiranje
+            .replace(/\n\s+/g, '\n')  // Ukloni indentaciju
+            .replace(/>\s+</g, '><')  // Ukloni razmake između tagova
+            .replace(/\n+/g, ' ')     // Zamijeni više newline-ova sa jednim razmakom
             .trim();
         
         // Očisti previewEl
@@ -1256,11 +1336,23 @@
         }
         
         if (cssContent) {
-            styleEl.textContent = cssContent;
+            // Dodaj reset CSS na početak
+            const resetCSS = `
+                #templatePreview * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+            `;
+            styleEl.textContent = resetCSS + cssContent;
         }
         
         // Prikaži HTML sadržaj sa formatiranjem (CSS će biti primjenjen kroz head style)
-        previewEl.innerHTML = htmlContent;
+        const wrapper = document.createElement('div');
+        wrapper.style.margin = '0';
+        wrapper.style.padding = '0';
+        wrapper.innerHTML = htmlContent;
+        previewEl.appendChild(wrapper);
     }
 
     // Spremi promjene (samo osvježi preview)
@@ -1308,9 +1400,26 @@
     }
 
     function closeTemplateEditor() {
-        document.getElementById('templateModal').style.display = 'none';
+        const modal = document.getElementById('templateModal');
+        const styleEl = document.getElementById('templatePreviewStyle');
+        
+        // Sakri modal
+        modal.style.display = 'none';
+        
+        // Resetuj state
         currentTemplateDocNum = '';
         currentRawTemplate = '';
+        
+        // Resetuj CSS
+        if (styleEl) {
+            styleEl.textContent = '';
+        }
+        
+        // Resetuj preview sadržaj
+        const previewEl = document.getElementById('templatePreview');
+        if (previewEl) {
+            previewEl.innerHTML = '';
+        }
     }
 
     async function completePhase(faseId, fazaBroj, projectId) {
