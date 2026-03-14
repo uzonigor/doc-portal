@@ -654,118 +654,134 @@
         return null;
     }
 
-    // Učitaj projekat
-    function loadProject() {
-        const projectId = getProjectId();
-        if (!projectId) {
+    // Učitaj projekat sa API-ja
+    async function loadProject() {
+        try {
+            const projectId = getProjectId();
+            if (!projectId) {
+                window.location.href = '/doc-portal-1/';
+                return;
+            }
+
+            // Učitaj projekat sa API-ja
+            const response = await fetch(`/api/projekti/${projectId}`);
+            
+            if (!response.ok) {
+                if (response.status === 404) {
+                    alert('Projekat nije pronađen');
+                    window.location.href = '/doc-portal-1/';
+                    return;
+                }
+                throw new Error(`API error: ${response.status}`);
+            }
+            
+            const project = await response.json();
+
+            // Prikaži informacije o projektu
+            projectTitle.textContent = project.naziv;
+            projectInfo.innerHTML = `
+                <div class="info-item">
+                    <span class="info-label">Kupac:</span>
+                    <span>${project.kupac.naziv}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">PIB/JMBG:</span>
+                    <span>${project.kupac.pib || project.kupac.jmbg || '-'}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Snaga:</span>
+                    <span>${project.snaga} kW</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Lokacija:</span>
+                    <span>${project.lokacija}</span>
+                </div>
+            `;
+
+            // Kreiraj timeline sa fazama iz API-ja
+            renderPhases(projectId, project.faze);
+        } catch (error) {
+            console.error('Error loading project:', error);
+            alert('Greška pri učitavanju projekta: ' + error.message);
             window.location.href = '/doc-portal-1/';
-            return;
         }
-
-        const projects = JSON.parse(localStorage.getItem('projects_10_8kw') || '[]');
-        const project = projects.find(p => p.id === projectId);
-
-        if (!project) {
-            window.location.href = '/doc-portal-1/';
-            return;
-        }
-
-        // Prikaži informacije o projektu
-        projectTitle.textContent = project.naziv;
-        projectInfo.innerHTML = `
-            <div class="info-item">
-                <span class="info-label">Kupac:</span>
-                <span>${project.kupac.ime} ${project.kupac.prezime}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">PIB:</span>
-                <span>${project.kupac.pib}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Snaga:</span>
-                <span>${project.kw} kW</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Lokacija:</span>
-                <span>${project.lokacija}</span>
-            </div>
-        `;
-
-        // Kreiraj timeline
-        renderPhases(projectId);
     }
 
-    // Renderuj faze
-    function renderPhases(projectId) {
-        const phases = [
-            {
-                id: 0,
-                title: 'Priprema Dokumentacije',
-                description: 'Osnovne forme ovlašćenja i ugovore potrebne za početak',
-                docs: [
-                    { num: '0.1', text: 'Forma ovlašćenja', type: 'form', file: 'forma-ovlascenja.html' },
-                    { num: '0.2', text: 'Forma ugovora', type: 'form', file: 'forma-ugovor.html' }
-                ]
-            },
-            {
-                id: 1,
-                title: 'Izgradnja Proizvodnog Objekta',
-                description: 'Dokumentacija o izgradnji i instalaciji solarnog sistema',
-                docs: [
-                    { num: '5.0', text: 'Potvrda o usklađenosti instalacija kupca-proizvodjača sa uslovima priklučenja', type: 'form', file: 'forma-potvrda.html' },
-                    { num: '5.1', text: 'Dodatak potvrdi sa podacima o invertorimima', type: 'form', file: 'forma-potvrda.html' },
-                    { num: '5.2', text: 'Dodatak potvrdi o karakteristikama, podešenju i funkcionalnom ispitivanju zaštitnih uređaja', type: 'form', file: 'forma-potvrda.html' },
-                    { num: '5.3', text: 'Licenca odgovornog izvođača radova', type: 'upload', id: 'doc-5-3' },
-                    { num: '5.4', text: 'Izveštaj o ispitivanju ispravnosti zaštitnog provodnika, glavnog i dodatnog provodnika sa izjednačavanjem potencijala', type: 'upload', id: 'doc-5-4' },
-                    { num: '5.5', text: 'Izveštaj o izvršenom ispitivanju otpornosti izolacije električne instalacije', type: 'upload', id: 'doc-5-5' },
-                    { num: '5.6', text: 'Izveštaj o izvršenom ispitivanju impedanse zaštitnog uzemljenja', type: 'upload', id: 'doc-5-6' },
-                    { num: '5.7', text: 'Izveštaj o izvršenom ispitivanju funkcionalnosti zaštitnih i upravljačkih uređaja', type: 'upload', id: 'doc-5-7' },
-                    { num: '5.8', text: 'Izjava o usaglašenosti proizvodnog objekta sa Mrežnim pravilima', type: 'upload', id: 'doc-5-8' },
-                    { num: '5.9', text: 'Jednopolna šema proizvodnog objekta do mernog mesta, overena od strane odgovornog Izvođača radova', type: 'upload', id: 'doc-5-9' },
-                    { num: '5.10', text: 'Tropolna šema proizvodnog objekta do mernog mesta sa urtanim zaštitnim provodnikom, overena od strane odgovornog Izvođača radova', type: 'upload', id: 'doc-5-10' },
-                    { num: '5.11', text: 'Sertifikate o usaglašenosti ugrađenog tipa invertora sa standardom SRPS EN 50549-1:2020', type: 'upload', id: 'doc-5-11' },
-                    { num: '5.12', text: 'Sertifikate o usaglašenosti, po relevantnim standardima za spojni prekidač, ukoliko nije deo invertora', type: 'upload', id: 'doc-5-12' },
-                    { num: '5.13', text: 'Sertifikate o usaglašenosti, po relevantnim standardima za zaštitni uređaj sistemske zaštite, ukoliko nije deo invertora', type: 'upload', id: 'doc-5-13' },
-                    { num: '5.14', text: 'Kataloške podatke za invertor, spojni prekidač (ukoliko nije deo invertora), zaštitni uređaj sistemske zaštite (ukoliko nije deo invertora)', type: 'upload', id: 'doc-5-14' }
-                ]
-            },
-            {
-                id: 2,
-                title: 'Prilagođenje Mernog Mjesta',
-                description: 'Procedure za prilagođenje mjernog mjesta za proizvodnju',
-                docs: [
-                    { num: '6.1', text: 'Zahtev za prilagođenje mernog mesta', type: 'form', file: 'forma-zahtev.html' },
-                    { num: '6.2', text: 'Dokaz o uplati potrebnih troškova', type: 'upload', id: 'doc-6-2' },
-                    { num: '6.3', text: 'Atesti za ugrađenu opremu i uređaje', type: 'upload', id: 'doc-6-3' }
-                ]
-            },
-            {
-                id: 3,
-                title: 'Zaključivanje Ugovora',
-                description: 'Konačni ugovori sa elektrodistribucijom',
-                docs: [
-                    { num: '7.1', text: 'Zahtev za zaključenje ugovora o potpunom snabdevanju sa neto obračunom', type: 'form', file: 'forma-zahtev-ugovora.html' }
-                ]
-            },
-            {
-                id: 4,
-                title: 'Upis u Registar',
-                description: 'Konačna registracija kupca-proizvođača',
-                docs: []
-            }
-        ];
+    // Predefinisane faze sa dokumentima (iste za sve projekte)
+    const PHASE_DEFINITIONS = [
+        {
+            id: 0,
+            title: 'Priprema Dokumentacije',
+            description: 'Osnovne forme ovlašćenja i ugovore potrebne za početak',
+            docs: [
+                { num: '0.1', text: 'Forma ovlašćenja', type: 'form', file: 'forma-ovlascenja.html' },
+                { num: '0.2', text: 'Forma ugovora', type: 'form', file: 'forma-ugovor.html' }
+            ]
+        },
+        {
+            id: 1,
+            title: 'Izgradnja Proizvodnog Objekta',
+            description: 'Dokumentacija o izgradnji i instalaciji solarnog sistema',
+            docs: [
+                { num: '5.0', text: 'Potvrda o usklađenosti instalacija kupca-proizvodjača sa uslovima priklučenja', type: 'form', file: 'forma-potvrda.html' },
+                { num: '5.1', text: 'Dodatak potvrdi sa podacima o invertorimima', type: 'form', file: 'forma-potvrda.html' },
+                { num: '5.2', text: 'Dodatak potvrdi o karakteristikama, podešenju i funkcionalnom ispitivanju zaštitnih uređaja', type: 'form', file: 'forma-potvrda.html' },
+                { num: '5.3', text: 'Licenca odgovornog izvođača radova', type: 'upload', id: 'doc-5-3' },
+                { num: '5.4', text: 'Izveštaj o ispitivanju ispravnosti zaštitnog provodnika, glavnog i dodatnog provodnika sa izjednačavanjem potencijala', type: 'upload', id: 'doc-5-4' },
+                { num: '5.5', text: 'Izveštaj o izvršenom ispitivanju otpornosti izolacije električne instalacije', type: 'upload', id: 'doc-5-5' },
+                { num: '5.6', text: 'Izveštaj o izvršenom ispitivanju impedanse zaštitnog uzemljenja', type: 'upload', id: 'doc-5-6' },
+                { num: '5.7', text: 'Izveštaj o izvršenom ispitivanju funkcionalnosti zaštitnih i upravljačkih uređaja', type: 'upload', id: 'doc-5-7' },
+                { num: '5.8', text: 'Izjava o usaglašenosti proizvodnog objekta sa Mrežnim pravilima', type: 'upload', id: 'doc-5-8' },
+                { num: '5.9', text: 'Jednopolna šema proizvodnog objekta do mernog mesta, overena od strane odgovornog Izvođača radova', type: 'upload', id: 'doc-5-9' },
+                { num: '5.10', text: 'Tropolna šema proizvodnog objekta do mernog mesta sa urtanim zaštitnim provodnikom, overena od strane odgovornog Izvođača radova', type: 'upload', id: 'doc-5-10' },
+                { num: '5.11', text: 'Sertifikate o usaglašenosti ugrađenog tipa invertora sa standardom SRPS EN 50549-1:2020', type: 'upload', id: 'doc-5-11' },
+                { num: '5.12', text: 'Sertifikate o usaglašenosti, po relevantnim standardima za spojni prekidač, ukoliko nije deo invertora', type: 'upload', id: 'doc-5-12' },
+                { num: '5.13', text: 'Sertifikate o usaglašenosti, po relevantnim standardima za zaštitni uređaj sistemske zaštite, ukoliko nije deo invertora', type: 'upload', id: 'doc-5-13' },
+                { num: '5.14', text: 'Kataloške podatke za invertor, spojni prekidač (ukoliko nije deo invertora), zaštitni uređaj sistemske zaštite (ukoliko nije deo invertora)', type: 'upload', id: 'doc-5-14' }
+            ]
+        },
+        {
+            id: 2,
+            title: 'Prilagođenje Mernog Mjesta',
+            description: 'Procedure za prilagođenje mjernog mjesta za proizvodnju',
+            docs: [
+                { num: '6.1', text: 'Zahtev za prilagođenje mernog mesta', type: 'form', file: 'forma-zahtev.html' },
+                { num: '6.2', text: 'Dokaz o uplati potrebnih troškova', type: 'upload', id: 'doc-6-2' },
+                { num: '6.3', text: 'Atesti za ugrađenu opremu i uređaje', type: 'upload', id: 'doc-6-3' }
+            ]
+        },
+        {
+            id: 3,
+            title: 'Zaključivanje Ugovora',
+            description: 'Konačni ugovori sa elektrodistribucijom',
+            docs: [
+                { num: '7.1', text: 'Zahtev za zaključenje ugovora o potpunom snabdevanju sa neto obračunom', type: 'form', file: 'forma-zahtev-ugovora.html' }
+            ]
+        },
+        {
+            id: 4,
+            title: 'Upis u Registar',
+            description: 'Konačna registracija kupca-proizvođača',
+            docs: []
+        }
+    ];
 
-        const projectPhases = JSON.parse(localStorage.getItem(`phases_${projectId}`) || '[]');
+    // Renderuj faze - kombinuj API podatke sa predefinisanim fazama
+    function renderPhases(projectId, apiFaze) {
+        // Kombinuj API faze sa predefinisanim fazama i dokumentima
+        const phases = PHASE_DEFINITIONS.map(phaseDef => {
+            const apiPhase = apiFaze.find(f => f.fazaBroj === phaseDef.id) || {};
+            return {
+                ...phaseDef,
+                apiId: apiPhase.id,
+                status: apiPhase.status || (phaseDef.id === 0 ? 'active' : 'pending'),
+                completed: apiPhase.completed || false
+            };
+        });
 
         timeline.innerHTML = phases.map(phase => {
-            const phaseStatus = projectPhases.find(p => p.phaseId === phase.id) || {
-                phaseId: phase.id,
-                status: phase.id === 0 ? 'active' : 'pending',
-                completed: false
-            };
-
-            const statusClass = phaseStatus.completed ? 'completed' : phaseStatus.status === 'active' ? 'active' : 'disabled';
-            const statusText = phaseStatus.completed ? 'Završeno' : phaseStatus.status === 'active' ? 'U toku' : 'Čeka se';
+            const statusClass = phase.completed ? 'completed' : phase.status === 'active' ? 'active' : 'disabled';
+            const statusText = phase.completed ? 'Završeno' : phase.status === 'active' ? 'U toku' : 'Čeka se';
 
             return `
                 <div class="timeline-item ${statusClass}">
@@ -809,15 +825,15 @@
                             </div>
                         ` : ''}
                         <div class="phase-actions">
-                            ${phaseStatus.status === 'active' || phaseStatus.status === 'completed' ? `
+                            ${phase.status === 'active' || phase.status === 'completed' ? `
                                 <button class="btn btn-primary" onclick="openPhase(${phase.id}, '${projectId}')">
                                     Otvori Fazu
                                 </button>
                             ` : `
                                 <button class="btn" disabled>Otvori Fazu</button>
                             `}
-                            ${phaseStatus.status === 'active' && !phaseStatus.completed ? `
-                                <button class="btn btn-success" onclick="completePhase(${phase.id}, '${projectId}')">
+                            ${phase.status === 'active' && !phase.completed ? `
+                                <button class="btn btn-success" onclick="completePhase(${phase.apiId}, ${phase.id}, '${projectId}')">
                                     Označi kao Gotovo
                                 </button>
                             ` : ''}
@@ -860,39 +876,32 @@
         // Ovdje će biti logika za otvaranje forme za tu fazu
     }
 
-    // Označi fazu kao gotovu
-    function completePhase(phaseId, projectId) {
-        const projectPhases = JSON.parse(localStorage.getItem(`phases_${projectId}`) || '[]');
-        const phaseIndex = projectPhases.findIndex(p => p.phaseId === phaseId);
-
-        if (phaseIndex >= 0) {
-            projectPhases[phaseIndex].completed = true;
-            projectPhases[phaseIndex].completedAt = new Date().toISOString();
-        } else {
-            projectPhases.push({
-                phaseId,
-                status: 'active',
-                completed: true,
-                completedAt: new Date().toISOString()
+    // Označi fazu kao gotovu - koristi API
+    async function completePhase(faseId, fazaBroj, projectId) {
+        try {
+            const response = await fetch(`/api/faze/${faseId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    completed: true
+                })
             });
-        }
 
-        localStorage.setItem(`phases_${projectId}`, JSON.stringify(projectPhases));
-
-        // Aktiviraj sljedeću fazu ako postoji
-        if (phaseId < 4) {
-            const nextPhase = projectPhases.find(p => p.phaseId === phaseId + 1);
-            if (!nextPhase) {
-                projectPhases.push({
-                    phaseId: phaseId + 1,
-                    status: 'active',
-                    completed: false
-                });
-                localStorage.setItem(`phases_${projectId}`, JSON.stringify(projectPhases));
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Greška pri ažuriranju faze');
             }
-        }
 
-        renderPhases(projectId);
+            console.log('Faza je označena kao gotova:', faseId);
+            
+            // Ponovno učitaj projekat (što će refresh-ati faze)
+            loadProject();
+        } catch (error) {
+            console.error('Error completing phase:', error);
+            alert('Greška: ' + error.message);
+        }
     }
 
     // Mobile menu
