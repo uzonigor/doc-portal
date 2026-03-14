@@ -602,11 +602,12 @@
             <table id="kupcitable">
                 <thead>
                     <tr>
-                        <th>Kupac</th>
+                        <th>Naziv kompanije</th>
                         <th>PIB</th>
+                        <th>MB</th>
                         <th>Email</th>
                         <th>Telefon</th>
-                        <th>kW</th>
+                        <th>Direktor</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -637,15 +638,9 @@
         </div>
 
         <form id="kupacForm">
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Ime</label>
-                    <input type="text" id="ime" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Prezime</label>
-                    <input type="text" id="prezime" class="form-input" required>
-                </div>
+            <div class="form-group">
+                <label class="form-label">Naziv kompanije</label>
+                <input type="text" id="nazivKompanije" class="form-input" required>
             </div>
 
             <div class="form-row">
@@ -654,36 +649,30 @@
                     <input type="text" id="pib" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Matrični Broj</label>
-                    <input type="text" id="maticniBroj" class="form-input">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="email" class="form-input" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Telefon</label>
-                    <input type="tel" id="telefonski" class="form-input">
+                    <label class="form-label">MB kompanije / MB fizickog lica</label>
+                    <input type="text" id="maticniBroj" class="form-input" required>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Adresa</label>
+                <label class="form-label">Adresa APR</label>
                 <input type="text" id="adresa" class="form-input" required>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Mjesto</label>
-                    <input type="text" id="mesto" class="form-input" required>
+                    <label class="form-label">Email adresa</label>
+                    <input type="email" id="email" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Instalirano (kW)</label>
-                    <input type="number" id="kw" class="form-input" step="0.1" required>
+                    <label class="form-label">Kontakt telefon</label>
+                    <input type="tel" id="telefon" class="form-input" required>
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Direktor kompanije / Fizicko lice (za potpis)</label>
+                <input type="text" id="direktor" class="form-input" required>
             </div>
 
             <div class="modal-footer">
@@ -743,11 +732,12 @@
             kupci.forEach(kupac => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="kupac-name">${kupac.ime} ${kupac.prezime}</td>
+                    <td class="kupac-name">${kupac.nazivKompanije}</td>
                     <td>${kupac.pib}</td>
+                    <td>${kupac.maticniBroj}</td>
                     <td>${kupac.email}</td>
-                    <td>${kupac.telefonski || '-'}</td>
-                    <td>${kupac.kw} kW</td>
+                    <td>${kupac.telefon || '-'}</td>
+                    <td>${kupac.direktor}</td>
                     <td><button type="button" class="action-btn" onclick="obrisiKupca('${kupac.id}')">Obriši</button></td>
                 `;
                 tableBody.appendChild(row);
@@ -787,15 +777,13 @@
         
         const newKupac = {
             id: `kupac_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            ime: document.getElementById('ime').value,
-            prezime: document.getElementById('prezime').value,
+            nazivKompanije: document.getElementById('nazivKompanije').value,
             pib: document.getElementById('pib').value,
             maticniBroj: document.getElementById('maticniBroj').value,
-            email: document.getElementById('email').value,
-            telefonski: document.getElementById('telefonski').value,
             adresa: document.getElementById('adresa').value,
-            mesto: document.getElementById('mesto').value,
-            kw: parseFloat(document.getElementById('kw').value),
+            email: document.getElementById('email').value,
+            telefon: document.getElementById('telefon').value,
+            direktor: document.getElementById('direktor').value,
             datumKreiran: new Date().toISOString()
         };
 
@@ -815,10 +803,12 @@
         
         tableBody.innerHTML = '';
         const filtered = kupci.filter(k => 
-            k.ime.toLowerCase().includes(searchTerm) ||
-            k.prezime.toLowerCase().includes(searchTerm) ||
+            k.nazivKompanije.toLowerCase().includes(searchTerm) ||
             k.pib.includes(searchTerm) ||
-            k.email.toLowerCase().includes(searchTerm)
+            k.maticniBroj.toLowerCase().includes(searchTerm) ||
+            k.email.toLowerCase().includes(searchTerm) ||
+            k.telefon.toLowerCase().includes(searchTerm) ||
+            k.direktor.toLowerCase().includes(searchTerm)
         );
 
         if (filtered.length === 0) {
@@ -831,11 +821,12 @@
             filtered.forEach(kupac => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="kupac-name">${kupac.ime} ${kupac.prezime}</td>
+                    <td class="kupac-name">${kupac.nazivKompanije}</td>
                     <td>${kupac.pib}</td>
+                    <td>${kupac.maticniBroj}</td>
                     <td>${kupac.email}</td>
-                    <td>${kupac.telefonski || '-'}</td>
-                    <td>${kupac.kw} kW</td>
+                    <td>${kupac.telefon || '-'}</td>
+                    <td>${kupac.direktor}</td>
                     <td><button type="button" class="action-btn" onclick="obrisiKupca('${kupac.id}')">Obriši</button></td>
                 `;
                 tableBody.appendChild(row);
