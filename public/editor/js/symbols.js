@@ -22,12 +22,17 @@
  *   compute - opcioni izračunati podaci (npr. snaga niza)
  */
 
+import { faktorNapona, PODRAZUMEVANE_TEMPERATURE } from './provere.js';
+
 const S = 'stroke="currentColor" fill="none" stroke-width="1.6"';
 const SF = 'stroke="currentColor" fill="currentColor"';
 const THIN = 'stroke="currentColor" fill="none" stroke-width="1"';
 
 // Kvadratić za simbole u ormanu / kućištu
 const box = (w, h) => `<rect x="0" y="0" width="${w}" height="${h}" rx="2" ${S}/>`;
+
+// Napon niza na najhladnijem danu; isti faktor koji koristi i string plan.
+const FAKTOR_HLADNO = faktorNapona(PODRAZUMEVANE_TEMPERATURE.tempMin);
 
 export const KATEGORIJE = [
     { id: 'dc', naziv: 'DC strana' },
@@ -87,8 +92,7 @@ export const SYMBOLS = {
         compute: (p) => ({
             'Snaga niza': ((p.modula || 0) * (p.pmax || 0) / 1000).toFixed(2) + ' kWp',
             'Voc niza (STC)': ((p.modula || 0) * (p.voc || 0)).toFixed(1) + ' V',
-            // Voc raste na niskim temperaturama; -10°C, tipičan koef. -0,29 %/K
-            'Voc pri −10 °C': ((p.modula || 0) * (p.voc || 0) * 1.101).toFixed(1) + ' V',
+            'Voc pri −10 °C': ((p.modula || 0) * (p.voc || 0) * FAKTOR_HLADNO).toFixed(1) + ' V',
             'Umpp niza': ((p.modula || 0) * (p.vmpp || 0)).toFixed(1) + ' V',
             'Isc × 1,25': ((p.isc || 0) * 1.25).toFixed(1) + ' A'
         }),

@@ -159,6 +159,12 @@ function uJednopolnu() {
             proizvodjac: model.modul.proizvodjac
         },
         inverter: { mppt: Math.max(1, maxMppt), faza: 3, snaga: 10 },
+        granice: (model.oprema.find(o => o.tip === 'inverter') || {}).granice || null,
+        temperature: {
+            tempMin: model.proracun.tempMin,
+            tempMax: model.proracun.tempMax,
+            koefNapona: model.proracun.koefNapona
+        },
         raspodelaStringova: raspodela
     });
 

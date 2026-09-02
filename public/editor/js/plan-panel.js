@@ -6,7 +6,8 @@ import { escapeXml } from './util.js';
 import { pitaj } from './dijalog.js';
 import { TIPOVI_OPREME } from './plan-model.js';
 import { izvestajDuzina } from './plan-trase.js';
-import { moduli as katalogModula, nadji, podaci, dodaj } from './katalog.js';
+import { moduli as katalogModula, inverteri as katalogInvertera, nadji, podaci, dodaj, POLJA_GRANICA } from './katalog.js';
+import { proveriUlaze, vocHladno } from './provere.js';
 
 function polje(label, tip, vrednost, cilj, kljuc, dodatno = '') {
     const korak = tip === 'int' ? '1' : (tip === 'float' ? 'any' : null);
@@ -19,13 +20,19 @@ function polje(label, tip, vrednost, cilj, kljuc, dodatno = '') {
 function odeljakStringova(model, aktivniString) {
     const po = model.modulaPoStringu();
 
+    /** Granica napona je Udc,max invertera kome string pripada, ako je poznata. */
+    const granicaZa = (s) => {
+        const inv = model.oprema.find(o => o.tip === 'inverter' && (o.inverter || 1) === (s.inverter || 1));
+        return (inv && inv.granice && inv.granice.udcMax) || 1000;
+    };
+
     return `
         <h4>Stringovi</h4>
         <div class="stringovi">
             ${model.stringovi.map(s => {
                 const n = po.get(s.id) || 0;
-                // Voc raste na niskim temperaturama; -10 °C, tipičan koef. -0,29 %/K
-                const voc = n * (model.modul.voc || 0) * 1.101;
+                const voc = vocHladno(n, model.modul.voc || 0, model.proracun);
+                const granica = granicaZa(s);
                 return `
                 <div class="string-red${s.id === aktivniString ? ' aktivan' : ''}" data-string="${s.id}">
                     <button class="string-izbor" data-akcija="aktiviraj" data-id="${s.id}"
@@ -33,7 +40,8 @@ function odeljakStringova(model, aktivniString) {
                         <span class="boja" style="background:${escapeXml(s.boja)}"></span>
                         <b>${escapeXml(s.oznaka)}</b>
                     </button>
-                    <span class="string-broj${voc > 1000 ? ' opasno' : ''}" title="Voc na −10 °C: ${voc.toFixed(0)} V">
+                    <span class="string-broj${voc > granica ? ' opasno' : ''}"
+                          title="Voc na ${model.proracun.tempMin ?? -10} °C: ${voc.toFixed(0)} V (granica ${granica} V)">
                         ${n} kom · ${voc.toFixed(0)} V
                     </span>
                     <input type="number" step="1" min="1" value="${s.inverter}" title="Inverter"
@@ -86,12 +94,26 @@ function odeljakPolja(model, polje_) {
 
 function odeljakOpreme(model, o) {
     if (!o) return '';
+
+    const granice = o.tip === 'inverter' ? `
+        <label>Iz kataloga
+            <select data-cilj="katalog-inverter">
+                <option value="">— izaberi —</option>
+                ${katalogInvertera().map(k =>
+                    `<option value="${escapeXml(k.id)}">${escapeXml(k.naziv)}</option>`).join('')}
+            </select></label>
+        <div class="par">
+            ${POLJA_GRANICA.map(f =>
+                polje(f.label, 'float', (o.granice || {})[f.kljuc], 'granice', f.kljuc)).join('')}
+        </div>` : '';
+
     return `
         <h4>${escapeXml(TIPOVI_OPREME[o.tip]?.naziv || o.tip)}</h4>
         <div class="forma">
             ${polje('Oznaka', 'text', o.oznaka, 'oprema', 'oznaka')}
             ${polje('Naziv', 'text', o.naziv, 'oprema', 'naziv')}
             ${o.tip === 'inverter' ? polje('Redni broj invertera', 'int', o.inverter, 'oprema', 'inverter') : ''}
+            ${granice}
             <div class="par">
                 ${polje('X (m)', 'float', o.pos.x.toFixed(2), 'oprema-pos', 'x')}
                 ${polje('Y (m)', 'float', o.pos.y.toFixed(2), 'oprema-pos', 'y')}
@@ -179,6 +201,37 @@ function odeljakTrasa(model) {
            razmak pređe ono što fabrički priključci pokrivaju. Na crtežu su podebljani.</p>`;
 }
 
+function odeljakUlaza(model) {
+    const ulazi = proveriUlaze(model);
+    if (!ulazi.length) return '';
+
+    const svePoruke = ulazi.flatMap(u => u.poruke);
+
+    return `
+        <h4>DC ulazi invertera</h4>
+        <table class="tabela sitna">
+            <thead><tr><th>Ulaz</th><th>Str.</th>
+                <th title="Voc najdužeg stringa na najhladnijem danu">Voc↓</th>
+                <th title="Umpp na najtoplijem danu">Umpp↑</th>
+                <th>Impp</th></tr></thead>
+            <tbody>${ulazi.map(u => {
+                const losa = u.poruke.some(x => x.nivo === 'greska');
+                return `<tr class="${losa ? 'red-greska' : ''}">
+                    <td>${escapeXml(u.kljuc)}${u.imaGranice ? '' : ' <span class="znak">bez granica</span>'}</td>
+                    <td>${u.stringovi.length}</td>
+                    <td>${u.voc.toFixed(0)} V</td>
+                    <td>${u.vmppVruce.toFixed(0)} V</td>
+                    <td>${u.impp.toFixed(1)} A</td>
+                </tr>`;
+            }).join('')}</tbody>
+        </table>
+        ${svePoruke.length ? `<ul class="upozorenja">${svePoruke.map(x =>
+            `<li class="${x.nivo === 'greska' ? 'greska' : ''}">${escapeXml(x.tekst)}</li>`).join('')}</ul>` : ''}
+        ${ulazi.some(u => !u.imaGranice)
+            ? `<p class="mala">Granice se unose uz inverter (izaberi ga na crtežu) ili se povuku iz kataloga.</p>`
+            : ''}`;
+}
+
 function odeljakProracuna(model) {
     const p = model.proracun;
     return `
@@ -204,6 +257,11 @@ function odeljakProracuna(model) {
                 ${polje('Min. presek DC (mm²)', 'float', p.minPresekDC, 'proracun', 'minPresekDC')}
                 ${polje('Min. presek AC (mm²)', 'float', p.minPresekAC, 'proracun', 'minPresekAC')}
             </div>
+            <div class="par">
+                ${polje('Najhladniji dan (°C)', 'float', p.tempMin, 'proracun', 'tempMin')}
+                ${polje('Najtopliji dan (°C)', 'float', p.tempMax, 'proracun', 'tempMax')}
+            </div>
+            ${polje('Koeficijent napona (%/K)', 'float', p.koefNapona, 'proracun', 'koefNapona')}
         </div>
         <p class="mala">κ = 56 važi na 20 °C. Za proračun na radnoj temperaturi
            provodnika uzmi 48 (PVC, 70 °C) ili 44 (90 °C).</p>`;
@@ -292,6 +350,7 @@ export function renderPlanSvojstva(el, model, izabrani, canvas) {
         odeljakStringova(model, canvas.aktivniString),
         oprema_ ? odeljakOpreme(model, oprema_) : odeljakPolja(model, polje_),
         odeljakTrasa(model),
+        odeljakUlaza(model),
         odeljakProracuna(model),
         odeljakModula(model),
         odeljakPodloge(model),
@@ -313,6 +372,11 @@ function vezi(el, model, polje_, oprema_, canvas) {
 
             if (cilj === 'polje' && polje_) model.setPoljeProp(polje_.id, kljuc, vrednost);
             else if (cilj === 'oprema' && oprema_) model.setOpremaProp(oprema_.id, kljuc, vrednost);
+            else if (cilj === 'granice' && oprema_) {
+                model.commit('izmeni granice', () => {
+                    oprema_.granice = { ...(oprema_.granice || {}), [kljuc]: vrednost };
+                });
+            }
             else if (cilj === 'oprema-pos' && oprema_) {
                 model.commit('pomeri opremu', () => { oprema_.pos[kljuc] = vrednost; });
             }
@@ -330,6 +394,17 @@ function vezi(el, model, polje_, oprema_, canvas) {
         if (!stavka) return;
         model.commit('modul iz kataloga', () => {
             Object.assign(model.modul, podaci(stavka));
+        });
+    });
+
+    const izborInvertera = el.querySelector('select[data-cilj="katalog-inverter"]');
+    if (izborInvertera) izborInvertera.addEventListener('change', () => {
+        const stavka = nadji('inverter', izborInvertera.value);
+        if (!stavka || !oprema_) return;
+        const { udcMax, umpptMin, umpptMax, idcMax, iscMax, stringovaPoMppt } = stavka;
+        model.commit('inverter iz kataloga', () => {
+            oprema_.granice = { udcMax, umpptMin, umpptMax, idcMax, iscMax, stringovaPoMppt };
+            oprema_.naziv = stavka.naziv;
         });
     });
 

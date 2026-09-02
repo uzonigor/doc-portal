@@ -10,6 +10,7 @@
  */
 
 import { Dokument, noviId } from './dokument.js';
+import { vocHladno } from './provere.js';
 
 /** Piksela crteža po metru. */
 export const PPM = 100;
@@ -72,7 +73,12 @@ export class PlanModel extends Dokument {
             faktorTemp: 1,
             faktorGrupisanja: 1,
             minPresekDC: 6,
-            minPresekAC: 2.5
+            minPresekAC: 2.5,
+
+            // ekstremi za proveru DC ulaza invertera
+            tempMin: -10,        // °C — najhladniji radni dan
+            tempMax: 70,         // °C — temperatura ćelije na najtoplijem danu
+            koefNapona: -0.29    // %/K — temperaturni koeficijent napona
         }, data.proracun);
 
         this.trasa = Object.assign({
@@ -232,7 +238,9 @@ export class PlanModel extends Dokument {
                 oznaka: opcije.oznaka || this.sledecaOznakaOpreme(def.oznaka),
                 naziv: opcije.naziv || def.naziv,
                 pos: { x: pos.x, y: pos.y },
-                inverter: opcije.inverter ?? isti   // kom inverteru pripada (za AC trase)
+                inverter: opcije.inverter ?? isti,  // kom inverteru pripada (za AC trase)
+                // granice DC ulaza — popunjavaju se iz kataloga ili ručno
+                granice: tip === 'inverter' ? { ...(opcije.granice || {}) } : undefined
             };
             this.oprema.push(o);
             return o;
@@ -372,17 +380,9 @@ export class PlanModel extends Dokument {
             const n = po.get(s.id) || 0;
             if (!n) {
                 poruke.push({ nivo: 'upozorenje', tekst: `String ${s.oznaka} nema nijedan modul.` });
-                return;
-            }
-            // Voc raste na niskim temperaturama; -10 °C, tipičan koef. -0,29 %/K
-            const voc = n * (this.modul.voc || 0) * 1.101;
-            if (voc > 1000) {
-                poruke.push({
-                    nivo: 'greska',
-                    tekst: `String ${s.oznaka}: Voc na −10 °C je ${voc.toFixed(0)} V — preko 1000 V.`
-                });
             }
         });
+        // Naponske i strujne granice se proveravaju prema inverteru, u provere.js
 
         // Stringovi na istom MPPT ulazu treba da budu jednake dužine.
         const poMppt = new Map();

@@ -32,12 +32,42 @@ const UGRADJENI_MODULI = [
     }
 ];
 
+/**
+ * Granice DC ulaza. Ovo su vrednosti koje obaraju projekat ako se prekorače,
+ * pa se unose po inverteru:
+ *   udcMax    - najveći dozvoljen napon na DC ulazu (Voc na najhladnijem danu)
+ *   umpptMin  - donja granica MPPT opsega (napon na najtoplijem danu)
+ *   umpptMax  - gornja granica MPPT opsega
+ *   idcMax    - najveća radna struja po MPPT ulazu
+ *   iscMax    - najveća struja kratkog spoja po MPPT ulazu
+ *   stringovaPoMppt - koliko stringova sme paralelno na jedan ulaz
+ */
 const UGRADJENI_INVERTERI = [
-    { id: 'i5', naziv: 'Generički 5 kW, 1-fazni', ugradjen: true, proizvodjac: '', model: '', snaga: 5, faza: 1, mppt: 2 },
-    { id: 'i6', naziv: 'Generički 6 kW, 3-fazni', ugradjen: true, proizvodjac: '', model: '', snaga: 6, faza: 3, mppt: 2 },
-    { id: 'i10', naziv: 'Generički 10 kW, 3-fazni', ugradjen: true, proizvodjac: '', model: '', snaga: 10, faza: 3, mppt: 2 },
-    { id: 'i20', naziv: 'Generički 20 kW, 3-fazni', ugradjen: true, proizvodjac: '', model: '', snaga: 20, faza: 3, mppt: 2 },
-    { id: 'i50', naziv: 'Generički 50 kW, 3-fazni', ugradjen: true, proizvodjac: '', model: '', snaga: 50, faza: 3, mppt: 4 }
+    { id: 'i5', naziv: 'Generički 5 kW, 1-fazni', ugradjen: true, proizvodjac: '', model: '',
+      snaga: 5, faza: 1, mppt: 2,
+      udcMax: 600, umpptMin: 90, umpptMax: 540, idcMax: 13, iscMax: 19.5, stringovaPoMppt: 1 },
+    { id: 'i6', naziv: 'Generički 6 kW, 3-fazni', ugradjen: true, proizvodjac: '', model: '',
+      snaga: 6, faza: 3, mppt: 2,
+      udcMax: 1100, umpptMin: 160, umpptMax: 850, idcMax: 13.5, iscMax: 20, stringovaPoMppt: 1 },
+    { id: 'i10', naziv: 'Generički 10 kW, 3-fazni', ugradjen: true, proizvodjac: '', model: '',
+      snaga: 10, faza: 3, mppt: 2,
+      udcMax: 1100, umpptMin: 160, umpptMax: 850, idcMax: 20, iscMax: 30, stringovaPoMppt: 2 },
+    { id: 'i20', naziv: 'Generički 20 kW, 3-fazni', ugradjen: true, proizvodjac: '', model: '',
+      snaga: 20, faza: 3, mppt: 2,
+      udcMax: 1100, umpptMin: 200, umpptMax: 850, idcMax: 26, iscMax: 40, stringovaPoMppt: 2 },
+    { id: 'i50', naziv: 'Generički 50 kW, 3-fazni', ugradjen: true, proizvodjac: '', model: '',
+      snaga: 50, faza: 3, mppt: 4,
+      udcMax: 1100, umpptMin: 200, umpptMax: 1000, idcMax: 26, iscMax: 40, stringovaPoMppt: 2 }
+];
+
+/** Polja granica DC ulaza — koriste ih i katalog i panel opreme. */
+export const POLJA_GRANICA = [
+    { kljuc: 'udcMax', label: 'Udc,max (V)' },
+    { kljuc: 'umpptMin', label: 'MPPT min (V)' },
+    { kljuc: 'umpptMax', label: 'MPPT max (V)' },
+    { kljuc: 'idcMax', label: 'Idc,max po MPPT (A)' },
+    { kljuc: 'iscMax', label: 'Isc,max po MPPT (A)' },
+    { kljuc: 'stringovaPoMppt', label: 'Stringova po MPPT' }
 ];
 
 function ucitajSvoje() {

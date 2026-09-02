@@ -80,6 +80,7 @@ krova i prenosi u generator, koji tada zaključava polja „broj panela" i
 | `js/proracun.js` | formule i tabele: pad napona, opteretljivost, izbor preseka |
 | `js/sema-proracun.js` | proračun nad šemom — izvor napajanja se traži u grafu |
 | `js/katalog.js` | katalog modula i invertera koji se ponavljaju |
+| `js/provere.js` | granice DC ulaza invertera: napon na oba temperaturna ekstrema, struje |
 | `js/util.js` | sitne deljene funkcije |
 | `js/app.js` | sklapanje, autosave, demo šema |
 
@@ -200,6 +201,31 @@ svoj natpis sa dužinom. Trase prvo izlaze iz polja upravno pa idu vodoravno
 
 Zato inverter i ormani moraju biti postavljeni na plan (alat **Oprema**) —
 bez njih nema odakle do kuda da se meri.
+
+## Provera DC ulaza invertera
+
+Granice koje obaraju projekat proveravaju se po **MPPT ulazu**, ne po stringu
+— jer se na jedan ulaz može vezati više stringova paralelno.
+
+Napon se gleda na oba ekstrema, sa faktorom `1 + (T − 25) · β / 100`
+(β = temperaturni koeficijent napona, tipično −0,29 %/K):
+
+| Provera | Uslov | Posledica prekoračenja |
+|---|---|---|
+| Voc na najhladnijem danu | ≤ **Udc,max** | uništen inverter |
+| Umpp na najtoplijem danu | ≥ **MPPT min** | elektrana ujutru ne kreće |
+| Umpp na najhladnijem danu | ≤ **MPPT max** | rad van optimuma |
+| Impp × broj stringova | ≤ **Idc,max** | ulaz ne prihvata struju |
+| 1,25 × Isc × broj stringova | ≤ **Isc,max** | isto |
+| broj stringova | ≤ dozvoljeni po ulazu | — |
+
+Merodavan je **najduži string** na ulazu. Granice se unose uz inverter na
+planu ili se povuku iz kataloga; temperaturni ekstremi (−10 °C / +70 °C) i
+koeficijent su parametri.
+
+Ista granica važi svuda: lista stringova crveni kad Voc pređe Udc,max
+**tog** invertera, a ne neku fiksnu vrednost. Kad inverter nije postavljen,
+koristi se uobičajenih 1000 V.
 
 ## Katalog opreme
 

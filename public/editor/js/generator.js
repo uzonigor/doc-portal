@@ -9,8 +9,10 @@
 import { Model } from './model.js';
 import { rasporedi } from './layout.js';
 import { defaultProps } from './symbols.js';
+import { vocHladno } from './provere.js';
 
-// Uobičajen maksimalni DC ulazni napon string invertera
+// Uobičajen maksimalni DC ulazni napon string invertera, kad granice
+// konkretnog invertera nisu poznate
 const GRANICA_VOC = 1000;
 
 export const PODRAZUMEVANI = {
@@ -30,6 +32,10 @@ export const PODRAZUMEVANI = {
     // [{ mppt, modula, oznaka }] po stringu. Ako je zadat, ima prednost
     // nad brojPanela/invertera — raspored stringova je već odlučen na krovu.
     raspodelaStringova: null,
+
+    // Granice DC ulaza invertera i temperaturni ekstremi, ako su poznati
+    granice: null,
+    temperature: null,
 
     dcPrekidac: true,
     dcSpd: 'T2',
@@ -315,14 +321,17 @@ export function rekapitulacija(p = {}) {
     const snagaAC = invertera * (par.inverter.snaga || 0);
     const najduziString = Math.max(...stringovi);
 
-    // Voc raste na niskim temperaturama; -10 °C, tipičan koef. -0,29 %/K
-    const vocHladno = najduziString * (par.panel.voc || 0) * 1.101;
+    // Granice konkretnog invertera ako su prenete sa plana ili izabrane iz
+    // kataloga; inače uobičajena vrednost.
+    const granice = par.granice || {};
+    const udcMax = granice.udcMax || GRANICA_VOC;
+    const voc = vocHladno(najduziString, par.panel.voc || 0, par.temperature || {});
     const odnos = snagaAC ? snagaDC / snagaAC : 0;
 
     const upozorenja = [];
-    if (vocHladno > GRANICA_VOC) {
-        upozorenja.push(`Voc najdužeg niza na −10 °C je ${vocHladno.toFixed(0)} V — prelazi uobičajenih ` +
-            `${GRANICA_VOC} V ulaznog napona invertera. Skrati string ili proveri dozvoljeni Udc,max.`);
+    if (voc > udcMax) {
+        upozorenja.push(`Voc najdužeg niza na −10 °C je ${voc.toFixed(0)} V — prelazi ` +
+            `${granice.udcMax ? 'Udc,max invertera' : 'uobičajenih'} ${udcMax} V. Skrati string.`);
     }
     if (odnos && odnos > 1.35) {
         upozorenja.push(`Odnos DC/AC je ${odnos.toFixed(2)} — inverter je izrazito predimenzionisan sa DC strane.`);
@@ -340,7 +349,7 @@ export function rekapitulacija(p = {}) {
             'Snaga AC': `${snagaAC.toFixed(2)} kW`,
             'Odnos DC/AC': odnos ? odnos.toFixed(2) : '—',
             'Stringova': `${stringovi.length} (${stringovi.join(' + ')})`,
-            'Voc najdužeg niza (−10 °C)': `${vocHladno.toFixed(0)} V`,
+            'Voc najdužeg niza (−10 °C)': `${voc.toFixed(0)} V`,
             'Isc × 1,25': `${((par.panel.isc || 0) * 1.25).toFixed(1)} A`
         },
         upozorenja
