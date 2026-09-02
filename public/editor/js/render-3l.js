@@ -15,17 +15,20 @@ import { route, ortogonalizuj } from './router.js';
 import { nodeTransform, escapeXml } from './render.js';
 
 /**
- * Razmak između žila u snopu. Mora da primi simbol jednog pola — najviši
- * prekidački simbol (FID) je ~32 jedinice — inače se polovi preklapaju.
+ * Razmak između žila u snopu.
+ *
+ * Donja granica je visina simbola jednog pola: najviši prekidački glif je
+ * ~20 jedinica (prekidač), a strujni merni transformator ~22. Ispod toga bi
+ * se polovi dodirivali.
  */
-export const RAZMAK_ZILA = 34;
+export const RAZMAK_ZILA = 24;
 
 /** Duži izlaz iz porta nego na jednopolnoj — u njemu se smešta fan-out žila. */
-const IZLAZ_3L = 52;
+const IZLAZ_3L = 44;
 
 /** Prva i sledeće vertikale fan-outa; razmaknute da se ne poklope. */
-const FAN_POCETAK = 12;
-const FAN_KORAK = 8;
+const FAN_POCETAK = 10;
+const FAN_KORAK = 6;
 
 /** Redosled crtanja žila odozgo nadole. */
 const REDOSLED = ['L1', 'L2', 'L3', 'L', 'L+', 'N', 'L-', 'PE'];

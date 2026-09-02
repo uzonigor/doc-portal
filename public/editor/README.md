@@ -195,6 +195,10 @@ celog snopa umesto po polu.
 jednopolna (`pomeriPoliliniju`), pa raspored elemenata ostaje isti na oba
 lista.
 
+Razmak žila (`RAZMAK_ZILA`, 24 jedinice) ima donju granicu: visinu simbola
+jednog pola. Najviši prekidački glif je ~20 jedinica, strujni merni
+transformator ~22 — ispod toga bi se polovi dodirivali.
+
 ## Samo pravi uglovi
 
 Na šemi nema kosih linija — ni na jednopolnoj ni na tropolnoj. Tri mesta
