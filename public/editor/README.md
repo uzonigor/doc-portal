@@ -164,14 +164,23 @@ Iz geometrije krova, ne iz crteža šeme. Za svaki string:
 
 ### Šta ide u nabavku
 
-Moduli već dolaze ožičeni, pa se za nabavku broji samo ono što fabrički
-priključci ne pokriju. Svaku vezu između dva modula pokrivaju **dva**
-priključka — + jednog i − drugog; dokupljuje se ostatak, po vezi. Parametar
-je *Fabrički priključak modula* (podrazumevano 1,2 m po polu).
+**Veze između panela se ne kupuju** — taj kabl je ugrađen u modul. Broje se
+samo **skokovi**: mesta gde razmak pređe ono što fabrički priključci
+pokrivaju — preskok preko slemena, oko dimnjaka, prekid niza, nepristupačan
+deo krova. Jednu vezu pokrivaju dva priključka (+ jednog modula i − drugog),
+pa se dokupljuje samo ostatak, po vezi. Parametar je *Priključak modula*
+(podrazumevano 1,2 m po polu).
 
-Na pad napona to nema uticaja — i fabrički kabl je provodnik, pa proračun
-i dalje ide na punu dužinu. Razlika je znatna: string od 16 modula ima
-32,6 m ožičenja, a sa priključcima od 1,2 m treba dokupiti 0,2 m.
+Skokovi se **podebljano obeležavaju na crtežu**, sa dodatnom dužinom, da
+instalater vidi gde kabl stvarno treba.
+
+Na pad napona ovo nema uticaja — i fabrički kabl je provodnik. Menja se samo
+količina za nabavku:
+
+| Slučaj | Ožičenje | Skokovi | Za nabavku |
+|---|---|---|---|
+| pun niz od 16 modula | 32,6 m | nema | vodovi |
+| isti niz, rupa za dimnjak | 32,6 m | 2 × 2,2 m | vodovi + 4,4 m |
 
 Odatle tri broja koja ne treba mešati:
 

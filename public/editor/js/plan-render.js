@@ -129,8 +129,18 @@ export function traseSvg(model) {
             ? `<polyline class="trasa-ozicenje" points="${tacke}" stroke="${escapeXml(s.boja)}"/>`
             : '';
 
+        // Veze između panela pokrivaju fabrički priključci; obeležavaju se
+        // samo skokovi — tamo kabl stvarno treba dokupiti.
+        const skokovi = (s.skokovi || []).map(k => `
+            <line class="trasa-skok" stroke="${escapeXml(s.boja)}"
+                  x1="${k.od.x * PPM}" y1="${k.od.y * PPM}"
+                  x2="${k.do.x * PPM}" y2="${k.do.y * PPM}"/>
+            <text class="trasa-skok-tekst" x="${(k.od.x + k.do.x) / 2 * PPM}"
+                  y="${(k.od.y + k.do.y) / 2 * PPM - 10}" text-anchor="middle"
+                  fill="${escapeXml(s.boja)}">+${k.dodatno.toFixed(1)} m</text>`).join('');
+
         if (!s.inverterPos || !s.krajPlus || !s.krajMinus) {
-            return `<g class="trasa" data-string="${s.stringId}">${ozicenje}</g>`;
+            return `<g class="trasa" data-string="${s.stringId}">${ozicenje}${skokovi}</g>`;
         }
 
         const polovi = [
@@ -150,7 +160,7 @@ export function traseSvg(model) {
                   y="${(s.inverterPos.y + p.pomak) * PPM - 5}" text-anchor="middle"
                   fill="${escapeXml(s.boja)}">${escapeXml(s.oznaka)} ${p.znak} ${p.duzina.toFixed(1)} m</text>`).join('');
 
-        return `<g class="trasa" data-string="${s.stringId}">${vodovi}${ozicenje}${natpisi}</g>`;
+        return `<g class="trasa" data-string="${s.stringId}">${vodovi}${ozicenje}${skokovi}${natpisi}</g>`;
     }).join('')}</g>`;
 }
 

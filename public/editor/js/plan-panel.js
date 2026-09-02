@@ -120,21 +120,27 @@ function odeljakTrasa(model) {
                 ${polje('Visina spusta (m)', 'float', t.visinaSpusta, 'trasa', 'visinaSpusta')}
                 ${polje('Rezerva (%)', 'float', t.rezerva, 'trasa', 'rezerva')}
             </div>
-            ${polje('Fabrički priključak modula (m)', 'float', t.duzinaPrikljucka, 'trasa', 'duzinaPrikljucka')}
+            ${polje('Priključak modula (m po polu)', 'float', t.duzinaPrikljucka, 'trasa', 'duzinaPrikljucka')}
         </div>
 
         ${izv.nedostajeInverter ? `<ul class="upozorenja"><li>Nema invertera na planu —
             vodovi do invertera se ne mogu izmeriti. Dodaj ga alatom <b>Oprema</b>.</li></ul>` : ''}
 
         ${redovi.length ? `<table class="tabela sitna">
-            <thead><tr><th>String</th><th>Ožičenje</th><th>Vod +</th><th>Vod −</th><th title="Kabl koji treba dokupiti, bez onoga što pokrivaju fabrički priključci">Nabavka</th><th>Presek</th><th>Pad</th></tr></thead>
+            <thead><tr><th>String</th>
+                <th title="Mesta gde razmak pređe ono što fabrički priključci modula pokrivaju">Skokovi</th>
+                <th>Vod +</th><th>Vod −</th>
+                <th title="Kabl koji treba dokupiti">Nabavka</th>
+                <th>Presek</th><th>Pad</th></tr></thead>
             <tbody>${redovi.map(s => {
                 const pr = s.predlog;
                 const prelazi = pr && pr.padProcenat > (model.proracun.padDC ?? 3);
                 const iznadCilja = pr && pr.iznadCilja;
                 return `<tr>
                 <td><span class="boja-tacka" style="background:${escapeXml(s.boja)}"></span> ${escapeXml(s.oznaka)}</td>
-                <td>${s.ozicenje.toFixed(1)} m</td>
+                <td title="Ožičenje niza: ${s.ozicenje.toFixed(1)} m">${s.skokovi.length
+                    ? `<b>${s.skokovi.length}</b> · ${s.ozicenjeDodatno.toFixed(1)} m`
+                    : '—'}</td>
                 <td>${s.vodPlus ? s.vodPlus.toFixed(1) + ' m' : '—'}</td>
                 <td>${s.vodMinus ? s.vodMinus.toFixed(1) + ' m' : '—'}</td>
                 <td><b>${s.dodatno.toFixed(1)} m</b></td>
@@ -168,8 +174,9 @@ function odeljakTrasa(model) {
                 <dd>${izv.dodatnoDC.toFixed(1)} m</dd>
             <dt>AC ukupno</dt><dd>${izv.ukupnoAC.toFixed(1)} m</dd>
         </dl>
-        <p class="mala"><b>Ožičenje</b> je stvarna dužina provodnika u nizu i po njoj se računa
-           pad napona. <b>Nabavka</b> je samo ono što fabrički priključci modula ne pokriju.</p>`;
+        <p class="mala"><b>Veze između panela se ne kupuju</b> — taj kabl je ugrađen u modul.
+           Broje se samo <b>skokovi</b>: preskok preko slemena, dimnjaka ili prekid niza, gde
+           razmak pređe ono što fabrički priključci pokrivaju. Na crtežu su podebljani.</p>`;
 }
 
 function odeljakProracuna(model) {

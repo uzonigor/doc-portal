@@ -511,3 +511,9 @@ svg[data-prikaz="3L"] .node { cursor: move; }
 }
 
 .generator label.preko-dva { grid-column: 1 / -1; }
+
+.trasa-skok { stroke-width: 6; opacity: .35; stroke-linecap: round; }
+.trasa-skok-tekst {
+    font: bold 11px 'Segoe UI', sans-serif;
+    paint-order: stroke; stroke: #fff; stroke-width: 3.5px; stroke-linejoin: round;
+}

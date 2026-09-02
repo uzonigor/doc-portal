@@ -18,6 +18,9 @@ const STIL = `
     .trasa-vod { stroke-width: 2; stroke-dasharray: 9 5; fill: none; }
     .trasa-tekst { font: bold 10px 'Segoe UI', sans-serif;
                    paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+    .trasa-skok { stroke-width: 5; opacity: .3; stroke-linecap: round; }
+    .trasa-skok-tekst { font: bold 10px 'Segoe UI', sans-serif;
+                        paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
     .trasa-pol { font: bold 12px 'Segoe UI', sans-serif;
                  paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
     .razmernik-tekst, .sever-tekst { font: 10px 'Segoe UI', sans-serif; fill: #111; }
@@ -52,8 +55,9 @@ function legendaStavke(model) {
     const izv = izvestajDuzina(model);
     if (izv.ukupnoDC > 0) {
         stavke.push({
-            tekst: `DC provodnika ${izv.ukupnoDC.toFixed(0)} m · za nabavku ${izv.dodatnoDC.toFixed(0)} m ` +
-                   `(bez fabričkih priključaka)`
+            tekst: `DC provodnika ukupno ${izv.ukupnoDC.toFixed(0)} m (sa vezama u nizu) · ` +
+                   `za nabavku ${izv.dodatnoDC.toFixed(0)} m` +
+                   (izv.brojSkokova ? ` · skokova ${izv.brojSkokova}` : '')
         });
     }
 
