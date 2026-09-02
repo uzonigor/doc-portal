@@ -34,6 +34,39 @@ function segmentSlobodan(a, b, prepreke) {
     return true;
 }
 
+/**
+ * Razbij svaki kosi segment na dva prava.
+ *
+ * A* radi na gridu, pa spoj sa stvarnim krajem porta ume da ispadne kos.
+ * Šema sme da ima samo vodoravne i uspravne poteze, pa je ovo završna
+ * provera kroz koju prolazi svaka putanja.
+ */
+export function ortogonalizuj(tacke) {
+    if (tacke.length < 2) return tacke;
+
+    const out = [tacke[0]];
+    let prethodnoHorizontalno = null;
+
+    for (let i = 1; i < tacke.length; i++) {
+        const a = out[out.length - 1], b = tacke[i];
+        const dx = Math.abs(b.x - a.x), dy = Math.abs(b.y - a.y);
+
+        if (dx < 0.01 || dy < 0.01) {
+            out.push(b);
+            if (dx > 0.01 || dy > 0.01) prethodnoHorizontalno = dx > dy;
+            continue;
+        }
+
+        // smer prvog dela nastavlja prethodni potez, da se ne prave suvišni lomovi
+        const prvoHorizontalno = prethodnoHorizontalno === null ? true : prethodnoHorizontalno;
+        out.push(prvoHorizontalno ? { x: b.x, y: a.y } : { x: a.x, y: b.y });
+        out.push(b);
+        prethodnoHorizontalno = !prvoHorizontalno;
+    }
+
+    return out;
+}
+
 /** Ukloni suvišne kolinearne tačke. */
 function sazmi(tacke) {
     const out = [tacke[0]];
@@ -144,14 +177,17 @@ function rutaSegmenta(a, b, aDir, bDir, prepreke) {
  * @param {{x,y,dir}} to    - ulazni port
  * @param {Array<{x,y}>} waypoints - ručne prelomne tačke (mogu biti prazne)
  * @param {Array<{x,y,w,h}>} prepreke
+ * @param {object} opcije - { izlaz } dužina "pipka" na izlasku iz porta;
+ *                          tropolna traži duži, da fan-out žila stane
  * @returns {Array<{x,y}>} tačke polilinije
  */
-export function route(from, to, waypoints = [], prepreke = []) {
+export function route(from, to, waypoints = [], prepreke = [], opcije = {}) {
+    const duzinaIzlaza = opcije.izlaz ?? IZLAZ;
     const [ax, ay] = POMAK[from.dir] || [1, 0];
     const [bx, by] = POMAK[to.dir] || [-1, 0];
 
-    const izlaz = { x: from.x + ax * IZLAZ, y: from.y + ay * IZLAZ };
-    const ulaz = { x: to.x + bx * IZLAZ, y: to.y + by * IZLAZ };
+    const izlaz = { x: from.x + ax * duzinaIzlaza, y: from.y + ay * duzinaIzlaza };
+    const ulaz = { x: to.x + bx * duzinaIzlaza, y: to.y + by * duzinaIzlaza };
 
     const tacke = [{ x: from.x, y: from.y }, izlaz];
     const sidra = [izlaz, ...waypoints, ulaz];
@@ -165,7 +201,7 @@ export function route(from, to, waypoints = [], prepreke = []) {
     }
 
     tacke.push({ x: to.x, y: to.y });
-    return sazmi(tacke);
+    return sazmi(ortogonalizuj(tacke));
 }
 
 function suprotno(dir) {
@@ -178,10 +214,18 @@ function smerKa(a, b) {
         : (b.y >= a.y ? 'S' : 'N');
 }
 
-/** Polilinija -> SVG path sa blago zaobljenim uglovima. */
-export function pathD(tacke, radijus = 4) {
+/**
+ * Polilinija -> SVG path.
+ * Podrazumevano su uglovi oštri, kako se i crtaju električne šeme;
+ * `radijus > 0` ih zaobljava.
+ */
+export function pathD(tacke, radijus = 0) {
     if (tacke.length < 2) return '';
     let d = `M ${tacke[0].x} ${tacke[0].y}`;
+
+    if (radijus <= 0) {
+        return d + tacke.slice(1).map(t => ` L ${t.x} ${t.y}`).join('');
+    }
 
     for (let i = 1; i < tacke.length - 1; i++) {
         const p = tacke[i - 1], c = tacke[i], n = tacke[i + 1];

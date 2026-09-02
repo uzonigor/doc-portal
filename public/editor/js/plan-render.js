@@ -105,16 +105,20 @@ export function traseSvg(model) {
             : '';
 
         const imaVod = s.prikljucak && s.inverterPos;
+
+        // Vod se računa manhattan rastojanjem (uz ivice), pa se tako i crta —
+        // kosa linija bi pokazivala kraću trasu nego što je proračunata.
         const vod = imaVod
-            ? `<line class="trasa-vod" stroke="${escapeXml(s.boja)}"
-                     x1="${s.prikljucak.x * PPM}" y1="${s.prikljucak.y * PPM}"
-                     x2="${s.inverterPos.x * PPM}" y2="${s.inverterPos.y * PPM}"/>`
+            ? `<polyline class="trasa-vod" stroke="${escapeXml(s.boja)}" fill="none"
+                     points="${s.prikljucak.x * PPM},${s.prikljucak.y * PPM}
+                             ${s.inverterPos.x * PPM},${s.prikljucak.y * PPM}
+                             ${s.inverterPos.x * PPM},${s.inverterPos.y * PPM}"/>`
             : '';
 
         // Natpis ide poslednji da ga linije trase ne bi precrtale.
         const natpis = imaVod
             ? `<text class="trasa-tekst" x="${(s.prikljucak.x + s.inverterPos.x) / 2 * PPM}"
-                     y="${(s.prikljucak.y + s.inverterPos.y) / 2 * PPM - 6}" text-anchor="middle"
+                     y="${s.prikljucak.y * PPM - 8}" text-anchor="middle"
                      fill="${escapeXml(s.boja)}">${escapeXml(s.oznaka)} · 2×${s.vod.toFixed(1)} m</text>`
             : '';
 

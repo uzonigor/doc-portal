@@ -11,7 +11,7 @@
  */
 
 import { getSymbol, portPosition, nodeSize, nodeBBox, poliTip, prekinuteZile } from './symbols.js';
-import { route } from './router.js';
+import { route, ortogonalizuj } from './router.js';
 import { nodeTransform, escapeXml } from './render.js';
 
 /**
@@ -19,6 +19,13 @@ import { nodeTransform, escapeXml } from './render.js';
  * prekidački simbol (FID) je ~32 jedinice — inače se polovi preklapaju.
  */
 export const RAZMAK_ZILA = 34;
+
+/** Duži izlaz iz porta nego na jednopolnoj — u njemu se smešta fan-out žila. */
+const IZLAZ_3L = 52;
+
+/** Prva i sledeće vertikale fan-outa; razmaknute da se ne poklope. */
+const FAN_POCETAK = 12;
+const FAN_KORAK = 8;
 
 /** Redosled crtanja žila odozgo nadole. */
 const REDOSLED = ['L1', 'L2', 'L3', 'L', 'L+', 'N', 'L-', 'PE'];
@@ -35,6 +42,26 @@ function pomakZile(zile, zila) {
 }
 
 // ── paralelno pomeranje ortogonalne polilinije ───────────────────────────────
+
+/** Ukloni tačke koje se ponavljaju ili leže na istoj pravoj. */
+function sazmi(tacke) {
+    const out = [];
+    tacke.forEach(t => {
+        const p = out[out.length - 1];
+        if (p && Math.abs(p.x - t.x) < 0.01 && Math.abs(p.y - t.y) < 0.01) return;
+        out.push(t);
+    });
+
+    const cist = [out[0]];
+    for (let i = 1; i < out.length - 1; i++) {
+        const a = cist[cist.length - 1], b = out[i], c = out[i + 1];
+        const kolinearno = (Math.abs(a.x - b.x) < 0.01 && Math.abs(b.x - c.x) < 0.01)
+            || (Math.abs(a.y - b.y) < 0.01 && Math.abs(b.y - c.y) < 0.01);
+        if (!kolinearno) cist.push(b);
+    }
+    if (out.length > 1) cist.push(out[out.length - 1]);
+    return cist;
+}
 
 function smer(a, b) {
     const dx = b.x - a.x, dy = b.y - a.y;
@@ -75,6 +102,32 @@ export function pomeriPoliliniju(tacke, d) {
 
 function putanjaD(tacke) {
     return tacke.map((t, i) => `${i ? 'L' : 'M'} ${t.x} ${t.y}`).join(' ');
+}
+
+const SMER = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] };
+
+/**
+ * Ortogonalni spoj priključka na snop.
+ *
+ * Bez ovoga bi žila išla kosom linijom od priključka do svoje trake. Umesto
+ * toga: kratak potez u smeru porta, pa upravno do trake, pa dalje pravo —
+ * sve pod pravim uglom. Svaka žila skreće na svojoj udaljenosti, da se
+ * vertikale ne poklope.
+ */
+function spojNaSnop(terminal, cilj, redni) {
+    const [sx, sy] = SMER[terminal.dir] || [1, 0];
+    const odmak = FAN_POCETAK + redni * FAN_KORAK;
+    const horizontalan = sx !== 0;
+
+    const skretanje = horizontalan
+        ? { x: terminal.x + sx * odmak, y: terminal.y }
+        : { x: terminal.x, y: terminal.y + sy * odmak };
+
+    const naTraci = horizontalan
+        ? { x: skretanje.x, y: cilj.y }
+        : { x: cilj.x, y: skretanje.y };
+
+    return [skretanje, naTraci];
 }
 
 // ── priključci uređaja ───────────────────────────────────────────────────────
@@ -274,20 +327,29 @@ export function edgeSvg3l(model, edge, opcije = {}) {
     const izlaz = prikljucci(od, odPort, zile);
     const ulaz = prikljucci(ka, doPort, zile);
 
-    const osnovna = route(kraj.from, kraj.to, edge.waypoints || [], model.prepreke([odId, doId]));
+    const osnovna = route(kraj.from, kraj.to, edge.waypoints || [],
+        model.prepreke([odId, doId]), { izlaz: IZLAZ_3L });
 
-    const linije = zile.map(z => {
+    const linije = zile.map((z, i) => {
         const d = pomakZile(zile, z);
         // pomeriPoliliniju pomera ULEVO od smera kretanja, a pomakZile raste
         // nadole; zato ide sa suprotnim znakom, inače se snop preslika i žile
         // se ukrste na svakom elementu.
         const pomerena = pomeriPoliliniju(osnovna, -d);
 
-        // Krajevi se povuku na stvarne priključke elemenata.
         const a = izlaz.get(z), b = ulaz.get(z);
-        const tacke = [a, ...pomerena.slice(1, -1), b];
+        const traka = pomerena.slice(1, -1);
 
-        return `<path class="zila zila-${z.replace('+', 'p').replace('-', 'm')}" d="${putanjaD(tacke)}"/>`;
+        // Krajevi se na traku spajaju pod pravim uglom, ne kosom linijom.
+        const tacke = [
+            a,
+            ...spojNaSnop(a, traka[0] || pomerena[0], i),
+            ...traka,
+            ...spojNaSnop(b, traka[traka.length - 1] || pomerena[pomerena.length - 1], i).reverse(),
+            b
+        ];
+
+        return `<path class="zila zila-${z.replace('+', 'p').replace('-', 'm')}" d="${putanjaD(sazmi(ortogonalizuj(tacke)))}"/>`;
     }).join('');
 
     // Oznake žila jednom po vodu, na sredini najdužeg segmenta.

@@ -194,3 +194,22 @@ celog snopa umesto po polu.
 Žile se crtaju paralelnim pomeranjem iste putanje koju koristi i
 jednopolna (`pomeriPoliliniju`), pa raspored elemenata ostaje isti na oba
 lista.
+
+## Samo pravi uglovi
+
+Na šemi nema kosih linija — ni na jednopolnoj ni na tropolnoj. Tri mesta
+su to inače kvarila:
+
+- **A\* rutiranje** radi na gridu od 10 jedinica, pa spoj sa stvarnim
+  krajem porta ispadne kos
+- **fan-out žila** od priključka do svoje trake u snopu
+- **zaobljeni uglovi** u `pathD`
+
+Zato svaka putanja prolazi kroz `ortogonalizuj()` u `router.js`, koji svaki
+kosi segment razbija na dva prava, nastavljajući smer prethodnog poteza da
+se ne prave suvišni lomovi. Uglovi su oštri (`pathD` radijus 0).
+
+Na string planu je isto urađeno sa vodom do invertera — on se računa
+manhattan rastojanjem, pa se tako i crta; kosa linija bi pokazivala kraću
+trasu nego što je proračunata. Ožičenje između modula i dalje prati redove
+modula, jer to i jeste putanja kabla po krovu.
