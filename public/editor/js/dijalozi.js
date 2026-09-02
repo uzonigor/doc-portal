@@ -4,53 +4,14 @@
 
 import { PODRAZUMEVANI, generisi, rekapitulacija } from './generator.js';
 import { escapeXml } from './render.js';
+import { otvori, dugme, tabelaHtml } from './dijalog.js';
+import { preuzmi } from './list.js';
 import {
     tabelaKablova, specifikacijaOpreme, zbirKablova, ukupnoModula,
     redoviProracuna, KOLONE_KABLOVA, KOLONE_OPREME, KOLONE_PRORACUNA, csv
 } from './specifikacija.js';
 import { proracunKablova, primeniPredloge } from './sema-proracun.js';
 import { PODRAZUMEVANI_PARAMETRI } from './proracun.js';
-
-// ── osnovni okvir dijaloga ───────────────────────────────────────────────────
-
-function otvori(naslov, sadrzaj, sirina = 720) {
-    const zavesa = document.createElement('div');
-    zavesa.className = 'zavesa';
-    zavesa.innerHTML = `
-        <div class="dijalog" style="max-width:${sirina}px">
-            <header><h3>${escapeXml(naslov)}</h3><button class="zatvori" aria-label="Zatvori">×</button></header>
-            <div class="telo"></div>
-            <footer></footer>
-        </div>`;
-
-    document.body.appendChild(zavesa);
-    zavesa.querySelector('.telo').appendChild(sadrzaj);
-
-    const zatvori = () => zavesa.remove();
-    zavesa.querySelector('.zatvori').addEventListener('click', zatvori);
-    zavesa.addEventListener('mousedown', e => { if (e.target === zavesa) zatvori(); });
-    document.addEventListener('keydown', function esc(e) {
-        if (e.key === 'Escape') { zatvori(); document.removeEventListener('keydown', esc); }
-    });
-
-    return { zavesa, podnozje: zavesa.querySelector('footer'), zatvori };
-}
-
-function dugme(tekst, klasa, akcija) {
-    const b = document.createElement('button');
-    b.textContent = tekst;
-    if (klasa) b.className = klasa;
-    b.addEventListener('click', akcija);
-    return b;
-}
-
-function preuzmi(tekst, ime, mime) {
-    const url = URL.createObjectURL(new Blob([tekst], { type: mime }));
-    const a = document.createElement('a');
-    a.href = url; a.download = ime;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 
 // ── generator ────────────────────────────────────────────────────────────────
 
@@ -201,14 +162,6 @@ export function otvoriGenerator(model, canvas, meta = {}, preset = null) {
 }
 
 // ── tabele ───────────────────────────────────────────────────────────────────
-
-function tabelaHtml(redovi, kolone) {
-    if (!redovi.length) return `<p class="prazno">Nema podataka.</p>`;
-    return `<table class="tabela">
-        <thead><tr>${kolone.map(k => `<th>${escapeXml(k.naslov)}</th>`).join('')}</tr></thead>
-        <tbody>${redovi.map(r => `<tr>${kolone.map(k => `<td>${escapeXml(r[k.kljuc])}</td>`).join('')}</tr>`).join('')}</tbody>
-    </table>`;
-}
 
 export function otvoriTabele(model) {
     const kablovi = tabelaKablova(model);

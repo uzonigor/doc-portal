@@ -484,3 +484,23 @@ svg[data-alat="kalibracija"] { cursor: crosshair; }
 .node-3l .simbol, .node-3l .pol, .node-3l .odvod-pol { color: #1a202c; }
 
 svg[data-prikaz="3L"] .node { cursor: move; }
+
+/* ── biblioteka crteža ───────────────────────────────────────────────────── */
+
+.biblioteka-tabela td { vertical-align: middle; }
+.biblioteka-tabela tr.tekuci { background: #ebf8ff; }
+.biblioteka .veza {
+    border: none; background: none; padding: 0; cursor: pointer;
+    font-size: 13px; font-family: inherit; color: var(--akcenat); text-align: left;
+}
+.biblioteka .veza:hover { text-decoration: underline; background: none; }
+.biblioteka .znak {
+    margin-left: 8px; font-size: 10px; color: var(--prigusen);
+    border: 1px solid var(--ivica); border-radius: 3px; padding: 1px 5px;
+}
+.akcije-red { white-space: nowrap; text-align: right; }
+.akcije-red button {
+    border: none; background: none; color: var(--prigusen);
+    font-size: 14px; padding: 2px 5px; cursor: pointer; border-radius: 4px;
+}
+.akcije-red button:hover { background: #edf2f7; color: var(--tekst); }

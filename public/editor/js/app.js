@@ -6,13 +6,14 @@ import { Model } from './model.js';
 import { Canvas } from './canvas.js';
 import { renderPaleta, renderSvojstva } from './panel.js';
 import { izveziSvg, izveziPng, stampaj } from './export.js';
-import { api, skica, prenos } from './api.js';
+import { ucitaj, snimi as snimiUSkladiste, noviId, prenos, zapamtiPoslednji, poslednji } from './skladiste.js';
+import { otvoriBiblioteku, izveziCrtez } from './biblioteka.js';
 import { otvoriGenerator, otvoriTabele, otvoriProracun } from './dijalozi.js';
 import { generisi } from './generator.js';
 
 const el = (s) => document.querySelector(s);
 
-let model, canvas, semaId = null, projektaId = null;
+let model, canvas, crtezId = null, nazivCrteza = 'Nova šema';
 let tajmerAutosave = null;
 let neispisaneIzmene = false;
 
@@ -44,21 +45,18 @@ function demoModel() {
 // ── snimanje ─────────────────────────────────────────────────────────────────
 
 async function snimi(tiho = false) {
-    if (semaId) {
-        try {
-            await api.snimi(semaId, { naziv: model.meta.naziv, model: model.toJSON() });
-            neispisaneIzmene = false;
-            status('Snimljeno u bazu');
-            if (!tiho) poruka('Šema je snimljena.', 'uspeh');
-        } catch (e) {
-            status('Greška pri snimanju');
-            poruka(`Snimanje nije uspelo: ${e.message}`, 'greska');
-        }
-    } else {
-        skica.snimi(model.toJSON());
+    try {
+        const zapis = await snimiUSkladiste({
+            id: crtezId, naziv: model.meta.naziv || nazivCrteza, tip: '1L', model: model.toJSON()
+        });
+        crtezId = zapis.id;
+        zapamtiPoslednji('1L', crtezId);
         neispisaneIzmene = false;
-        status('Snimljeno lokalno (radna skica)');
-        if (!tiho) poruka('Snimljeno u lokalnu skicu. Otvori šemu iz projekta da bi se čuvala u bazi.', 'info');
+        status(`Snimljeno lokalno · ${new Date().toTimeString().slice(0, 5)}`);
+        if (!tiho) poruka('Crtež je snimljen u lokalnu biblioteku.', 'uspeh');
+    } catch (e) {
+        status('Greška pri snimanju');
+        poruka(`Snimanje nije uspelo: ${e.message}. Preuzmi crtež kao .json da ga ne izgubiš.`, 'greska');
     }
 }
 
@@ -72,34 +70,26 @@ function zakaziAutosave() {
 // ── inicijalizacija ──────────────────────────────────────────────────────────
 
 async function start() {
-    const putanja = location.pathname.match(/\/editor\/sema\/(\d+)/);
     const parametri = new URLSearchParams(location.search);
-    semaId = putanja ? parseInt(putanja[1], 10) : null;
-    projektaId = parametri.get('projekat') ? parseInt(parametri.get('projekat'), 10) : null;
+    crtezId = parametri.get('crtez') || poslednji('1L');
 
     let podaci = null;
 
-    if (semaId) {
-        try {
-            const sema = await api.ucitaj(semaId);
-            podaci = sema.model;
-            projektaId = sema.projektaId;
-            if (sema.projekat) {
-                podaci.meta = Object.assign({}, podaci.meta, {
-                    investitor: sema.projekat.kupac?.naziv || '',
-                    lokacija: sema.projekat.lokacija || ''
-                });
-            }
-            status(`Šema #${semaId}`);
-        } catch (e) {
-            poruka(`Ne mogu da učitam šemu: ${e.message}`, 'greska');
+    if (crtezId) {
+        const zapis = await ucitaj(crtezId);
+        if (zapis && zapis.tip === '1L') {
+            podaci = zapis.model;
+            nazivCrteza = zapis.naziv;
+            status(`Otvoren: ${zapis.naziv}`);
+        } else {
+            crtezId = null;   // zapis je obrisan ili je drugog tipa
         }
-    } else {
-        podaci = skica.ucitaj();
-        status('Radna skica (localStorage)');
     }
 
+    if (!crtezId) crtezId = noviId();
+
     model = podaci ? new Model(podaci) : demoModel();
+    if (!podaci) status('Nov crtež — snima se lokalno');
 
     canvas = new Canvas(el('#crtez'), model, {
         onIzbor: (ids) => renderSvojstva(el('#svojstva'), model, ids, canvas),
@@ -167,6 +157,14 @@ function postaviAlatke() {
     el('#btn-png').addEventListener('click', () => izveziPng(model, opcijePrikaza()));
     el('#btn-pdf').addEventListener('click', () => stampaj(model, opcijePrikaza()));
 
+    el('#btn-biblioteka').addEventListener('click', () => otvoriBiblioteku({
+        tekuciId: crtezId,
+        onPoruka: (t, v) => poruka(t, v)
+    }));
+
+    el('#btn-json').addEventListener('click', () =>
+        izveziCrtez({ naziv: model.meta.naziv, tip: '1L', model: model.toJSON() }));
+
     el('#btn-generator').addEventListener('click', () => otvoriGenerator(model, canvas, model.meta));
     el('#btn-tabele').addEventListener('click', () => otvoriTabele(model));
     el('#btn-proracun').addEventListener('click', () => otvoriProracun(model, canvas));
@@ -182,10 +180,10 @@ function postaviAlatke() {
         canvas.uklopiUProzor();
     });
 
-    el('#btn-prazno').addEventListener('click', () => {
-        if (!confirm('Obrisati ceo crtež?')) return;
-        model.commit('novi crtež', () => { model.nodes = []; model.edges = []; });
-        canvas.postaviIzbor([]);
+    el('#btn-prazno').addEventListener('click', async () => {
+        if (!confirm('Napraviti nov crtež? Tekući ostaje u biblioteci.')) return;
+        await snimi(true);
+        location.href = '/editor?crtez=' + noviId();
     });
 }
 

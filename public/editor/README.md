@@ -12,15 +12,31 @@ Faza 5: tropolna šema — prikaz istog grafa po žilama.
 
 ## Pokretanje
 
-Editor je deo portala:
+Editor je **samostalan** — ne zavisi od doc-portala, ni od servera, ni od baze.
+Server ga samo servira kao statičke fajlove.
 
-- `/editor` — jednopolna šema, radna skica (čuva se u `localStorage`)
-- `/editor/sema/:id` — šema vezana za projekat (čuva se u bazi)
-- `/plan` — string plan, radna skica
-- `/plan/:id` — plan vezan za projekat
+- `/editor` — jednopolna i tropolna šema
+- `/plan` — string plan
+- `?crtez=<id>` — otvara određen crtež iz lokalne biblioteke
 
-Oba crteža se čuvaju u istoj tabeli `seme`, razlikuju se po koloni `tip`
-(`1L` / `3L` / `PLAN`).
+## Gde se crteži čuvaju
+
+U browseru, kroz **IndexedDB** (`js/skladiste.js`). Ne localStorage: string
+plan sa učitanim snimkom krova ume da bude par megabajta, a localStorage
+puca već na ~5 MB za ceo sajt. Ako IndexedDB nije dostupan (privatni
+prozor, stroga podešavanja), pada se na localStorage uz jasno upozorenje.
+
+Dugme **☰ Crteži** otvara biblioteku: lista, otvaranje, preimenovanje,
+brisanje, uvoz i izvoz.
+
+**Fajl je jedini način da crtež pređe na drugi računar.** Dugme `JSON`
+preuzima crtež kao `.go4.json`; isti fajl se uvozi kroz biblioteku. Fajl
+nosi potpis, pa se tuđi JSON odbija sa jasnom porukom umesto da napravi
+prazan crtež.
+
+Iz toga sledi jedno ograničenje koje treba znati: **crteži žive u jednom
+browseru na jednom računaru.** Brisanje podataka sajta ih briše. Ono što
+treba da preživi — izvezi u `.json`.
 
 ## Arhitektura
 
@@ -55,7 +71,9 @@ krova i prenosi u generator, koji tada zaključava polja „broj panela" i
 | `js/layout.js` | logičke koordinate (kolona, red) → pozicije, sa poravnanjem kolona |
 | `js/specifikacija.js` | tabela kablova, zbir po tipu kabla, specifikacija opreme, CSV |
 | `js/dijalozi.js` | dijalog generatora i dijalog tabela |
-| `js/api.js` | `/api/seme`, localStorage skice i prenos plan → šema |
+| `js/skladiste.js` | lokalna biblioteka (IndexedDB), `.json` razmena, prenos plan → šema |
+| `js/biblioteka.js` | dijalog biblioteke: lista, uvoz, izvoz, preimenovanje |
+| `js/dijalog.js` | okvir modalnog dijaloga, upit, tabela |
 | `js/list.js` | zajednički okvir lista: format, okvir, legenda, sastavnica |
 | `js/dokument.js` | osnova dokumenta: meta, format, undo/redo, događaji |
 | `js/plan-trase.js` | leapfrog ožičenje, dužine trasa, predlog preseka po stringu |

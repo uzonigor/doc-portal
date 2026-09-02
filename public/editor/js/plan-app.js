@@ -6,10 +6,12 @@ import { PlanModel } from './plan-model.js';
 import { PlanCanvas } from './plan-canvas.js';
 import { renderPlanSvojstva } from './plan-panel.js';
 import { izveziSvg, izveziPng, stampaj } from './plan-export.js';
-import { api, planSkica, prenos } from './api.js';
+import { ucitaj, snimi as snimiUSkladiste, noviId, prenos, zapamtiPoslednji, poslednji } from './skladiste.js';
+import { otvoriBiblioteku, izveziCrtez } from './biblioteka.js';
 import { TIPOVI_OPREME } from './plan-model.js';
 import { izvestajDuzina } from './plan-trase.js';
 import { escapeXml } from './util.js';
+import { pitaj } from './dijalog.js';
 
 const el = (s) => document.querySelector(s);
 
@@ -18,7 +20,7 @@ const el = (s) => document.querySelector(s);
 const MAX_STRANICA_PODLOGE = 2000;
 const KVALITET_PODLOGE = 0.82;
 
-let model, canvas, planId = null, projektaId = null;
+let model, canvas, crtezId = null;
 let tajmerAutosave = null;
 let neispisaneIzmene = false;
 
@@ -31,40 +33,6 @@ function poruka(tekst, vrsta = 'info') {
 }
 
 function status(tekst) { el('#status').textContent = tekst; }
-
-// ── mali upitni dijalog ──────────────────────────────────────────────────────
-
-function pitaj(naslov, opis, podrazumevano) {
-    return new Promise(resolve => {
-        const zavesa = document.createElement('div');
-        zavesa.className = 'zavesa';
-        zavesa.innerHTML = `
-            <div class="dijalog" style="max-width:420px">
-                <header><h3>${escapeXml(naslov)}</h3></header>
-                <div class="telo">
-                    <p class="mala">${escapeXml(opis)}</p>
-                    <input type="number" step="any" class="upit-polje" value="${escapeXml(podrazumevano)}">
-                </div>
-                <footer>
-                    <button data-a="ne">Odustani</button>
-                    <button data-a="da" class="primarno">Potvrdi</button>
-                </footer>
-            </div>`;
-        document.body.appendChild(zavesa);
-
-        const input = zavesa.querySelector('.upit-polje');
-        input.focus();
-        input.select();
-
-        const zatvori = (v) => { zavesa.remove(); resolve(v); };
-        zavesa.querySelector('[data-a="ne"]').addEventListener('click', () => zatvori(null));
-        zavesa.querySelector('[data-a="da"]').addEventListener('click', () => zatvori(parseFloat(input.value)));
-        input.addEventListener('keydown', e => {
-            if (e.key === 'Enter') zatvori(parseFloat(input.value));
-            if (e.key === 'Escape') zatvori(null);
-        });
-    });
-}
 
 // ── podloga ──────────────────────────────────────────────────────────────────
 
@@ -107,11 +75,12 @@ async function ucitajPodlogu(file) {
 }
 
 async function kalibrisi(duzinaNaCrtezu, od) {
-    const stvarna = await pitaj(
+    const uneto = await pitaj(
         'Kalibracija podloge',
         `Povučena duž je trenutno ${duzinaNaCrtezu.toFixed(2)} m. Koliko iznosi u stvarnosti?`,
-        duzinaNaCrtezu.toFixed(2));
+        duzinaNaCrtezu.toFixed(2), 'number');
 
+    const stvarna = parseFloat(uneto);
     if (!stvarna || stvarna <= 0) return;
 
     const f = stvarna / duzinaNaCrtezu;
@@ -131,25 +100,19 @@ async function kalibrisi(duzinaNaCrtezu, od) {
 // ── snimanje ─────────────────────────────────────────────────────────────────
 
 async function snimi(tiho = false) {
-    if (planId) {
-        try {
-            await api.snimi(planId, { naziv: model.meta.naziv, model: model.toJSON() });
-            neispisaneIzmene = false;
-            status('Snimljeno u bazu');
-            if (!tiho) poruka('Plan je snimljen.', 'uspeh');
-        } catch (e) {
-            status('Greška pri snimanju');
-            poruka(`Snimanje nije uspelo: ${e.message}`, 'greska');
-        }
-    } else {
-        const uspelo = planSkica.snimi(model.toJSON());
+    try {
+        const zapis = await snimiUSkladiste({
+            id: crtezId, naziv: model.meta.naziv || 'String plan', tip: 'PLAN', model: model.toJSON()
+        });
+        crtezId = zapis.id;
+        zapamtiPoslednji('PLAN', crtezId);
         neispisaneIzmene = false;
-        status(uspelo ? 'Snimljeno lokalno (radna skica)' : 'Lokalna skica je prepunjena');
-        if (!tiho && !uspelo) {
-            poruka('Skica ne staje u lokalnu memoriju — verovatno zbog podloge. Otvori plan iz projekta da bi se čuvao u bazi.', 'greska');
-        } else if (!tiho) {
-            poruka('Snimljeno u lokalnu skicu.', 'info');
-        }
+        status(`Snimljeno lokalno · ${new Date().toTimeString().slice(0, 5)}`);
+        if (!tiho) poruka('Plan je snimljen u lokalnu biblioteku.', 'uspeh');
+    } catch (e) {
+        status('Greška pri snimanju');
+        poruka(`Snimanje nije uspelo: ${e.message}. Preuzmi plan kao .json da ga ne izgubiš — ` +
+               'snimak krova ume da bude veliki.', 'greska');
     }
 }
 
@@ -198,7 +161,7 @@ function uJednopolnu() {
     });
 
     snimi(true);
-    location.href = projektaId ? `/editor?izPlana=1&projekat=${projektaId}` : '/editor?izPlana=1';
+    location.href = '/editor?izPlana=1';
 }
 
 // ── alati ────────────────────────────────────────────────────────────────────
@@ -222,34 +185,25 @@ function osveziAlate() {
 // ── inicijalizacija ──────────────────────────────────────────────────────────
 
 async function start() {
-    const putanja = location.pathname.match(/\/plan\/(\d+)/);
     const parametri = new URLSearchParams(location.search);
-    planId = putanja ? parseInt(putanja[1], 10) : null;
-    projektaId = parametri.get('projekat') ? parseInt(parametri.get('projekat'), 10) : null;
+    crtezId = parametri.get('crtez') || poslednji('PLAN');
 
     let podaci = null;
 
-    if (planId) {
-        try {
-            const zapis = await api.ucitaj(planId);
+    if (crtezId) {
+        const zapis = await ucitaj(crtezId);
+        if (zapis && zapis.tip === 'PLAN') {
             podaci = zapis.model;
-            projektaId = zapis.projektaId;
-            if (zapis.projekat) {
-                podaci.meta = Object.assign({}, podaci.meta, {
-                    investitor: zapis.projekat.kupac?.naziv || '',
-                    lokacija: zapis.projekat.lokacija || ''
-                });
-            }
-            status(`Plan #${planId}`);
-        } catch (e) {
-            poruka(`Ne mogu da učitam plan: ${e.message}`, 'greska');
+            status(`Otvoren: ${zapis.naziv}`);
+        } else {
+            crtezId = null;
         }
-    } else {
-        podaci = planSkica.ucitaj();
-        status('Radna skica (localStorage)');
     }
 
+    if (!crtezId) crtezId = noviId();
+
     model = podaci ? new PlanModel(podaci) : demoPlan();
+    if (!podaci) status('Nov plan — snima se lokalno');
 
     canvas = new PlanCanvas(el('#crtez'), model, {
         onIzbor: (ids) => renderPlanSvojstva(el('#svojstva'), model, ids, canvas),
@@ -340,6 +294,20 @@ function postaviAlatke() {
         canvas.postaviAlat('izbor');
         osveziAlate();
         canvas.postaviIzbor([p.id]);
+    });
+
+    el('#btn-biblioteka').addEventListener('click', () => otvoriBiblioteku({
+        tekuciId: crtezId,
+        onPoruka: (t, v) => poruka(t, v)
+    }));
+
+    el('#btn-json').addEventListener('click', () =>
+        izveziCrtez({ naziv: model.meta.naziv, tip: 'PLAN', model: model.toJSON() }));
+
+    el('#btn-nov').addEventListener('click', async () => {
+        if (!confirm('Napraviti nov plan? Tekući ostaje u biblioteci.')) return;
+        await snimi(true);
+        location.href = '/plan?crtez=' + noviId();
     });
 
     el('#btn-undo').addEventListener('click', () => { model.undo(); canvas.postaviIzbor([]); });

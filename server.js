@@ -10,7 +10,6 @@ import projektiRouter from './routes/projekti.js';
 import fazeRouter from './routes/faze.js';
 import pdfRouter from './routes/pdf.js';
 import templatesRouter from './routes/templates.js';
-import semeRouter from './routes/seme.js';
 
 // Import legacy routes (ako trebaju)
 // import formsRouter from './routes/forms.js';
@@ -78,9 +77,6 @@ app.use('/api/pdf', pdfRouter);
 // Templates routes - za spremi prilagođenih šablona
 app.use('/api/templates', templatesRouter);
 
-// Šeme routes - jednopolne i tropolne šeme
-app.use('/api/seme', semeRouter);
-
 // ============================================
 // FRONTEND ROUTES
 // ============================================
@@ -120,16 +116,8 @@ app.get('/editor', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/editor/sema-editor.html'));
 });
 
-app.get('/editor/sema/:semaId', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/editor/sema-editor.html'));
-});
-
 // String plan - raspored modula na krovu
 app.get('/plan', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/editor/plan-editor.html'));
-});
-
-app.get('/plan/:planId', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/editor/plan-editor.html'));
 });
 
