@@ -10,6 +10,7 @@ import projektiRouter from './routes/projekti.js';
 import fazeRouter from './routes/faze.js';
 import pdfRouter from './routes/pdf.js';
 import templatesRouter from './routes/templates.js';
+import semeRouter from './routes/seme.js';
 
 // Import legacy routes (ako trebaju)
 // import formsRouter from './routes/forms.js';
@@ -40,6 +41,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Služi statičke fajlove (HTML, CSS, JS, slike)
 app.use(express.static(path.join(__dirname, '.')));
+
+// Vizuelni editor šema (JS moduli, simboli)
+app.use('/editor', express.static(path.join(__dirname, 'public/editor')));
 
 // ============================================
 // API ROUTES - PRISMA
@@ -74,6 +78,9 @@ app.use('/api/pdf', pdfRouter);
 // Templates routes - za spremi prilagođenih šablona
 app.use('/api/templates', templatesRouter);
 
+// Šeme routes - jednopolne i tropolne šeme
+app.use('/api/seme', semeRouter);
+
 // ============================================
 // FRONTEND ROUTES
 // ============================================
@@ -106,6 +113,15 @@ app.get('/doc-portal-2', (req, res) => {
 // Način 3 - 50-150 kW
 app.get('/doc-portal-3', (req, res) => {
     res.sendFile(path.join(__dirname, 'doc-portal-3.html'));
+});
+
+// Vizuelni editor šema
+app.get('/editor', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/editor/sema-editor.html'));
+});
+
+app.get('/editor/sema/:semaId', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/editor/sema-editor.html'));
 });
 
 // Služi index.html za sve ostale rute (SPA fallback)

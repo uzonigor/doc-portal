@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor šema - GO4</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --ivica: #e2e8f0;
+            --tekst: #2d3748;
+            --prigusen: #718096;
+            --akcenat: #2b6cb0;
+            --panel: #ffffff;
+            --podloga: #f7fafc;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--tekst);
+            background: var(--podloga);
+            font-size: 14px;
+            height: 100vh;
+            overflow: hidden;
+            display: grid;
+            grid-template-rows: 52px 1fr;
+        }
+
+        /* ── traka sa alatkama ──────────────────────────────────────────── */
+
+        .traka {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 16px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--ivica);
+        }
+
+        .traka .logo { font-weight: 700; color: var(--akcenat); margin-right: 8px; letter-spacing: .5px; }
+        .traka .razmak { flex: 1; }
+
+        .traka input[type=text], .traka select {
+            border: 1px solid var(--ivica);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--tekst);
+            background: #fff;
+        }
+
+        .traka input#naziv { width: 300px; }
+
+        button {
+            border: 1px solid var(--ivica);
+            background: #fff;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--tekst);
+            cursor: pointer;
+        }
+        button:hover { background: #edf2f7; }
+        button.primarno { background: var(--akcenat); color: #fff; border-color: var(--akcenat); }
+        button.primarno:hover { background: #2c5282; }
+        button.opasno { color: #c53030; border-color: #fed7d7; }
+        button.opasno:hover { background: #fff5f5; }
+
+        .grupa { display: flex; gap: 4px; }
+
+        /* ── raspored ───────────────────────────────────────────────────── */
+
+        .radna { display: grid; grid-template-columns: 240px 1fr 300px; overflow: hidden; }
+
+        .bocni {
+            background: var(--panel);
+            overflow-y: auto;
+            padding: 12px;
+        }
+        .bocni.levo { border-right: 1px solid var(--ivica); }
+        .bocni.desno { border-left: 1px solid var(--ivica); }
+
+        .bocni h4 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            color: var(--prigusen);
+            margin: 14px 0 8px;
+        }
+        .bocni h4:first-child { margin-top: 0; }
+
+        /* ── paleta ─────────────────────────────────────────────────────── */
+
+        .kat-lista { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+        .simbol-kartica {
+            border: 1px solid var(--ivica);
+            border-radius: 6px;
+            padding: 6px 4px;
+            text-align: center;
+            cursor: grab;
+            background: #fff;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .simbol-kartica:hover { border-color: var(--akcenat); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+        .simbol-kartica:active { cursor: grabbing; }
+        .simbol-kartica .pregled { width: 100%; height: 40px; color: #111; display: block; }
+        .simbol-kartica span {
+            display: block;
+            font-size: 10px;
+            line-height: 1.25;
+            color: var(--prigusen);
+            margin-top: 4px;
+        }
+
+        /* ── platno ─────────────────────────────────────────────────────── */
+
+        #platno { position: relative; overflow: hidden; background: #fff; }
+        #crtez { position: absolute; inset: 0; }
+        .platno { width: 100%; height: 100%; display: block; touch-action: none; }
+
+        .grid-tacka { fill: #cbd5e0; }
+
+        .node .simbol { color: #1a202c; }
+        .node .oznaka { font: bold 11px 'Segoe UI', sans-serif; fill: #1a202c; }
+        .node .label { font: 9px 'Segoe UI', sans-serif; fill: #718096; }
+        .node .izbor { fill: rgba(43,108,176,.07); stroke: var(--akcenat); stroke-width: 1; stroke-dasharray: 4 3; }
+        .node { cursor: move; }
+
+        .port { fill: #fff; stroke: #a0aec0; stroke-width: 1.4; cursor: crosshair; }
+        .port:hover { fill: #bee3f8; stroke: var(--akcenat); stroke-width: 2; }
+        .port.zauzet { fill: #a0aec0; stroke: #718096; }
+
+        .edge .linija { stroke: #1a202c; stroke-width: 1.6; fill: none; }
+        .edge.sys-DC .linija { stroke: #b45309; }
+        .edge.sys-PE .linija { stroke: #2f855a; }
+        .edge .pogodak { stroke: transparent; stroke-width: 12; fill: none; cursor: pointer; }
+        .edge.selektovan .linija { stroke: var(--akcenat); stroke-width: 2.6; }
+        .edge .zile { stroke: #1a202c; stroke-width: 1.2; }
+        .edge .zile-tekst, .edge .kabl-tekst { font: 9px 'Segoe UI', sans-serif; fill: #4a5568; }
+
+        .veza-privremena { stroke: var(--akcenat); stroke-width: 2; stroke-dasharray: 5 4; fill: none; }
+        .veza-privremena.nevazeca { stroke: #e53e3e; }
+        .marquee { fill: rgba(43,108,176,.08); stroke: var(--akcenat); stroke-width: 1; stroke-dasharray: 4 3; }
+
+        /* ── svojstva ───────────────────────────────────────────────────── */
+
+        .forma { display: flex; flex-direction: column; gap: 8px; }
+        .forma label {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            font-size: 11px;
+            color: var(--prigusen);
+        }
+        .forma input, .forma select {
+            border: 1px solid var(--ivica);
+            border-radius: 5px;
+            padding: 6px 8px;
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--tekst);
+            background: #fff;
+        }
+        .forma input:focus, .forma select:focus { outline: 2px solid #bee3f8; border-color: var(--akcenat); }
+
+        .rekap { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: 12px; }
+        .rekap dt { color: var(--prigusen); }
+        .rekap dd { text-align: right; font-variant-numeric: tabular-nums; }
+
+        .akcije { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+        .akcije button { flex: 1; min-width: 88px; }
+
+        .prazno { color: var(--prigusen); font-size: 13px; line-height: 1.5; }
+        .prazno p + p { margin-top: 8px; }
+        .mala { font-size: 11px; color: var(--prigusen); line-height: 1.5; }
+
+        .upozorenja { list-style: none; font-size: 11px; display: flex; flex-direction: column; gap: 5px; }
+        .upozorenja li { padding: 5px 8px; border-radius: 4px; background: #fffaf0; color: #975a16; }
+        .upozorenja li.greska { background: #fff5f5; color: #c53030; }
+
+        /* ── statusna traka i poruke ────────────────────────────────────── */
+
+        #status {
+            position: absolute;
+            left: 12px; bottom: 12px;
+            font-size: 11px;
+            color: var(--prigusen);
+            background: rgba(255,255,255,.9);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--ivica);
+            pointer-events: none;
+        }
+
+        .pomoc {
+            position: absolute;
+            right: 12px; bottom: 12px;
+            font-size: 11px;
+            color: var(--prigusen);
+            background: rgba(255,255,255,.9);
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--ivica);
+            line-height: 1.6;
+            max-width: 280px;
+            pointer-events: none;
+        }
+
+        .poruka {
+            position: fixed;
+            top: 64px; left: 50%;
+            transform: translate(-50%, -12px);
+            background: #2d3748;
+            color: #fff;
+            padding: 9px 18px;
+            border-radius: 6px;
+            font-size: 13px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s, transform .2s;
+            z-index: 100;
+        }
+        .poruka.vidljiv { opacity: 1; transform: translate(-50%, 0); }
+        .poruka.greska { background: #c53030; }
+        .poruka.uspeh { background: #2f855a; }
+    </style>
+</head>
+<body>
+
+    <div class="traka">
+        <span class="logo">GO4</span>
+        <input type="text" id="naziv" placeholder="Naziv šeme">
+
+        <select id="format" title="Format lista">
+            <option value="A4-landscape">A4 pejzaž</option>
+            <option value="A4-portrait">A4 portret</option>
+            <option value="A3-landscape">A3 pejzaž</option>
+            <option value="A3-portrait">A3 portret</option>
+        </select>
+
+        <div class="grupa">
+            <button id="btn-undo" title="Ctrl+Z">↶</button>
+            <button id="btn-redo" title="Ctrl+Shift+Z">↷</button>
+        </div>
+
+        <div class="grupa">
+            <button id="btn-zoom-minus" title="Umanji">−</button>
+            <button id="btn-zoom-plus" title="Uvećaj">+</button>
+            <button id="btn-uklopi" title="Uklopi u prozor">Uklopi</button>
+        </div>
+
+        <span class="razmak"></span>
+
+        <div class="grupa">
+            <button id="btn-demo">Demo šema</button>
+            <button id="btn-prazno" class="opasno">Novi crtež</button>
+        </div>
+
+        <div class="grupa">
+            <button id="btn-svg">SVG</button>
+            <button id="btn-png">PNG</button>
+            <button id="btn-pdf">PDF / štampa</button>
+        </div>
+
+        <button id="btn-snimi" class="primarno">Snimi</button>
+    </div>
+
+    <div class="radna">
+        <aside class="bocni levo" id="paleta"></aside>
+
+        <main id="platno">
+            <div id="crtez"></div>
+            <div id="status">—</div>
+            <div class="pomoc">
+                Prevuci simbol iz palete · povuci od <b>porta</b> do porta za vezu<br>
+                <b>Shift</b>+prevlačenje ili srednji taster = pomeranje pogleda · točkić = zum<br>
+                <b>R</b> rotiraj · <b>Ctrl+D</b> dupliraj · <b>Delete</b> obriši
+            </div>
+        </main>
+
+        <aside class="bocni desno" id="svojstva"></aside>
+    </div>
+
+    <div class="poruka" id="poruka"></div>
+
+    <script type="module" src="/editor/js/app.js"></script>
+</body>
+</html>

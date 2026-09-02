@@ -40,6 +40,7 @@ model Projekat {
   faze            Faza[]
   dokumenti       Dokument[]
   templateVersioni TemplateVersion[]
+  seme            Sema[]
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -95,4 +96,18 @@ model TemplateVersion {
 
   @@unique([projektaId, docNum])
   @@map("template_versions")
+}
+
+model Sema {
+  id              Int       @id @default(autoincrement())
+  projekat        Projekat  @relation(fields: [projektaId], references: [id], onDelete: Cascade)
+  projektaId      Int
+  naziv           String
+  tip             String    @default("1L")   // 1L = jednopolna, 3L = tropolna
+  model           Json                        // graf model (nodes/edges/meta/sheet)
+  verzija         Int       @default(1)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("seme")
 }
