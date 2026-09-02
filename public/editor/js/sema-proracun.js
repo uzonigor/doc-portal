@@ -50,6 +50,7 @@ export function podaciGrane(model, edge, par) {
             strujaZastite: (niz.props.isc || 0) * 1.25,
             izvor: niz.oznaka,
             dozvoljenPad: par.padDC,
+            ciljniPad: par.ciljniPadDC,
             tipKabla: edge.cable?.tip || 'PV1-F'
         };
     }
@@ -83,6 +84,7 @@ export function podaciGrane(model, edge, par) {
             snaga,
             izvor: inverteri.map(n => n.oznaka).join(', '),
             dozvoljenPad: par.padAC,
+            ciljniPad: par.ciljniPadAC,
             tipKabla: edge.cable?.tip || 'NYY-J'
         };
     }
@@ -126,7 +128,8 @@ export function proracunKablova(model, parametri = {}) {
 
         const predlog = predlogPreseka({
             sistem: edge.system, duzina, struja: p.struja, strujaZastite: p.strujaZastite,
-            napon: p.napon, dozvoljenPad: p.dozvoljenPad, tipKabla: p.tipKabla
+            napon: p.napon, dozvoljenPad: p.dozvoljenPad, ciljniPad: p.ciljniPad,
+            tipKabla: p.tipKabla
         }, par);
 
         const provera = zadati

@@ -204,7 +204,8 @@ export function predlogZaString(model, duzina) {
         struja: m.impp || 0,
         strujaZastite: (m.isc || 0) * 1.25,
         napon: (duzina.modula || 0) * (m.vmpp || 0),
-        dozvoljenPad: p.padDC ?? 1,
+        dozvoljenPad: p.padDC ?? 3,
+        ciljniPad: p.ciljniPadDC ?? 1,
         tipKabla: 'PV1-F'
     }, p);
 }

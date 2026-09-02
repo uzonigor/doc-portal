@@ -264,8 +264,10 @@ export function otvoriTabele(model) {
 // ── proračun kablova ─────────────────────────────────────────────────────────
 
 const POLJA_PRORACUNA = [
-    { kljuc: 'padDC', label: 'Dozvoljen pad DC (%)' },
-    { kljuc: 'padAC', label: 'Dozvoljen pad AC (%)' },
+    { kljuc: 'padDC', label: 'Granični pad DC (%)' },
+    { kljuc: 'padAC', label: 'Granični pad AC (%)' },
+    { kljuc: 'ciljniPadDC', label: 'Ciljni pad DC (%)' },
+    { kljuc: 'ciljniPadAC', label: 'Ciljni pad AC (%)' },
     { kljuc: 'kapa', label: 'κ bakra (m/Ω·mm²)' },
     { kljuc: 'cosFi', label: 'cos φ' },
     { kljuc: 'faktorTemp', label: 'Faktor temperature' },
@@ -306,6 +308,10 @@ export function otvoriProracun(model, canvas) {
             ${bezDuzine.length ? `<ul class="upozorenja"><li>${bezDuzine.length}
                 ${bezDuzine.length === 1 ? 'deonica nema' : 'deonica nema'} zadatu dužinu — unesi je u panelu
                 provodnika ili je prenesi sa string plana.</li></ul>` : ''}
+            ${rezultat.filter(r => r.predlog && r.predlog.iznadCilja).length ? `
+                <h4>Iznad ciljnog pada (u granici ispravnosti)</h4>
+                <ul class="upozorenja">${rezultat.filter(r => r.predlog && r.predlog.iznadCilja).map(r =>
+                    `<li>${escapeXml(r.oznaka)}: ${escapeXml(r.predlog.poruke[r.predlog.poruke.length - 1])}</li>`).join('')}</ul>` : ''}
             <p class="mala">Presek je <b>predlog</b>: najmanji standardni koji zadovoljava i pad napona
                i strujnu opteretljivost, uz praktični minimum. Projektant ga potvrđuje.
                Formule i tabele opteretljivosti stoje u <code>js/proracun.js</code>.</p>`;

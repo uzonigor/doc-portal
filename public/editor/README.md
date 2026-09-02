@@ -113,6 +113,15 @@ AC trofazno:     ΔU = √3 · L · I · cosφ / (κ · S)
 ```
 
 κ = 56 m/(Ω·mm²) na 20 °C (48 na 70 °C, 44 na 90 °C — podesivo).
+
+**Granični i ciljni pad su razdvojeni.** Presek diže samo *granični* pad
+(podrazumevano 3 %) — ispod njega je instalacija ispravna i nema razloga
+da alat sam predlaže deblji kabl. *Ciljni* pad (1 %) se samo prijavljuje
+kao napomena, da se vidi gde se gube kilovat-časovi.
+
+Praktična posledica: na realnom stringu (16 modula, 670 V) 6 mm² drži do
+oko 150 m; presek raste tek na izrazito dugim trasama ili na stringovima
+sa malo modula.
 Pad napona se računa na Vmpp/Impp, a opteretljivost na 1,25 × Isc odnosno
 na struju prekidača koji vod štiti.
 

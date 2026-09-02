@@ -64,8 +64,10 @@ export class PlanModel extends Dokument {
         // Parametri proračuna preseka; menjaju se u panelu i prenose u šemu.
         this.proracun = Object.assign({
             kapa: 56,
-            padDC: 1,
-            padAC: 1,
+            padDC: 3,        // granični pad — diže presek
+            padAC: 3,
+            ciljniPadDC: 1,  // ciljni pad — samo napomena
+            ciljniPadAC: 1,
             cosFi: 1,
             faktorTemp: 1,
             faktorGrupisanja: 1,

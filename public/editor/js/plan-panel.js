@@ -127,13 +127,14 @@ function odeljakTrasa(model) {
             <thead><tr><th>String</th><th>Ožičenje</th><th>Vod</th><th>Presek</th><th>Pad</th></tr></thead>
             <tbody>${redovi.map(s => {
                 const pr = s.predlog;
-                const prelazi = pr && pr.padProcenat > (model.proracun.padDC ?? 1);
+                const prelazi = pr && pr.padProcenat > (model.proracun.padDC ?? 3);
+                const iznadCilja = pr && pr.iznadCilja;
                 return `<tr>
                 <td><span class="boja-tacka" style="background:${escapeXml(s.boja)}"></span> ${escapeXml(s.oznaka)}</td>
                 <td>${s.ozicenje.toFixed(1)} m</td>
                 <td>${s.vod ? '2×' + s.vod.toFixed(1) + ' m' : '—'}</td>
                 <td>${pr && pr.presek ? `<b>${pr.presek}</b> mm²` : '—'}</td>
-                <td class="${prelazi ? 'opasno' : ''}">${pr && pr.presek ? pr.padProcenat.toFixed(2) + ' %' : '—'}</td>
+                <td class="${prelazi ? 'opasno' : (iznadCilja ? 'iznad-cilja' : '')}">${pr && pr.presek ? pr.padProcenat.toFixed(2) + ' %' : '—'}</td>
             </tr>`; }).join('')}</tbody>
         </table>
         ${redovi.filter(s => s.predlog && s.predlog.poruke.length).length ? `
@@ -166,8 +167,12 @@ function odeljakProracuna(model) {
         <h4>Parametri proračuna</h4>
         <div class="forma">
             <div class="par">
-                ${polje('Dozvoljen pad DC (%)', 'float', p.padDC, 'proracun', 'padDC')}
-                ${polje('Dozvoljen pad AC (%)', 'float', p.padAC, 'proracun', 'padAC')}
+                ${polje('Granični pad DC (%)', 'float', p.padDC, 'proracun', 'padDC')}
+                ${polje('Granični pad AC (%)', 'float', p.padAC, 'proracun', 'padAC')}
+            </div>
+            <div class="par">
+                ${polje('Ciljni pad DC (%)', 'float', p.ciljniPadDC, 'proracun', 'ciljniPadDC')}
+                ${polje('Ciljni pad AC (%)', 'float', p.ciljniPadAC, 'proracun', 'ciljniPadAC')}
             </div>
             <div class="par">
                 ${polje('κ bakra (m/Ω·mm²)', 'float', p.kapa, 'proracun', 'kapa')}

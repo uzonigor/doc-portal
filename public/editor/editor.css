@@ -465,3 +465,5 @@ svg[data-alat="kalibracija"] { cursor: crosshair; }
 .proracun .tabela { font-size: 11px; }
 .proracun .tabela th, .proracun .tabela td { padding: 5px 6px; white-space: nowrap; }
 .proracun-tabela { overflow-x: auto; }
+
+.iznad-cilja { color: #975a16; }

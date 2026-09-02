@@ -50,8 +50,20 @@ export const IZ_NYY_3 = { 1.5: 17.5, 2.5: 24, 4: 32, 6: 41, 10: 57, 16: 76, 25: 
 
 export const PODRAZUMEVANI_PARAMETRI = {
     kapa: KAPA_CU_20,
-    padDC: 1,          // % — od stringa do invertera
-    padAC: 1,          // % — od invertera do mesta priključenja
+
+    /**
+     * GRANIČNI pad — jedini koji diže presek. Ispod njega instalacija je
+     * ispravna, pa nema razloga da alat sam predlaže deblji kabl.
+     */
+    padDC: 3,
+    padAC: 3,
+
+    /**
+     * CILJNI pad — projektantski cilj efikasnosti. Ne diže presek, samo se
+     * prijavljuje kao napomena, da se vidi gde se gubi energija.
+     */
+    ciljniPadDC: 1,
+    ciljniPadAC: 1,
     cosFi: 1,          // PV inverteri po pravilu rade sa cosφ = 1
     faktorTemp: 1,     // korekcija za temperaturu ambijenta
     faktorGrupisanja: 1, // korekcija za broj kablova u snopu
@@ -179,11 +191,12 @@ export function predlogPreseka(o, p = PODRAZUMEVANI_PARAMETRI) {
     const padProcenat = (padV / o.napon) * 100;
     const iz = opteretljivost(presek, o.sistem, o.tipKabla, par);
 
+    const poruke = [];
+
     let razlog = 'pad napona';
     if (izStruje > izPada && izStruje >= presek) razlog = 'opteretljivost';
     if (izPrakse === presek && izPrakse > izPada && izPrakse > izStruje) razlog = 'minimalni presek';
 
-    const poruke = [];
     if (razlog === 'opteretljivost') {
         poruke.push(`Presek je određen strujnom opteretljivošću (Iz ${iz.toFixed(0)} A ≥ ${strujaZastite.toFixed(1)} A), ne padom napona.`);
     }
@@ -194,7 +207,15 @@ export function predlogPreseka(o, p = PODRAZUMEVANI_PARAMETRI) {
         poruke.push(`Opteretljivost je korigovana faktorima ${par.faktorTemp} × ${par.faktorGrupisanja}.`);
     }
 
-    return { presek, padV, padProcenat, iz, minPad, razlog, poruke };
+    // Ciljni pad ne diže presek — samo se prijavljuje, da se vidi gde se gubi
+    // energija iako je instalacija u granicama ispravnosti.
+    const iznadCilja = o.ciljniPad && padProcenat > o.ciljniPad;
+    if (iznadCilja) {
+        poruke.push(`Pad ${padProcenat.toFixed(2)} % je iznad ciljnih ${o.ciljniPad} % ` +
+                    `(granica je ${o.dozvoljenPad} %). Deblji kabl bi smanjio gubitke.`);
+    }
+
+    return { presek, padV, padProcenat, iz, minPad, razlog, poruke, iznadCilja: !!iznadCilja };
 }
 
 /** Provera preseka koji je projektant sam upisao. */
