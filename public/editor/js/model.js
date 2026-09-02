@@ -215,6 +215,15 @@ export class Model {
         return { ok: true, system: pa.system };
     }
 
+    /** Sledeća slobodna oznaka provodnika (-W1, -W2 ...). */
+    sledecaOznakaGrane() {
+        const uzete = this.edges
+            .map(e => e.oznaka)
+            .filter(o => o && /^-W\d+$/.test(o))
+            .map(o => parseInt(o.slice(2), 10));
+        return `-W${uzete.length ? Math.max(...uzete) + 1 : 1}`;
+    }
+
     addEdge(fromRef, toRef) {
         const provera = this.proveriVezu(fromRef, toRef);
         if (!provera.ok) return { greska: provera.razlog };
@@ -230,6 +239,7 @@ export class Model {
             const system = zastitna ? 'PE' : (provera.system === 'DC' ? 'DC' : (trofazno ? 'AC3' : 'AC1'));
             const edge = {
                 id: noviId('w'),
+                oznaka: this.sledecaOznakaGrane(),
                 from: fromRef,
                 to: toRef,
                 system,

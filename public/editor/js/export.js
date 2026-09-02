@@ -19,9 +19,10 @@ const STIL = `
     .edge.sys-DC .linija { stroke: #b45309; }
     .edge.sys-PE .linija { stroke: #2f855a; }
     .zile { stroke: #111; stroke-width: 1.2; }
-    .zile-tekst, .kabl-tekst { font: 9px 'Segoe UI', sans-serif; fill: #333; }
-    .oznaka { font: bold 11px 'Segoe UI', sans-serif; fill: #111; }
-    .label { font: 9px 'Segoe UI', sans-serif; fill: #555; }
+    /* beli obrub oko teksta da oznake ostanu čitljive kad se preklope sa vodovima */
+    .zile-tekst, .kabl-tekst { font: 9px 'Segoe UI', sans-serif; fill: #333; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+    .oznaka { font: bold 11px 'Segoe UI', sans-serif; fill: #111; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+    .label { font: 9px 'Segoe UI', sans-serif; fill: #555; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
     .okvir { stroke: #111; stroke-width: 1.5; fill: none; }
     .sastavnica text { font: 10px 'Segoe UI', sans-serif; fill: #111; }
     .sastavnica .naslov { font: bold 13px 'Segoe UI', sans-serif; }
@@ -64,19 +65,28 @@ function sastavnica(model, x, y, w, h) {
     </g>`;
 }
 
+const LEGENDA_RED = 16;
+const LEGENDA_SIRINA = 240;
+
+/** Visina legende zavisi od broja različitih simbola na crtežu. */
+function visinaLegende(model) {
+    const korisceni = new Set(model.nodes.map(n => n.type));
+    return korisceni.size ? 26 + korisceni.size * LEGENDA_RED : 0;
+}
+
 function legenda(model, x, y) {
     const korisceni = [...new Set(model.nodes.map(n => n.type))];
     if (!korisceni.length) return '';
 
-    const visina = 26 + korisceni.length * 16;
-    const sirina = 230;
+    const visina = visinaLegende(model);
+    const sirina = LEGENDA_SIRINA;
 
     return `<g class="legenda">
         <rect x="${x}" y="${y}" width="${sirina}" height="${visina}" class="okvir" stroke-width="1"/>
         <text class="naslov" x="${x + 10}" y="${y + 17}">LEGENDA</text>
         ${korisceni.map((t, i) => {
             const oznake = model.nodes.filter(n => n.type === t).map(n => n.oznaka).join(', ');
-            return `<text x="${x + 10}" y="${y + 34 + i * 16}">${escapeXml(oznake)} — ${escapeXml(SYMBOLS[t].naziv)}</text>`;
+            return `<text x="${x + 10}" y="${y + 34 + i * LEGENDA_RED}">${escapeXml(oznake)} — ${escapeXml(SYMBOLS[t].naziv)}</text>`;
         }).join('')}
     </g>`;
 }
@@ -90,10 +100,15 @@ export function listSvg(model) {
     const M = 20;                       // spoljna margina
     const sastavnicaW = 460, sastavnicaH = 120;
 
-    // Crtež se skalira da stane u slobodan prostor iznad sastavnice.
+    // Donja traka je rezervisana za legendu i sastavnicu — crtež se u nju
+    // nikada ne spušta, pa se ne može desiti da legenda prekrije šemu.
+    const legendaH = visinaLegende(model);
+    const donjaTrakaH = Math.max(sastavnicaH, legendaH);
+    const donjaTrakaY = H - M - donjaTrakaH;
+
     const b = crtezBBox(model, 20);
     const poljeW = W - M * 2 - 20;
-    const poljeH = H - M * 2 - sastavnicaH - 30;
+    const poljeH = donjaTrakaY - M - 30;
     const k = Math.min(1.6, poljeW / b.w, poljeH / b.h);
     const ox = M + 10 + (poljeW - b.w * k) / 2 - b.x * k;
     const oy = M + 10 + (poljeH - b.h * k) / 2 - b.y * k;
@@ -103,7 +118,7 @@ export function listSvg(model) {
         <rect x="0" y="0" width="${W}" height="${H}" fill="#fff"/>
         <rect x="${M}" y="${M}" width="${W - M * 2}" height="${H - M * 2}" class="okvir"/>
         <g transform="translate(${ox} ${oy}) scale(${k})">${crtezSvg(model, { interaktivan: false })}</g>
-        ${legenda(model, M + 12, H - M - sastavnicaH - 12 - (26 + [...new Set(model.nodes.map(n => n.type))].length * 16))}
+        ${legenda(model, M + 12, H - M - legendaH)}
         ${sastavnica(model, W - M - sastavnicaW, H - M - sastavnicaH, sastavnicaW, sastavnicaH)}
     </svg>`;
 }

@@ -125,10 +125,11 @@
         .grid-tacka { fill: #cbd5e0; }
 
         .node .simbol { color: #1a202c; }
-        .node .oznaka { font: bold 11px 'Segoe UI', sans-serif; fill: #1a202c; }
-        .node .label { font: 9px 'Segoe UI', sans-serif; fill: #718096; }
+        .node .oznaka { font: bold 11px 'Segoe UI', sans-serif; fill: #1a202c; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+        .node .label { font: 9px 'Segoe UI', sans-serif; fill: #718096; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
         .node .izbor { fill: rgba(43,108,176,.07); stroke: var(--akcenat); stroke-width: 1; stroke-dasharray: 4 3; }
         .node { cursor: move; }
+        .pogodak-node { fill: transparent; stroke: none; }
 
         .port { fill: #fff; stroke: #a0aec0; stroke-width: 1.4; cursor: crosshair; }
         .port:hover { fill: #bee3f8; stroke: var(--akcenat); stroke-width: 2; }
@@ -140,7 +141,8 @@
         .edge .pogodak { stroke: transparent; stroke-width: 12; fill: none; cursor: pointer; }
         .edge.selektovan .linija { stroke: var(--akcenat); stroke-width: 2.6; }
         .edge .zile { stroke: #1a202c; stroke-width: 1.2; }
-        .edge .zile-tekst, .edge .kabl-tekst { font: 9px 'Segoe UI', sans-serif; fill: #4a5568; }
+        /* beli obrub da oznake ostanu čitljive preko vodova */
+        .edge .zile-tekst, .edge .kabl-tekst { font: 9px 'Segoe UI', sans-serif; fill: #4a5568; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
 
         .veza-privremena { stroke: var(--akcenat); stroke-width: 2; stroke-dasharray: 5 4; fill: none; }
         .veza-privremena.nevazeca { stroke: #e53e3e; }
@@ -210,6 +212,86 @@
             pointer-events: none;
         }
 
+
+        button.istaknuto { border-color: #b7791f; color: #975a16; background: #fffbeb; font-weight: 600; }
+        button.istaknuto:hover { background: #fef3c7; }
+
+        /* ── dijalozi ───────────────────────────────────────────────────── */
+
+        .zavesa {
+            position: fixed; inset: 0;
+            background: rgba(26,32,44,.45);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 200; padding: 24px;
+        }
+
+        .dijalog {
+            background: #fff;
+            border-radius: 10px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0,0,0,.25);
+        }
+        .dijalog header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px; border-bottom: 1px solid var(--ivica);
+        }
+        .dijalog header h3 { font-size: 15px; font-weight: 600; }
+        .dijalog .zatvori {
+            border: none; background: none; font-size: 22px; line-height: 1;
+            color: var(--prigusen); padding: 0 6px; cursor: pointer;
+        }
+        .dijalog .telo { padding: 18px 20px; overflow-y: auto; }
+        .dijalog footer {
+            display: flex; justify-content: flex-end; gap: 8px;
+            padding: 12px 20px; border-top: 1px solid var(--ivica); background: var(--podloga);
+            border-radius: 0 0 10px 10px;
+        }
+
+        /* generator */
+        .generator { display: grid; grid-template-columns: 1fr 260px; gap: 20px; }
+        .generator fieldset { border: none; margin-bottom: 18px; }
+        .generator legend {
+            font-size: 11px; text-transform: uppercase; letter-spacing: .6px;
+            color: var(--prigusen); margin-bottom: 8px; padding: 0;
+        }
+        .generator fieldset { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+        .generator legend { grid-column: 1 / -1; }
+        .generator label {
+            display: flex; flex-direction: column; gap: 3px;
+            font-size: 11px; color: var(--prigusen);
+        }
+        .generator label.check {
+            flex-direction: row; align-items: center; gap: 7px;
+            font-size: 13px; color: var(--tekst); padding-top: 16px;
+        }
+        .generator input[type=text], .generator input[type=number], .generator select {
+            border: 1px solid var(--ivica); border-radius: 5px; padding: 6px 8px;
+            font-size: 13px; font-family: inherit; color: var(--tekst); background: #fff;
+        }
+        .gen-rekap {
+            background: var(--podloga); border: 1px solid var(--ivica);
+            border-radius: 8px; padding: 14px; align-self: start; position: sticky; top: 0;
+        }
+        .gen-rekap h4 {
+            font-size: 11px; text-transform: uppercase; letter-spacing: .6px;
+            color: var(--prigusen); margin-bottom: 10px;
+        }
+        .gen-rekap .rekap dd { font-weight: 600; }
+        .gen-rekap .mala { margin-top: 12px; }
+
+        /* tabele */
+        .jezicci { display: flex; gap: 6px; margin-bottom: 14px; }
+        .jezicci button.aktivan { background: var(--akcenat); color: #fff; border-color: var(--akcenat); }
+        .tabela { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .tabela th, .tabela td {
+            border: 1px solid var(--ivica); padding: 6px 8px; text-align: left; vertical-align: top;
+        }
+        .tabela th { background: var(--podloga); font-weight: 600; font-size: 11px; }
+        .tabele h4 { font-size: 11px; text-transform: uppercase; color: var(--prigusen); margin: 18px 0 8px; }
+
         .poruka {
             position: fixed;
             top: 64px; left: 50%;
@@ -256,7 +338,9 @@
         <span class="razmak"></span>
 
         <div class="grupa">
-            <button id="btn-demo">Demo šema</button>
+            <button id="btn-generator" class="istaknuto">⚡ Generiši</button>
+            <button id="btn-tabele">Tabele</button>
+            <button id="btn-demo">Demo</button>
             <button id="btn-prazno" class="opasno">Novi crtež</button>
         </div>
 

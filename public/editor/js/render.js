@@ -54,12 +54,18 @@ export function nodeSvg(node, opcije = {}) {
         ? `<rect class="izbor" x="${bbox.x - 6}" y="${bbox.y - 6}" width="${w + 12}" height="${h + 12}" rx="3"/>`
         : '';
 
+    // Simboli se crtaju bez ispune, pa bez ovog pravougaonika klik unutar
+    // simbola ne bi pogađao ništa — hvatamo ceo gabarit.
+    const pogodak = opcije.interaktivan
+        ? `<rect class="pogodak-node" x="${bbox.x}" y="${bbox.y}" width="${w}" height="${h}"/>`
+        : '';
+
     const portGrupa = portovi
         ? `<g class="portovi" transform="translate(${bbox.x} ${bbox.y})">${portovi}</g>`
         : '';
 
     return `<g class="node${opcije.selektovan ? ' selektovan' : ''}" data-id="${node.id}">
-        ${okvir}${simbol}${tekst}${portGrupa}
+        ${okvir}${pogodak}${simbol}${tekst}${portGrupa}
     </g>`;
 }
 

@@ -7,6 +7,8 @@ import { Canvas } from './canvas.js';
 import { renderPaleta, renderSvojstva } from './panel.js';
 import { izveziSvg, izveziPng, stampaj } from './export.js';
 import { api, skica } from './api.js';
+import { otvoriGenerator, otvoriTabele } from './dijalozi.js';
+import { generisi } from './generator.js';
 
 const el = (s) => document.querySelector(s);
 
@@ -28,42 +30,15 @@ function status(tekst) { el('#status').textContent = tekst; }
 
 // ── demo šema ────────────────────────────────────────────────────────────────
 
+/** Demo je obična primena generatora — nema odvojenog, ručno složenog crteža. */
 function demoModel() {
-    const m = new Model({ meta: { naziv: 'PV elektrana 10 kW — jednopolna šema', projektant: '', brojProjekta: '' } });
-
-    const dodaj = (type, x, y, props) => {
-        const n = m.addNode(type, { x, y });
-        if (props) Object.assign(n.props, props);
-        return n;
-    };
-
-    const s1 = dodaj('pv_string', 0, 30, { modula: 12, pmax: 550 });
-    const s2 = dodaj('pv_string', 0, 200, { modula: 12, pmax: 550 });
-    const q1 = dodaj('dc_prekidac', 220, 30);
-    const q2 = dodaj('dc_prekidac', 220, 200);
-    const inv = dodaj('inverter_3f', 400, 70, { snaga: 10, mppt: 2 });
-    const q3 = dodaj('ac_prekidac', 620, 70, { struja: 20, polova: '3P+N' });
-    const spdAc = dodaj('ac_spd', 650, 260);
-    const fid = dodaj('fid', 790, 70);
-    const br = dodaj('brojilo', 950, 60);
-    const kpk = dodaj('kpk', 1110, 60);
-    const mreza = dodaj('mreza', 1280, 70);
-    const pe = dodaj('uzemljenje', 430, 300);
-
-    m.addEdge(`${s1.id}:dc+`, `${q1.id}:in`);
-    m.addEdge(`${q1.id}:out`, `${inv.id}:dc1+`);
-    m.addEdge(`${s2.id}:dc+`, `${q2.id}:in`);
-    m.addEdge(`${q2.id}:out`, `${inv.id}:dc2+`);
-    m.addEdge(`${inv.id}:L1`, `${q3.id}:in`);
-    m.addEdge(`${q3.id}:out`, `${fid.id}:in`);
-    m.addEdge(`${fid.id}:out`, `${br.id}:in`);
-    m.addEdge(`${br.id}:out`, `${kpk.id}:in`);
-    m.addEdge(`${kpk.id}:out`, `${mreza.id}:in`);
-    m.addEdge(`${inv.id}:PE`, `${pe.id}:in`);
-    m.addEdge(`${q3.id}:out`, `${spdAc.id}:in`);
-
-    m.undoStack = [];
-    return m;
+    return generisi({
+        naziv: 'PV elektrana 10 kW — jednopolna šema',
+        brojPanela: 24,
+        panel: { pmax: 550, voc: 49.8, isc: 13.9 },
+        invertera: 1,
+        inverter: { snaga: 10, faza: 3, mppt: 2 }
+    });
 }
 
 // ── snimanje ─────────────────────────────────────────────────────────────────
@@ -173,6 +148,9 @@ function postaviAlatke() {
     el('#btn-svg').addEventListener('click', () => izveziSvg(model));
     el('#btn-png').addEventListener('click', () => izveziPng(model));
     el('#btn-pdf').addEventListener('click', () => stampaj(model));
+
+    el('#btn-generator').addEventListener('click', () => otvoriGenerator(model, canvas, model.meta));
+    el('#btn-tabele').addEventListener('click', () => otvoriTabele(model));
 
     el('#btn-demo').addEventListener('click', () => {
         if (!confirm('Zameniti trenutni crtež demo šemom?')) return;
