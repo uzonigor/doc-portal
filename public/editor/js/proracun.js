@@ -59,9 +59,10 @@ export const PODRAZUMEVANI_PARAMETRI = {
     /**
      * Najmanji presek koji se u praksi ugrađuje, bez obzira na račun.
      * Na kratkim stringovima proračun bi dao 1,5 mm², što se ne postavlja —
-     * i zbog mehaničke otpornosti i zbog konektora.
+     * i zbog mehaničke otpornosti i zbog konektora. Na DC strani je usvojen
+     * 6 mm² kao kućni standard.
      */
-    minPresekDC: 4,
+    minPresekDC: 6,
     minPresekAC: 2.5
 };
 

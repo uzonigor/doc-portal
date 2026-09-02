@@ -102,7 +102,7 @@ u aktivnom stringu, potez ga skida. Ceo potez ulazi u undo kao jedan korak.
 
 **Presek je predlog, ne konačna vrednost.** Alat bira najmanji standardni
 presek koji istovremeno zadovoljava pad napona i strujnu opteretljivost, uz
-praktični minimum (4 mm² DC, 2,5 mm² AC). Projektant ga potvrđuje.
+praktični minimum (6 mm² DC, 2,5 mm² AC). Projektant ga potvrđuje.
 
 Formule (bakar, otporni deo; reaktansa se zanemaruje):
 

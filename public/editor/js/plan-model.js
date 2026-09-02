@@ -69,7 +69,7 @@ export class PlanModel extends Dokument {
             cosFi: 1,
             faktorTemp: 1,
             faktorGrupisanja: 1,
-            minPresekDC: 4,
+            minPresekDC: 6,
             minPresekAC: 2.5
         }, data.proracun);
 
