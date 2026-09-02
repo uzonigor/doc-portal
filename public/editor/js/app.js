@@ -6,7 +6,7 @@ import { Model } from './model.js';
 import { Canvas } from './canvas.js';
 import { renderPaleta, renderSvojstva } from './panel.js';
 import { izveziSvg, izveziPng, stampaj } from './export.js';
-import { api, skica } from './api.js';
+import { api, skica, prenos } from './api.js';
 import { otvoriGenerator, otvoriTabele } from './dijalozi.js';
 import { generisi } from './generator.js';
 
@@ -115,6 +115,13 @@ async function start() {
     renderSvojstva(el('#svojstva'), model, [], canvas);
     postaviAlatke();
     canvas.uklopiUProzor();
+
+    // Dolazak iz string plana: otvori generator sa već poznatim rasporedom.
+    if (parametri.get('izPlana')) {
+        const preneto = prenos.preuzmi();
+        if (preneto) otvoriGenerator(model, canvas, preneto, preneto);
+        else poruka('Nema prenetih podataka iz string plana.', 'greska');
+    }
 
     // Pristup iz konzole pri razvoju i debagovanju
     window.__editor = { model, canvas };

@@ -26,6 +26,11 @@ export const PODRAZUMEVANI = {
     invertera: 1,
     inverter: { snaga: 10, faza: 3, mppt: 2, proizvodjac: '', model: '' },
 
+    // Kada dolazi iz string plana: niz po inverterima, u njemu
+    // [{ mppt, modula, oznaka }] po stringu. Ako je zadat, ima prednost
+    // nad brojPanela/invertera — raspored stringova je već odlučen na krovu.
+    raspodelaStringova: null,
+
     dcPrekidac: true,
     dcSpd: 'T2',
     acPrekidac: 25,
@@ -40,6 +45,21 @@ export const PODRAZUMEVANI = {
     sistemUzemljenja: 'TN-C-S',
     uzemljenje: true
 };
+
+/** Prihvata i [[12, 12]] i [[{ mppt, modula }]] oblik; vraća normalizovan ili null. */
+function normalizujRaspodelu(r) {
+    if (!Array.isArray(r) || !r.length) return null;
+
+    const out = r
+        .map(inv => (Array.isArray(inv) ? inv : [])
+            .map((s, j) => (typeof s === 'number'
+                ? { modula: s, mppt: j + 1 }
+                : { modula: s.modula, mppt: s.mppt || j + 1, oznaka: s.oznaka }))
+            .filter(s => s.modula > 0))
+        .filter(inv => inv.length);
+
+    return out.length ? out : null;
+}
 
 /** Ravnomerna raspodela N komada u K grupa (ostatak ide na prve grupe). */
 export function raspodeli(ukupno, grupa) {
@@ -74,12 +94,14 @@ export function generisi(p = {}) {
         panel: { ...PODRAZUMEVANI.panel, ...(p.panel || {}) },
         inverter: { ...PODRAZUMEVANI.inverter, ...(p.inverter || {}) } };
 
-    const invertera = Math.max(1, parseInt(par.invertera, 10) || 1);
+    const raspodela = normalizujRaspodelu(par.raspodelaStringova);
+    const invertera = raspodela ? raspodela.length : Math.max(1, parseInt(par.invertera, 10) || 1);
     const mppt = Math.max(1, parseInt(par.inverter.mppt, 10) || 1);
     const trofazni = String(par.inverter.faza) === '3';
 
-    // Paneli se dele na invertere, pa svaki inverter na svoje MPPT ulaze.
-    const poInverteru = raspodeli(Math.max(1, parseInt(par.brojPanela, 10) || 1), invertera);
+    // Paneli se dele na invertere, pa svaki inverter na svoje MPPT ulaze —
+    // osim kada raspored stringova već dolazi iz string plana.
+    const poInverteru = raspodela ? [] : raspodeli(Math.max(1, parseInt(par.brojPanela, 10) || 1), invertera);
 
     const plan = [];   // { kljuc, type, kol, red, props }
     const veze = [];   // [odKljuc, odPort, doKljuc, doPort]
@@ -93,22 +115,25 @@ export function generisi(p = {}) {
     const redoviInvertera = [];
 
     for (let i = 0; i < invertera; i++) {
-        const poMppt = raspodeli(poInverteru[i], mppt).filter(n => n > 0);
+        const stringovi = raspodela
+            ? raspodela[i]
+            : raspodeli(poInverteru[i], mppt).filter(n => n > 0).map((n, j) => ({ modula: n, mppt: j + 1 }));
         const prviRed = red;
 
         const invKljuc = `inv${i}`;
         const invType = trofazni ? 'inverter_3f' : 'inverter_1f';
 
-        poMppt.forEach((modula, j) => {
+        stringovi.forEach((str, j) => {
             const sKljuc = dodaj(`str${i}_${j}`, 'pv_string', KOL.string, red, {
-                modula,
+                modula: str.modula,
                 pmax: par.panel.pmax,
                 voc: par.panel.voc,
                 isc: par.panel.isc,
                 proizvodjac: par.panel.proizvodjac
             });
+            if (str.oznaka) plan[plan.length - 1].oznakaStringa = str.oznaka;
 
-            const mpptPort = `dc${Math.min(j + 1, mppt)}+`;
+            const mpptPort = `dc${Math.min(str.mppt || j + 1, mppt)}+`;
 
             if (par.dcPrekidac) {
                 const qKljuc = dodaj(`dcq${i}_${j}`, 'dc_prekidac', KOL.dcZastita, red, {
@@ -231,6 +256,8 @@ export function generisi(p = {}) {
     plan.forEach(s => {
         const n = model.addNode(s.type, s.pos);
         Object.assign(n.props, s.props);
+        // string sa krova zadržava svoju oznaku (S1, S2 ...) i na šemi
+        if (s.oznakaStringa) n.label = `${n.label} ${s.oznakaStringa}`;
         idPo.set(s.kljuc, n.id);
     });
 
@@ -249,12 +276,16 @@ export function rekapitulacija(p = {}) {
     const par = { ...PODRAZUMEVANI, ...p, panel: { ...PODRAZUMEVANI.panel, ...(p.panel || {}) },
         inverter: { ...PODRAZUMEVANI.inverter, ...(p.inverter || {}) } };
 
-    const invertera = Math.max(1, parseInt(par.invertera, 10) || 1);
+    const raspodela = normalizujRaspodelu(par.raspodelaStringova);
+    const invertera = raspodela ? raspodela.length : Math.max(1, parseInt(par.invertera, 10) || 1);
     const mppt = Math.max(1, parseInt(par.inverter.mppt, 10) || 1);
-    const panela = Math.max(1, parseInt(par.brojPanela, 10) || 1);
 
-    const poInverteru = raspodeli(panela, invertera);
-    const stringovi = poInverteru.flatMap(n => raspodeli(n, mppt).filter(x => x > 0));
+    const stringovi = raspodela
+        ? raspodela.flatMap(inv => inv.map(s => s.modula))
+        : raspodeli(Math.max(1, parseInt(par.brojPanela, 10) || 1), invertera)
+            .flatMap(n => raspodeli(n, mppt).filter(x => x > 0));
+
+    const panela = stringovi.reduce((a, b) => a + b, 0);
 
     const snagaDC = panela * (par.panel.pmax || 0) / 1000;
     const snagaAC = invertera * (par.inverter.snaga || 0);

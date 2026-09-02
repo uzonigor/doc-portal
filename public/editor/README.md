@@ -4,13 +4,20 @@ Faza 1: jednopolna šema — graf model, biblioteka simbola, interaktivni
 canvas, izvoz u SVG/PNG/PDF.
 Faza 2: generator šeme iz parametara elektrane, auto-raspored,
 tabela kablova i specifikacija opreme.
+Faza 3: string plan — raspored modula na krovu preko učitanog snimka,
+dodela stringova i prenos u generator jednopolne.
 
 ## Pokretanje
 
 Editor je deo portala:
 
-- `/editor` — radna skica (čuva se u `localStorage`)
+- `/editor` — jednopolna šema, radna skica (čuva se u `localStorage`)
 - `/editor/sema/:id` — šema vezana za projekat (čuva se u bazi)
+- `/plan` — string plan, radna skica
+- `/plan/:id` — plan vezan za projekat
+
+Oba crteža se čuvaju u istoj tabeli `seme`, razlikuju se po koloni `tip`
+(`1L` / `3L` / `PLAN`).
 
 ## Arhitektura
 
@@ -19,10 +26,17 @@ se kasnije renderuje i tropolna šema, tabela kablova i specifikacija — bez
 promene formata podataka.
 
 ```
+string plan ──> raspodela stringova ──> generator ──> jednopolna šema
+   (krov)          (S1: 16, S2: 8)                      (graf model)
+
 model (JSON graf) ──┬── render.js  → SVG (canvas i izvoz)
                     ├── export.js  → list sa okvirom, legendom i sastavnicom
-                    └── (Faza 3)   → tropolni renderer nad istim podacima
+                    └── (kasnije)  → tropolni renderer nad istim podacima
 ```
+
+Krug je zatvoren: broj modula po stringu se ne kuca dvaput — čita se sa
+krova i prenosi u generator, koji tada zaključava polja „broj panela" i
+„broj invertera".
 
 | Fajl | Uloga |
 |---|---|
@@ -37,7 +51,10 @@ model (JSON graf) ──┬── render.js  → SVG (canvas i izvoz)
 | `js/layout.js` | logičke koordinate (kolona, red) → pozicije, sa poravnanjem kolona |
 | `js/specifikacija.js` | tabela kablova, zbir po tipu kabla, specifikacija opreme, CSV |
 | `js/dijalozi.js` | dijalog generatora i dijalog tabela |
-| `js/api.js` | `/api/seme` + localStorage skica |
+| `js/api.js` | `/api/seme`, localStorage skice i prenos plan → šema |
+| `js/list.js` | zajednički okvir lista: format, okvir, legenda, sastavnica |
+| `js/dokument.js` | osnova dokumenta: meta, format, undo/redo, događaji |
+| `js/util.js` | sitne deljene funkcije |
 | `js/app.js` | sklapanje, autosave, demo šema |
 
 ## Generator (Faza 2)
@@ -52,6 +69,29 @@ Generator ne računa piksele — svaki element dobije logičku poziciju
 Grane koje vise ispod glavnog voda (SPD, uzemljenje) dobijaju sopstvene
 razlomljene kolone, pa ne mogu upasti u redove stringova bez obzira na
 broj invertera.
+
+## String plan (Faza 3)
+
+Geometrija plana se čuva u **metrima**; render množi sa `PPM`. Tako se
+dimenzije modula, razmaci i kalibracija unose u stvarnim jedinicama, a
+razmera lista ostaje stvar prikaza.
+
+| Fajl | Uloga |
+|---|---|
+| `js/plan-model.js` | krovne ravni, stringovi, moduli, provere Voc i jednakosti stringova |
+| `js/plan-render.js` | podloga, mreža modula, razmernik, strelica severa |
+| `js/plan-canvas.js` | alati: izbor, bojenje stringova, isključivanje modula, podloga, kalibracija |
+| `js/plan-panel.js` | stringovi, krovna ravan, modul, podloga, rekapitulacija |
+| `js/plan-export.js` | list plana sa legendom stringova |
+| `js/plan-app.js` | sklapanje, učitavanje snimka, kalibracija, prenos u šemu |
+
+**Podloga**: snimak se pre upisa u model smanjuje na najviše 2000 px i
+pretvara u JPEG, da JSON ostane razumne veličine za bazu i localStorage.
+Kalibracija se radi povlačenjem duži poznate dužine — podloga se skalira
+oko početne tačke te duži, pa ostaje na mestu.
+
+**Bojenje stringova**: prvi klik u potezu određuje smer — ako je modul već
+u aktivnom stringu, potez ga skida. Ceo potez ulazi u undo kao jedan korak.
 
 ## Dodavanje novog simbola
 

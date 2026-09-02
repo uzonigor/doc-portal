@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor šema - GO4</title>
+    <title>String plan - GO4</title>
     <link rel="stylesheet" href="/editor/editor.css">
 </head>
 <body>
@@ -12,11 +12,11 @@
         <span class="logo">GO4</span>
 
         <div class="veza-stranica">
-            <a href="/plan">String plan</a>
-            <a href="/editor" class="tekuca">Jednopolna</a>
+            <a href="/plan" class="tekuca">String plan</a>
+            <a href="/editor">Jednopolna</a>
         </div>
 
-        <input type="text" id="naziv" placeholder="Naziv šeme">
+        <input type="text" id="naziv" placeholder="Naziv plana">
 
         <select id="format" title="Format lista">
             <option value="A4-landscape">A4 pejzaž</option>
@@ -33,17 +33,15 @@
         <div class="grupa">
             <button id="btn-zoom-minus" title="Umanji">−</button>
             <button id="btn-zoom-plus" title="Uvećaj">+</button>
-            <button id="btn-uklopi" title="Uklopi u prozor">Uklopi</button>
+            <button id="btn-uklopi">Uklopi</button>
         </div>
 
         <span class="razmak"></span>
 
-        <div class="grupa">
-            <button id="btn-generator" class="istaknuto">⚡ Generiši</button>
-            <button id="btn-tabele">Tabele</button>
-            <button id="btn-demo">Demo</button>
-            <button id="btn-prazno" class="opasno">Novi crtež</button>
-        </div>
+        <div class="grupa" id="alati"></div>
+
+        <button id="btn-polje">+ Krovna ravan</button>
+        <button id="btn-jednopolna" class="istaknuto">⚡ Jednopolna iz plana</button>
 
         <div class="grupa">
             <button id="btn-svg">SVG</button>
@@ -54,16 +52,14 @@
         <button id="btn-snimi" class="primarno">Snimi</button>
     </div>
 
-    <div class="radna">
-        <aside class="bocni levo" id="paleta"></aside>
-
+    <div class="radna plan">
         <main id="platno">
             <div id="crtez"></div>
             <div id="status">—</div>
+            <div id="alat-opis"></div>
             <div class="pomoc">
-                Prevuci simbol iz palete · povuci od <b>porta</b> do porta za vezu<br>
                 <b>Shift</b>+prevlačenje ili srednji taster = pomeranje pogleda · točkić = zum<br>
-                <b>R</b> rotiraj · <b>Ctrl+D</b> dupliraj · <b>Delete</b> obriši
+                <b>R</b> rotira krovnu ravan za 15° (Shift+R nazad) · <b>Delete</b> briše
             </div>
         </main>
 
@@ -72,6 +68,6 @@
 
     <div class="poruka" id="poruka"></div>
 
-    <script type="module" src="/editor/js/app.js"></script>
+    <script type="module" src="/editor/js/plan-app.js"></script>
 </body>
 </html>

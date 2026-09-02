@@ -3,15 +3,36 @@ import prisma from '../lib/prisma.js';
 
 const router = express.Router();
 
-// Prazan model za novu šemu
-function prazanModel(naziv) {
-    return {
+// Prazan model - jednopolna/tropolna šema ili string plan
+function prazanModel(naziv, tip) {
+    const osnova = {
         version: 1,
-        meta: { naziv: naziv || 'Nova šema', standard: 'IEC-60617' },
-        sheet: { format: 'A3', orijentacija: 'landscape' },
-        nodes: [],
-        edges: []
+        meta: { naziv: naziv || (tip === 'PLAN' ? 'String plan' : 'Nova šema') },
+        sheet: { format: 'A3', orijentacija: 'landscape' }
     };
+
+    if (tip === 'PLAN') {
+        return { ...osnova, tip: 'PLAN', podloga: { slika: null }, modul: {}, polja: [], stringovi: [] };
+    }
+
+    return { ...osnova, meta: { ...osnova.meta, standard: 'IEC-60617' }, nodes: [], edges: [] };
+}
+
+/** Model je validan ako odgovara svom tipu crteža. */
+function proveriModel(model, tip) {
+    if (!model || typeof model !== 'object') return 'Model mora biti objekat';
+
+    if (tip === 'PLAN' || model.tip === 'PLAN') {
+        if (!Array.isArray(model.polja) || !Array.isArray(model.stringovi)) {
+            return 'String plan mora imati polja i stringovi nizove';
+        }
+        return null;
+    }
+
+    if (!Array.isArray(model.nodes) || !Array.isArray(model.edges)) {
+        return 'Šema mora imati nodes i edges nizove';
+    }
+    return null;
 }
 
 // GET - Sve šeme jednog projekta (bez modela, samo lista)
@@ -66,9 +87,9 @@ router.post('/', async (req, res) => {
         const sema = await prisma.sema.create({
             data: {
                 projektaId: parseInt(projektaId),
-                naziv: naziv || 'Nova šema',
+                naziv: naziv || (tip === 'PLAN' ? 'String plan' : 'Nova šema'),
                 tip: tip || '1L',
-                model: model || prazanModel(naziv)
+                model: model || prazanModel(naziv, tip)
             }
         });
 
@@ -83,8 +104,15 @@ router.put('/:id', async (req, res) => {
     try {
         const { naziv, tip, model } = req.body;
 
-        if (model && (!Array.isArray(model.nodes) || !Array.isArray(model.edges))) {
-            return res.status(400).json({ error: 'Model mora imati nodes i edges nizove' });
+        if (model !== undefined) {
+            const postojeca = await prisma.sema.findUnique({
+                where: { id: parseInt(req.params.id) },
+                select: { tip: true }
+            });
+            if (!postojeca) return res.status(404).json({ error: 'Šema nije pronađena' });
+
+            const greska = proveriModel(model, tip || postojeca.tip);
+            if (greska) return res.status(400).json({ error: greska });
         }
 
         const data = {};

@@ -7,6 +7,9 @@
 
 import { getSymbol, portPosition, nodeSize, nodeBBox } from './symbols.js';
 import { route, pathD } from './router.js';
+import { escapeXml } from './util.js';
+
+export { escapeXml };
 
 /** SVG transform koji odgovara rotacionoj matematici iz symbols.js */
 export function nodeTransform(node) {
@@ -18,12 +21,6 @@ export function nodeTransform(node) {
     if (rot === 180) return `${t} rotate(180) translate(${-w} ${-h})`;
     if (rot === 270) return `${t} rotate(270) translate(${-w} 0)`;
     return t;
-}
-
-export function escapeXml(s) {
-    return String(s == null ? '' : s)
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
 
 /**

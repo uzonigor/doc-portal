@@ -124,6 +124,15 @@ app.get('/editor/sema/:semaId', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/editor/sema-editor.html'));
 });
 
+// String plan - raspored modula na krovu
+app.get('/plan', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/editor/plan-editor.html'));
+});
+
+app.get('/plan/:planId', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/editor/plan-editor.html'));
+});
+
 // Služi index.html za sve ostale rute (SPA fallback)
 app.get('*', (req, res) => {
     if (!req.path.startsWith('/api')) {

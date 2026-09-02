@@ -7,12 +7,7 @@
  */
 
 import { getSymbol, defaultProps, portPosition, nodeBBox } from './symbols.js';
-
-let brojac = 0;
-function noviId(prefix) {
-    brojac += 1;
-    return `${prefix}${Date.now().toString(36).slice(-4)}${brojac}`;
-}
+import { Dokument, noviId } from './dokument.js';
 
 export const ZILE = {
     DC: ['L+', 'L-'],
@@ -34,67 +29,23 @@ function jeTrofazni(node) {
     return false;
 }
 
-export class Model {
+export class Model extends Dokument {
     constructor(data) {
         const d = data || {};
-        this.version = 1;
-        this.meta = Object.assign({ naziv: 'Nova šema', standard: 'IEC-60617', projektant: '', brojProjekta: '' }, d.meta);
-        this.sheet = Object.assign({ format: 'A3', orijentacija: 'landscape' }, d.sheet);
+        super(d, { naziv: 'Nova šema', standard: 'IEC-60617' });
         this.nodes = (d.nodes || []).map(n => ({ ...n, props: { ...n.props } }));
         this.edges = (d.edges || []).map(e => ({ ...e }));
-
-        this.undoStack = [];
-        this.redoStack = [];
-        this.slusaoci = [];
     }
 
-    // ── događaji ─────────────────────────────────────────────────────────────
-
-    on(fn) { this.slusaoci.push(fn); return () => this.off(fn); }
-    off(fn) { this.slusaoci = this.slusaoci.filter(f => f !== fn); }
-    emit(razlog) { this.slusaoci.forEach(fn => fn(this, razlog)); }
-
-    // ── undo / redo ──────────────────────────────────────────────────────────
-
-    /** Izvrši izmenu uz snimanje snapshot-a za undo. */
-    commit(razlog, fn) {
-        const pre = this.snapshot();
-        const rezultat = fn();
-        this.undoStack.push({ razlog, data: pre });
-        if (this.undoStack.length > 100) this.undoStack.shift();
-        this.redoStack = [];
-        this.emit(razlog);
-        return rezultat;
+    stanje() {
+        return { nodes: this.nodes, edges: this.edges, meta: this.meta, sheet: this.sheet };
     }
 
-    snapshot() {
-        return JSON.stringify({ nodes: this.nodes, edges: this.edges, meta: this.meta, sheet: this.sheet });
-    }
-
-    restore(json) {
-        const d = JSON.parse(json);
+    primeniStanje(d) {
         this.nodes = d.nodes;
         this.edges = d.edges;
         this.meta = d.meta;
         this.sheet = d.sheet;
-    }
-
-    undo() {
-        const stavka = this.undoStack.pop();
-        if (!stavka) return false;
-        this.redoStack.push({ razlog: stavka.razlog, data: this.snapshot() });
-        this.restore(stavka.data);
-        this.emit('undo');
-        return true;
-    }
-
-    redo() {
-        const stavka = this.redoStack.pop();
-        if (!stavka) return false;
-        this.undoStack.push({ razlog: stavka.razlog, data: this.snapshot() });
-        this.restore(stavka.data);
-        this.emit('redo');
-        return true;
     }
 
     // ── čvorovi ──────────────────────────────────────────────────────────────

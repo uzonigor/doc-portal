@@ -104,12 +104,27 @@ function postavi(obj, put, vrednost) {
     cilj[poslednji] = vrednost;
 }
 
-export function otvoriGenerator(model, canvas, meta = {}) {
+/**
+ * @param {object} preset - unapred zadati parametri, npr. preneti iz string
+ *                          plana. Kada nose `raspodelaStringova`, raspored po
+ *                          stringovima je već odlučen na krovu, pa se polja
+ *                          "broj panela" i "broj invertera" zaključavaju.
+ */
+export function otvoriGenerator(model, canvas, meta = {}, preset = null) {
     const par = JSON.parse(JSON.stringify(PODRAZUMEVANI));
     // preuzmi podatke koje već znamo iz projekta
     ['naziv', 'investitor', 'lokacija', 'projektant', 'brojProjekta'].forEach(k => {
         if (meta[k]) par[k] = meta[k];
     });
+
+    if (preset) {
+        Object.assign(par, preset, {
+            panel: { ...par.panel, ...(preset.panel || {}) },
+            inverter: { ...par.inverter, ...(preset.inverter || {}) }
+        });
+    }
+
+    const izPlana = !!(par.raspodelaStringova && par.raspodelaStringova.length);
 
     const koren = document.createElement('div');
     koren.className = 'generator';
@@ -118,11 +133,15 @@ export function otvoriGenerator(model, canvas, meta = {}) {
     const poljaEl = koren.querySelector('.gen-polja');
     const rekapEl = koren.querySelector('.gen-rekap');
 
+    // Polja koja string plan već određuje ne smeju da se ručno menjaju.
+    const zakljucana = izPlana ? new Set(['brojPanela', 'invertera']) : new Set();
+
     poljaEl.innerHTML = POLJA.map(g => `
         <fieldset>
             <legend>${escapeXml(g.grupa)}</legend>
             ${g.polja.map(f => {
                 const v = uzmi(par, f.put);
+                const onemoguceno = zakljucana.has(f.put) ? ' disabled title="Dolazi iz string plana"' : '';
                 if (f.tip === 'check') {
                     return `<label class="check"><input type="checkbox" data-put="${f.put}"${v ? ' checked' : ''}> ${escapeXml(f.label)}</label>`;
                 }
@@ -134,7 +153,7 @@ export function otvoriGenerator(model, canvas, meta = {}) {
                 const tipInput = f.tip === 'text' ? 'text' : 'number';
                 const korak = f.tip === 'int' ? '1' : 'any';
                 return `<label>${escapeXml(f.label)}
-                    <input type="${tipInput}" step="${korak}" value="${escapeXml(v ?? '')}" data-put="${f.put}"></label>`;
+                    <input type="${tipInput}" step="${korak}" value="${escapeXml(v ?? '')}" data-put="${f.put}"${onemoguceno}></label>`;
             }).join('')}
         </fieldset>`).join('');
 
@@ -145,6 +164,8 @@ export function otvoriGenerator(model, canvas, meta = {}) {
         </dl>
         ${r.upozorenja.length ? `<ul class="upozorenja">${r.upozorenja.map(u =>
             `<li>${escapeXml(u)}</li>`).join('')}</ul>` : ''}
+        ${izPlana ? `<p class="mala"><b>Raspored stringova dolazi iz string plana</b> —
+            broj panela i invertera se odatle čitaju i ovde se ne menjaju.</p>` : ''}
         <p class="mala">Šema se generiše sa auto-rasporedom; sve se posle može doterati u editoru.</p>`;
     }
 
@@ -162,7 +183,7 @@ export function otvoriGenerator(model, canvas, meta = {}) {
 
     osveziRekap();
 
-    const d = otvori('Generiši šemu iz parametara', koren, 900);
+    const d = otvori(izPlana ? 'Generiši šemu iz string plana' : 'Generiši šemu iz parametara', koren, 900);
     d.podnozje.appendChild(dugme('Odustani', '', d.zatvori));
     d.podnozje.appendChild(dugme('Generiši', 'primarno', () => {
         const novi = generisi(par);
