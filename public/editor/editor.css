@@ -419,3 +419,49 @@ svg[data-alat="kalibracija"] { cursor: crosshair; }
 }
 .veza-stranica a:hover { background: #edf2f7; }
 .veza-stranica a.tekuca { background: var(--akcenat); color: #fff; border-color: var(--akcenat); }
+
+/* oprema i trase na planu */
+.oprema .marker { stroke: #fff; stroke-width: 2; }
+.oprema .marker-oznaka { font: bold 13px 'Segoe UI', sans-serif; fill: #fff; text-anchor: middle; }
+.oprema .marker-naziv {
+    font: 10px 'Segoe UI', sans-serif; fill: #2d3748; text-anchor: middle;
+    paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round;
+}
+.oprema .izbor { fill: rgba(43,108,176,.06); stroke: var(--akcenat); stroke-width: 1; stroke-dasharray: 5 4; }
+.oprema { cursor: move; }
+
+.trasa-ozicenje { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; opacity: .95; }
+.trasa-vod { stroke-width: 2.5; stroke-dasharray: 10 6; opacity: .9; }
+.trase { pointer-events: none; }
+.trasa-tekst {
+    font: bold 11px 'Segoe UI', sans-serif;
+    paint-order: stroke; stroke: #fff; stroke-width: 3.5px; stroke-linejoin: round;
+}
+
+.prekidac {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--prigusen);
+    border: 1px solid var(--ivica); border-radius: 6px; padding: 6px 10px;
+}
+
+.tabela.sitna { font-size: 11px; margin-top: 8px; }
+.tabela.sitna th, .tabela.sitna td { padding: 4px 6px; }
+.boja-tacka {
+    display: inline-block; width: 9px; height: 9px; border-radius: 2px;
+    border: 1px solid rgba(0,0,0,.2); margin-right: 4px;
+}
+
+/* proračun kablova */
+.proracun-parametri {
+    background: var(--podloga); border: 1px solid var(--ivica);
+    border-radius: 8px; padding: 12px; margin-bottom: 16px;
+}
+.forma-red { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 12px; }
+.forma-red label { display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: var(--prigusen); }
+.forma-red input {
+    border: 1px solid var(--ivica); border-radius: 5px; padding: 5px 8px;
+    font-size: 13px; font-family: inherit; width: 100%; min-width: 0;
+}
+.proracun .tabela { font-size: 11px; }
+.proracun .tabela th, .proracun .tabela td { padding: 5px 6px; white-space: nowrap; }
+.proracun-tabela { overflow-x: auto; }

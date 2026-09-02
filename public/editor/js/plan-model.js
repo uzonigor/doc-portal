@@ -21,8 +21,20 @@ export const PODRAZUMEVANI_MODUL = {
     pmax: 550,
     voc: 49.8,
     isc: 13.9,
+    // Radna tačka pri STC — po njoj se računa pad napona; Voc/Isc služe
+    // za granične provere (napon na hladnoći, struja kroz zaštitu).
+    vmpp: 41.9,
+    impp: 13.13,
     proizvodjac: '',
     model: ''
+};
+
+/** Oprema koja se postavlja na plan da bi trase kablova imale odakle do kuda. */
+export const TIPOVI_OPREME = {
+    inverter:  { naziv: 'Inverter',        oznaka: 'T', boja: '#2d3748' },
+    dc_orman:  { naziv: 'DC orman',        oznaka: 'A', boja: '#b45309' },
+    ac_orman:  { naziv: 'AC orman (PV-RO)', oznaka: 'A', boja: '#2b6cb0' },
+    kpk:       { naziv: 'Priključni ormar', oznaka: 'A', boja: '#2f855a' }
 };
 
 /** Boje stringova — birane da se razlikuju i u štampi u sivim tonovima. */
@@ -47,12 +59,34 @@ export class PlanModel extends Dokument {
         this.modul = Object.assign({}, PODRAZUMEVANI_MODUL, data.modul);
         this.polja = (data.polja || []).map(p => ({ ...p, moduli: { ...p.moduli } }));
         this.stringovi = (data.stringovi || []).map(s => ({ ...s }));
+        this.oprema = (data.oprema || []).map(o => ({ ...o }));
+
+        // Parametri proračuna preseka; menjaju se u panelu i prenose u šemu.
+        this.proracun = Object.assign({
+            kapa: 56,
+            padDC: 1,
+            padAC: 1,
+            cosFi: 1,
+            faktorTemp: 1,
+            faktorGrupisanja: 1,
+            minPresekDC: 4,
+            minPresekAC: 2.5
+        }, data.proracun);
+
+        this.trasa = Object.assign({
+            // Kabl ne ide vazdušnom linijom: prati ivice krova i spušta se
+            // do invertera, pa se dužina računa manhattan rastojanjem.
+            putanja: 'manhattan',
+            visinaSpusta: 3,     // m — vertikalni spust od krova do invertera
+            rezerva: 10          // % — savijanja, ulazak u orman, rezerva
+        }, data.trasa);
     }
 
     stanje() {
         return {
             meta: this.meta, sheet: this.sheet, podloga: this.podloga,
-            modul: this.modul, polja: this.polja, stringovi: this.stringovi
+            modul: this.modul, polja: this.polja, stringovi: this.stringovi,
+            oprema: this.oprema, trasa: this.trasa, proracun: this.proracun
         };
     }
 
@@ -63,6 +97,9 @@ export class PlanModel extends Dokument {
         this.modul = d.modul;
         this.polja = d.polja;
         this.stringovi = d.stringovi;
+        this.oprema = d.oprema || [];
+        this.trasa = d.trasa || this.trasa;
+        this.proracun = d.proracun || this.proracun;
     }
 
     // ── polja (krovne ravni sa mrežom modula) ────────────────────────────────
@@ -159,6 +196,67 @@ export class PlanModel extends Dokument {
             const s = this.getString(id);
             if (s) s[kljuc] = vrednost;
         });
+    }
+
+    // ── oprema na planu ──────────────────────────────────────────────────────
+
+    getOprema(id) { return this.oprema.find(o => o.id === id) || null; }
+
+    /** Sledeća slobodna oznaka po prefiksu (-A1, -A2 ...) preko cele opreme. */
+    sledecaOznakaOpreme(prefiks) {
+        const uzete = this.oprema
+            .map(o => o.oznaka)
+            .filter(o => o && o.startsWith('-' + prefiks))
+            .map(o => parseInt(o.slice(1 + prefiks.length), 10))
+            .filter(n => !Number.isNaN(n));
+        return `-${prefiks}${uzete.length ? Math.max(...uzete) + 1 : 1}`;
+    }
+
+    addOprema(tip, pos, opcije = {}) {
+        return this.commit('dodaj opremu', () => {
+            const def = TIPOVI_OPREME[tip];
+            const isti = this.oprema.filter(o => o.tip === tip).length + 1;
+            const o = {
+                id: noviId('o'),
+                tip,
+                oznaka: opcije.oznaka || this.sledecaOznakaOpreme(def.oznaka),
+                naziv: opcije.naziv || def.naziv,
+                pos: { x: pos.x, y: pos.y },
+                inverter: opcije.inverter ?? isti   // kom inverteru pripada (za AC trase)
+            };
+            this.oprema.push(o);
+            return o;
+        });
+    }
+
+    removeOprema(ids) {
+        const set = new Set(ids);
+        return this.commit('obriši opremu', () => {
+            this.oprema = this.oprema.filter(o => !set.has(o.id));
+        });
+    }
+
+    moveOpremaLive(ids, dx, dy) {
+        const set = new Set(ids);
+        this.oprema.forEach(o => {
+            if (set.has(o.id)) { o.pos.x += dx; o.pos.y += dy; }
+        });
+        this.emit('pomeri-live');
+    }
+
+    setOpremaProp(id, kljuc, vrednost) {
+        return this.commit('izmeni opremu', () => {
+            const o = this.getOprema(id);
+            if (o) o[kljuc] = vrednost;
+        });
+    }
+
+    /** Inverter kome string pripada — po broju invertera zadatom na stringu. */
+    inverterZaString(s) {
+        const inverteri = this.oprema.filter(o => o.tip === 'inverter')
+            .sort((a, b) => (a.inverter || 0) - (b.inverter || 0));
+        if (!inverteri.length) return null;
+        return inverteri.find(o => (o.inverter || 1) === (s.inverter || 1)) || inverteri[0];
     }
 
     // ── moduli ───────────────────────────────────────────────────────────────
@@ -305,7 +403,10 @@ export class PlanModel extends Dokument {
             podloga: this.podloga,
             modul: this.modul,
             polja: this.polja,
-            stringovi: this.stringovi
+            stringovi: this.stringovi,
+            oprema: this.oprema,
+            trasa: this.trasa,
+            proracun: this.proracun
         };
     }
 }

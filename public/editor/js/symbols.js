@@ -68,6 +68,8 @@ export const SYMBOLS = {
             pmax: { tip: 'float', label: 'Pmax modula (W)', default: 550 },
             voc: { tip: 'float', label: 'Voc modula (V)', default: 49.8 },
             isc: { tip: 'float', label: 'Isc modula (A)', default: 13.9 },
+            vmpp: { tip: 'float', label: 'Vmpp modula (V)', default: 41.9 },
+            impp: { tip: 'float', label: 'Impp modula (A)', default: 13.13 },
             proizvodjac: { tip: 'text', label: 'Proizvođač', default: '' }
         },
         compute: (p) => ({
@@ -75,6 +77,7 @@ export const SYMBOLS = {
             'Voc niza (STC)': ((p.modula || 0) * (p.voc || 0)).toFixed(1) + ' V',
             // Voc raste na niskim temperaturama; -10°C, tipičan koef. -0,29 %/K
             'Voc pri −10 °C': ((p.modula || 0) * (p.voc || 0) * 1.101).toFixed(1) + ' V',
+            'Umpp niza': ((p.modula || 0) * (p.vmpp || 0)).toFixed(1) + ' V',
             'Isc × 1,25': ((p.isc || 0) * 1.25).toFixed(1) + ' A'
         }),
         draw: () => `

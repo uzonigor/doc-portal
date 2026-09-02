@@ -25,6 +25,8 @@ export class PlanCanvas {
         this.izabrani = new Set();
         this.alat = 'izbor';
         this.aktivniString = null;
+        this.tipOpreme = 'inverter';
+        this.prikaziTrase = true;
 
         this.pan = { x: 100, y: 80 };
         this.zoom = 0.5;
@@ -79,7 +81,8 @@ export class PlanCanvas {
         this.pozadinaEl.setAttribute('transform', t);
         this.viewport.innerHTML = planSvg(this.model, {
             izabrani: [...this.izabrani],
-            interaktivan: true
+            interaktivan: true,
+            prikaziTrase: this.prikaziTrase
         });
         this.svg.setAttribute('data-alat', this.alat);
     }
@@ -122,8 +125,19 @@ export class PlanCanvas {
 
         // pomeranje pogleda: srednji/desni taster ili Shift na podlozi
         const poljeEl = ev.target.closest('.polje');
-        if (ev.button === 1 || ev.button === 2 || (ev.shiftKey && !poljeEl)) {
+        const opremaEl = ev.target.closest('.oprema');
+        if (ev.button === 1 || ev.button === 2 || (ev.shiftKey && !poljeEl && !opremaEl)) {
             this.stanje = { vrsta: 'pan', start: { x: ev.clientX, y: ev.clientY }, pan: { ...this.pan } };
+            return;
+        }
+
+        if (this.alat === 'oprema') {
+            const o = this.model.addOprema(this.tipOpreme, {
+                x: this.naSnap(tacka.x), y: this.naSnap(tacka.y)
+            });
+            this.postaviAlat('izbor');
+            this.postaviIzbor([o.id]);
+            this.onPromenaAlata && this.onPromenaAlata();
             return;
         }
 
@@ -167,8 +181,9 @@ export class PlanCanvas {
         }
 
         // alat "izbor"
-        if (poljeEl) {
-            const id = poljeEl.getAttribute('data-id');
+        const cilj = opremaEl || poljeEl;
+        if (cilj) {
+            const id = cilj.getAttribute('data-id');
             if (ev.ctrlKey || ev.metaKey) {
                 this.izabrani.has(id) ? this.izabrani.delete(id) : this.izabrani.add(id);
                 this.postaviIzbor([...this.izabrani]);
@@ -216,6 +231,7 @@ export class PlanCanvas {
             if (dx || dy) {
                 if (!s.pomereno) { s.snapshot = this.model.snapshot(); s.pomereno = true; }
                 this.model.movePoljaLive(s.ids, dx, dy);
+                this.model.moveOpremaLive(s.ids, dx, dy);
                 s.poslednja = { x: nx, y: ny };
             }
             return;
@@ -312,7 +328,9 @@ export class PlanCanvas {
         if (ev.key === 'Delete' || ev.key === 'Backspace') {
             ev.preventDefault();
             if (this.izabrani.size) {
-                this.model.removePolja([...this.izabrani]);
+                const ids = [...this.izabrani];
+                if (ids.some(i => this.model.getPolje(i))) this.model.removePolja(ids);
+                if (ids.some(i => this.model.getOprema(i))) this.model.removeOprema(ids);
                 this.postaviIzbor([]);
             }
             return;

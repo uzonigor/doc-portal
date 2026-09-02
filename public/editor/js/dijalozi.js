@@ -6,8 +6,10 @@ import { PODRAZUMEVANI, generisi, rekapitulacija } from './generator.js';
 import { escapeXml } from './render.js';
 import {
     tabelaKablova, specifikacijaOpreme, zbirKablova, ukupnoModula,
-    KOLONE_KABLOVA, KOLONE_OPREME, csv
+    redoviProracuna, KOLONE_KABLOVA, KOLONE_OPREME, KOLONE_PRORACUNA, csv
 } from './specifikacija.js';
+import { proracunKablova, primeniPredloge } from './sema-proracun.js';
+import { PODRAZUMEVANI_PARAMETRI } from './proracun.js';
 
 // ── osnovni okvir dijaloga ───────────────────────────────────────────────────
 
@@ -228,8 +230,17 @@ export function otvoriTabele(model) {
         <div class="tab" data-tab="kablovi" hidden>
             ${tabelaHtml(kablovi, KOLONE_KABLOVA)}
             ${zbir.length ? `<h4>Zbirno po tipu kabla</h4>
-                ${tabelaHtml(zbir.map(z => ({ kabl: z.kabl, duzina: z.duzina ? z.duzina.toFixed(1) : '—' })),
-                    [{ kljuc: 'kabl', naslov: 'Tip i presek' }, { kljuc: 'duzina', naslov: 'Ukupna dužina (m)' }])}` : ''}
+                ${tabelaHtml(zbir.map(z => ({
+                    kabl: z.kabl,
+                    duzina: z.duzina ? z.duzina.toFixed(1) : '—',
+                    zaNabavku: z.duzina ? String(z.zaNabavku) : '—'
+                })), [
+                    { kljuc: 'kabl', naslov: 'Tip i presek' },
+                    { kljuc: 'duzina', naslov: 'Izmereno (m)' },
+                    { kljuc: 'zaNabavku', naslov: 'Za nabavku (m)' }
+                ])}
+                <p class="mala">Dužine već nose rezervu zadatu na string planu;
+                   kolona za nabavku je zaokružena naviše na 5 m.</p>` : ''}
         </div>`;
 
     koren.querySelectorAll('.jezicci button').forEach(b => {
@@ -247,4 +258,81 @@ export function otvoriTabele(model) {
     d.podnozje.appendChild(dugme('Kablovi → CSV', '', () =>
         preuzmi(csv(kablovi, KOLONE_KABLOVA), `${ime}-kablovi.csv`, 'text/csv;charset=utf-8')));
     d.podnozje.appendChild(dugme('Zatvori', 'primarno', d.zatvori));
+}
+
+
+// ── proračun kablova ─────────────────────────────────────────────────────────
+
+const POLJA_PRORACUNA = [
+    { kljuc: 'padDC', label: 'Dozvoljen pad DC (%)' },
+    { kljuc: 'padAC', label: 'Dozvoljen pad AC (%)' },
+    { kljuc: 'kapa', label: 'κ bakra (m/Ω·mm²)' },
+    { kljuc: 'cosFi', label: 'cos φ' },
+    { kljuc: 'faktorTemp', label: 'Faktor temperature' },
+    { kljuc: 'faktorGrupisanja', label: 'Faktor grupisanja' },
+    { kljuc: 'minPresekDC', label: 'Min. presek DC (mm²)' },
+    { kljuc: 'minPresekAC', label: 'Min. presek AC (mm²)' }
+];
+
+export function otvoriProracun(model, canvas) {
+    const par = { ...PODRAZUMEVANI_PARAMETRI, ...(model.meta.proracun || {}) };
+
+    const koren = document.createElement('div');
+    koren.className = 'proracun';
+    koren.innerHTML = `<div class="proracun-parametri"></div><div class="proracun-tabela"></div>`;
+
+    const parametriEl = koren.querySelector('.proracun-parametri');
+    const tabelaEl = koren.querySelector('.proracun-tabela');
+
+    parametriEl.innerHTML = `<div class="forma-red">${POLJA_PRORACUNA.map(f => `
+        <label>${escapeXml(f.label)}
+            <input type="number" step="any" value="${escapeXml(par[f.kljuc])}" data-kljuc="${f.kljuc}"></label>`).join('')}
+    </div>`;
+
+    let rezultat = [];
+
+    function osvezi() {
+        rezultat = proracunKablova(model, par);
+        const redovi = redoviProracuna(rezultat);
+
+        const problemi = rezultat.filter(r => r.provera && !r.provera.uredu);
+        const bezDuzine = rezultat.filter(r => r.napomena && r.napomena.startsWith('Nema dužine'));
+
+        tabelaEl.innerHTML = `
+            ${tabelaHtml(redovi, KOLONE_PRORACUNA)}
+            ${problemi.length ? `<h4>Zadati preseci koji ne prolaze (${problemi.length})</h4>
+                <ul class="upozorenja">${problemi.map(r =>
+                    `<li class="greska">${escapeXml(r.oznaka)}: ${escapeXml(r.provera.greske.join(' '))}</li>`).join('')}</ul>` : ''}
+            ${bezDuzine.length ? `<ul class="upozorenja"><li>${bezDuzine.length}
+                ${bezDuzine.length === 1 ? 'deonica nema' : 'deonica nema'} zadatu dužinu — unesi je u panelu
+                provodnika ili je prenesi sa string plana.</li></ul>` : ''}
+            <p class="mala">Presek je <b>predlog</b>: najmanji standardni koji zadovoljava i pad napona
+               i strujnu opteretljivost, uz praktični minimum. Projektant ga potvrđuje.
+               Formule i tabele opteretljivosti stoje u <code>js/proracun.js</code>.</p>`;
+    }
+
+    parametriEl.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', () => {
+            par[input.getAttribute('data-kljuc')] = parseFloat(input.value) || 0;
+            osvezi();
+        });
+    });
+
+    osvezi();
+
+    const d = otvori('Proračun kablova (bakar)', koren, 1000);
+
+    d.podnozje.appendChild(dugme('Proračun → CSV', '', () =>
+        preuzmi(csv(redoviProracuna(rezultat), KOLONE_PRORACUNA),
+            `${(model.meta.naziv || 'sema').replace(/[^\w\-. ]+/g, '_')}-proracun.csv`, 'text/csv;charset=utf-8')));
+
+    d.podnozje.appendChild(dugme('Primeni predložene preseke', 'primarno', () => {
+        model.meta.proracun = { ...par };
+        const n = primeniPredloge(model, rezultat);
+        if (canvas) canvas.render();
+        d.zatvori();
+        if (!n) alert('Svi preseci već odgovaraju predlogu.');
+    }));
+
+    d.podnozje.appendChild(dugme('Zatvori', '', d.zatvori));
 }

@@ -104,7 +104,12 @@ export function generisi(p = {}) {
     const poInverteru = raspodela ? [] : raspodeli(Math.max(1, parseInt(par.brojPanela, 10) || 1), invertera);
 
     const plan = [];   // { kljuc, type, kol, red, props }
-    const veze = [];   // [odKljuc, odPort, doKljuc, doPort]
+    const veze = [];   // [odKljuc, odPort, doKljuc, doPort, kabl?]
+
+    // Dužine i preseci izmereni na string planu, ako ih ima.
+    const duzine = par.duzine || null;
+    const duzinaStringa = (oznaka) =>
+        (duzine && duzine.stringovi || []).find(d => d.oznaka === oznaka) || null;
 
     const dodaj = (kljuc, type, kol, red, props) => {
         plan.push({ kljuc, type, kol, red, props: { ...defaultProps(type), ...props } });
@@ -135,14 +140,22 @@ export function generisi(p = {}) {
 
             const mpptPort = `dc${Math.min(str.mppt || j + 1, mppt)}+`;
 
+            const izmereno = str.oznaka ? duzinaStringa(str.oznaka) : null;
+            const presek = izmereno && izmereno.presek ? izmereno.presek : undefined;
+
             if (par.dcPrekidac) {
                 const qKljuc = dodaj(`dcq${i}_${j}`, 'dc_prekidac', KOL.dcZastita, red, {
                     struja: Math.ceil((par.panel.isc || 0) * 1.25 / 5) * 5 || 16
                 });
-                veze.push([sKljuc, 'dc+', qKljuc, 'in']);
-                veze.push([qKljuc, 'out', invKljuc, mpptPort]);
+                // ožičenje po krovu ide na deonicu string → prekidač,
+                // a vod do invertera na deonicu prekidač → inverter
+                veze.push([sKljuc, 'dc+', qKljuc, 'in',
+                    { duzina: izmereno ? izmereno.ozicenje : undefined, presek }]);
+                veze.push([qKljuc, 'out', invKljuc, mpptPort,
+                    { duzina: izmereno ? izmereno.vod : undefined, presek }]);
             } else {
-                veze.push([sKljuc, 'dc+', invKljuc, mpptPort]);
+                veze.push([sKljuc, 'dc+', invKljuc, mpptPort,
+                    { duzina: izmereno ? izmereno.ukupno : undefined, presek }]);
             }
 
             red += 1;
@@ -171,7 +184,10 @@ export function generisi(p = {}) {
             struja: par.acPrekidac,
             polova: trofazni ? '3P+N' : '1P+N'
         });
-        veze.push([invKljuc, trofazni ? 'L1' : 'L', acq, 'in']);
+        const acDeonica = (duzine && duzine.ac || [])
+            .find(d => d.uloga && d.uloga.startsWith('inverter') && (d.inverter || 1) === i + 1);
+        veze.push([invKljuc, trofazni ? 'L1' : 'L', acq, 'in',
+            acDeonica ? { duzina: acDeonica.duzina } : undefined]);
     }
 
     const sredinaSveg = redoviInvertera.reduce((a, b) => a + b, 0) / redoviInvertera.length;
@@ -226,7 +242,9 @@ export function generisi(p = {}) {
         tip: par.merenje,
         faza: trofazni ? '3' : '1'
     });
-    veze.push([zajednickiIzlaz, zajednickiPort, br, 'in']);
+    const doKpk = (duzine && duzine.ac || []).find(d => d.uloga === 'ac_orman-kpk');
+    veze.push([zajednickiIzlaz, zajednickiPort, br, 'in',
+        doKpk ? { duzina: doKpk.duzina } : undefined]);
 
     const kpk = dodaj('kpk', 'kpk', KOL.kpk, sredinaSveg, {});
     veze.push([br, 'out', kpk, 'in']);
@@ -261,9 +279,15 @@ export function generisi(p = {}) {
         idPo.set(s.kljuc, n.id);
     });
 
-    veze.forEach(([od, odPort, doK, doPort]) => {
+    veze.forEach(([od, odPort, doK, doPort, kabl]) => {
         const a = idPo.get(od), b = idPo.get(doK);
-        if (a && b) model.addEdge(`${a}:${odPort}`, `${b}:${doPort}`);
+        if (!a || !b) return;
+        const grana = model.addEdge(`${a}:${odPort}`, `${b}:${doPort}`);
+        if (grana && !grana.greska && kabl) {
+            // dužine i preseci izmereni na krovu ulaze pravo u model
+            if (kabl.duzina !== undefined) grana.cable.duzina = Math.round(kabl.duzina * 10) / 10;
+            if (kabl.presek !== undefined) grana.cable.presek = kabl.presek;
+        }
     });
 
     model.undoStack = [];

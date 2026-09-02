@@ -7,7 +7,7 @@ import { Canvas } from './canvas.js';
 import { renderPaleta, renderSvojstva } from './panel.js';
 import { izveziSvg, izveziPng, stampaj } from './export.js';
 import { api, skica, prenos } from './api.js';
-import { otvoriGenerator, otvoriTabele } from './dijalozi.js';
+import { otvoriGenerator, otvoriTabele, otvoriProracun } from './dijalozi.js';
 import { generisi } from './generator.js';
 
 const el = (s) => document.querySelector(s);
@@ -158,6 +158,7 @@ function postaviAlatke() {
 
     el('#btn-generator').addEventListener('click', () => otvoriGenerator(model, canvas, model.meta));
     el('#btn-tabele').addEventListener('click', () => otvoriTabele(model));
+    el('#btn-proracun').addEventListener('click', () => otvoriProracun(model, canvas));
 
     el('#btn-demo').addEventListener('click', () => {
         if (!confirm('Zameniti trenutni crtež demo šemom?')) return;

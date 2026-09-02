@@ -6,6 +6,8 @@ Faza 2: generator šeme iz parametara elektrane, auto-raspored,
 tabela kablova i specifikacija opreme.
 Faza 3: string plan — raspored modula na krovu preko učitanog snimka,
 dodela stringova i prenos u generator jednopolne.
+Faza 4: trase i dužine iz geometrije krova, proračun preseka (bakar),
+specifikacija kablova.
 
 ## Pokretanje
 
@@ -54,6 +56,9 @@ krova i prenosi u generator, koji tada zaključava polja „broj panela" i
 | `js/api.js` | `/api/seme`, localStorage skice i prenos plan → šema |
 | `js/list.js` | zajednički okvir lista: format, okvir, legenda, sastavnica |
 | `js/dokument.js` | osnova dokumenta: meta, format, undo/redo, događaji |
+| `js/plan-trase.js` | leapfrog ožičenje, dužine trasa, predlog preseka po stringu |
+| `js/proracun.js` | formule i tabele: pad napona, opteretljivost, izbor preseka |
+| `js/sema-proracun.js` | proračun nad šemom — izvor napajanja se traži u grafu |
 | `js/util.js` | sitne deljene funkcije |
 | `js/app.js` | sklapanje, autosave, demo šema |
 
@@ -92,6 +97,41 @@ oko početne tačke te duži, pa ostaje na mestu.
 
 **Bojenje stringova**: prvi klik u potezu određuje smer — ako je modul već
 u aktivnom stringu, potez ga skida. Ceo potez ulazi u undo kao jedan korak.
+
+## Proračun kablova (Faza 4)
+
+**Presek je predlog, ne konačna vrednost.** Alat bira najmanji standardni
+presek koji istovremeno zadovoljava pad napona i strujnu opteretljivost, uz
+praktični minimum (4 mm² DC, 2,5 mm² AC). Projektant ga potvrđuje.
+
+Formule (bakar, otporni deo; reaktansa se zanemaruje):
+
+```
+DC (dvožilno):   ΔU = 2 · L · I / (κ · S)
+AC jednofazno:   ΔU = 2 · L · I · cosφ / (κ · S)
+AC trofazno:     ΔU = √3 · L · I · cosφ / (κ · S)
+```
+
+κ = 56 m/(Ω·mm²) na 20 °C (48 na 70 °C, 44 na 90 °C — podesivo).
+Pad napona se računa na Vmpp/Impp, a opteretljivost na 1,25 × Isc odnosno
+na struju prekidača koji vod štiti.
+
+Tabele opteretljivosti: PV1-F po EN 50618 (slobodno u vazduhu, 60 °C),
+NYY-J po IEC 60364-5-52 način C (30 °C), sa faktorima za temperaturu i
+grupisanje.
+
+### Odakle dolaze dužine
+
+Iz geometrije krova, ne iz crteža šeme. Za svaki string:
+
+- **ožičenje** — leapfrog putanja između modula (po redu: preko svakog
+  drugog do kraja, pa nazad preko preskočenih, tako da oba kraja izlaze na
+  istoj strani i površina strujne petlje ostane mala)
+- **vod** — od kraja stringa do invertera: manhattan rastojanje po krovu
+  + visina spusta + procenat rezerve, po provodniku
+
+Zato inverter i ormani moraju biti postavljeni na plan (alat **Oprema**) —
+bez njih nema odakle do kuda da se meri.
 
 ## Dodavanje novog simbola
 

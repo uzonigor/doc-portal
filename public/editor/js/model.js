@@ -182,7 +182,15 @@ export class Model extends Dokument {
         return this.commit('poveži', () => {
             const izvor = this.getNode(fromRef.split(':')[0]);
             const cilj = this.getNode(toRef.split(':')[0]);
-            const trofazno = jeTrofazni(izvor) || jeTrofazni(cilj);
+            // Brojilo, priključni ormar i mreža nemaju fazne portove pa se
+            // trofaznost mora naslediti od već povezanog dela AC lanca.
+            const naslednoTrofazno = this.edges.some(e => e.system === 'AC3' &&
+                [e.from, e.to].some(r => {
+                    const id = r.split(':')[0];
+                    return id === izvor.id || id === cilj.id;
+                }));
+
+            const trofazno = jeTrofazni(izvor) || jeTrofazni(cilj) || naslednoTrofazno;
 
             // Veza ka uzemljenju / SPD odvodu nosi samo zaštitni provodnik.
             const zastitna = [fromRef, toRef].some(r => /:pe$/i.test(r));

@@ -7,6 +7,8 @@ import { PlanCanvas } from './plan-canvas.js';
 import { renderPlanSvojstva } from './plan-panel.js';
 import { izveziSvg, izveziPng, stampaj } from './plan-export.js';
 import { api, planSkica, prenos } from './api.js';
+import { TIPOVI_OPREME } from './plan-model.js';
+import { izvestajDuzina } from './plan-trase.js';
 import { escapeXml } from './util.js';
 
 const el = (s) => document.querySelector(s);
@@ -168,7 +170,18 @@ function uJednopolnu() {
     }
 
     const maxMppt = Math.max(...raspodela.flat().map(s => s.mppt));
+    const duzine = izvestajDuzina(model);
+
     prenos.postavi({
+        duzine: {
+            stringovi: duzine.stringovi.map(s => ({
+                oznaka: s.oznaka, inverter: s.inverter, mppt: s.mppt,
+                modula: s.modula, ozicenje: s.ozicenje, vod: s.vod, ukupno: s.ukupno,
+                presek: s.predlog ? s.predlog.presek : null
+            })),
+            ac: duzine.ac
+        },
+        proracun: model.proracun,
         naziv: `${model.meta.naziv} — jednopolna šema`,
         investitor: model.meta.investitor,
         lokacija: model.meta.lokacija,
@@ -194,6 +207,7 @@ const ALATI = [
     { id: 'izbor', naziv: 'Izbor', opis: 'Biranje i pomeranje krovnih ravni' },
     { id: 'boji', naziv: 'Boji', opis: 'Prevlačenjem dodeljuješ module aktivnom stringu' },
     { id: 'iskljuci', naziv: 'Isključi', opis: 'Dimnjak, prozor, senka — modul se ne računa' },
+    { id: 'oprema', naziv: 'Oprema', opis: 'Klikom postavljaš inverter ili orman — odatle se mere trase' },
     { id: 'podloga', naziv: 'Podloga', opis: 'Prevlačenje učitanog snimka' },
     { id: 'kalibracija', naziv: 'Kalibracija', opis: 'Povuci duž poznate dužine da podesiš razmeru' }
 ];
@@ -303,6 +317,17 @@ function postaviAlatke() {
         canvas.postaviAlat(b.getAttribute('data-alat'));
         osveziAlate();
     });
+    canvas.onPromenaAlata = osveziAlate;
+
+    el('#tip-opreme').innerHTML = Object.entries(TIPOVI_OPREME)
+        .map(([k, d]) => `<option value="${k}">${escapeXml(d.naziv)}</option>`).join('');
+    el('#tip-opreme').addEventListener('change', e => { canvas.tipOpreme = e.target.value; });
+
+    el('#prikazi-trase').addEventListener('change', e => {
+        canvas.prikaziTrase = e.target.checked;
+        canvas.render();
+    });
+
     osveziAlate();
 
     el('#btn-polje').addEventListener('click', () => {

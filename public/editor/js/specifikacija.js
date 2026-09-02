@@ -49,15 +49,55 @@ export function tabelaKablova(model) {
     }));
 }
 
-/** Ukupna dužina po tipu i preseku kabla — za nabavku. */
-export function zbirKablova(model) {
+/**
+ * Ukupna dužina po tipu i preseku kabla — za nabavku.
+ *
+ * Dužine već nose rezervu zadatu na string planu, pa se ovde ne dodaje još
+ * jedna; samo se zaokružuje naviše na `korak` metara, kako se kablovi i kupuju.
+ */
+export function zbirKablova(model, korak = 5) {
     const mapa = new Map();
+
     model.edges.forEach(e => {
         if (!e.cable || !e.cable.presek) return;
         const kljuc = `${e.cable.tip || '—'} ${e.conductors.length}×${e.cable.presek} mm²`;
         mapa.set(kljuc, (mapa.get(kljuc) || 0) + (parseFloat(e.cable.duzina) || 0));
     });
-    return [...mapa.entries()].map(([kabl, duzina]) => ({ kabl, duzina }));
+
+    return [...mapa.entries()].map(([kabl, duzina]) => ({
+        kabl,
+        duzina,
+        zaNabavku: korak > 0 ? Math.ceil(duzina / korak) * korak : Math.ceil(duzina)
+    }));
+}
+
+export const KOLONE_PRORACUNA = [
+    { kljuc: 'oznaka', naslov: 'Oznaka' },
+    { kljuc: 'deonica', naslov: 'Deonica' },
+    { kljuc: 'sistem', naslov: 'Sistem' },
+    { kljuc: 'duzina', naslov: 'L (m)' },
+    { kljuc: 'napon', naslov: 'U (V)' },
+    { kljuc: 'struja', naslov: 'Ib (A)' },
+    { kljuc: 'strujaZastite', naslov: 'Iz ≥ (A)' },
+    { kljuc: 'presek', naslov: 'Presek (mm²)' },
+    { kljuc: 'pad', naslov: 'ΔU (%)' },
+    { kljuc: 'razlog', naslov: 'Merodavno' }
+];
+
+/** Redovi proračuna pripremljeni za tabelu i CSV. */
+export function redoviProracuna(rezultat) {
+    return rezultat.map(r => ({
+        oznaka: r.oznaka,
+        deonica: `${r.od} → ${r.do}`,
+        sistem: NAZIV_SISTEMA[r.sistem] || r.sistem,
+        duzina: r.duzina ? r.duzina.toFixed(1) : '',
+        napon: r.napon ? r.napon.toFixed(0) : '',
+        struja: r.struja ? r.struja.toFixed(1) : '',
+        strujaZastite: r.strujaZastite ? r.strujaZastite.toFixed(1) : '',
+        presek: r.predlog && r.predlog.presek ? String(r.predlog.presek) : (r.napomena ? '—' : ''),
+        pad: r.predlog && r.predlog.presek ? r.predlog.padProcenat.toFixed(2) : '',
+        razlog: r.predlog && r.predlog.presek ? r.predlog.razlog : (r.napomena || '')
+    }));
 }
 
 /** Tehnički opis elementa iz njegovih parametara. */
