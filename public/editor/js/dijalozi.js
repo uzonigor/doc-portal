@@ -12,6 +12,7 @@ import {
 } from './specifikacija.js';
 import { proracunKablova, primeniPredloge } from './sema-proracun.js';
 import { PODRAZUMEVANI_PARAMETRI } from './proracun.js';
+import { moduli as katalogModula, inverteri as katalogInvertera, nadji, podaci } from './katalog.js';
 
 // ── generator ────────────────────────────────────────────────────────────────
 
@@ -24,6 +25,7 @@ const POLJA = [
         { put: 'brojProjekta', label: 'Broj projekta', tip: 'text' }
     ]},
     { grupa: 'Paneli', polja: [
+        { katalog: 'modul', cilj: 'panel', label: 'Iz kataloga' },
         { put: 'brojPanela', label: 'Broj panela', tip: 'int' },
         { put: 'panel.pmax', label: 'Pmax (W)', tip: 'float' },
         { put: 'panel.voc', label: 'Voc (V)', tip: 'float' },
@@ -31,6 +33,7 @@ const POLJA = [
         { put: 'panel.proizvodjac', label: 'Proizvođač', tip: 'text' }
     ]},
     { grupa: 'Inverteri', polja: [
+        { katalog: 'inverter', cilj: 'inverter', label: 'Iz kataloga' },
         { put: 'invertera', label: 'Broj invertera', tip: 'int' },
         { put: 'inverter.snaga', label: 'Snaga po inverteru (kW)', tip: 'float' },
         { put: 'inverter.faza', label: 'Broj faza', tip: 'select', opcije: [['1', '1-fazni'], ['3', '3-fazni']] },
@@ -99,10 +102,31 @@ export function otvoriGenerator(model, canvas, meta = {}, preset = null) {
     // Polja koja string plan već određuje ne smeju da se ručno menjaju.
     const zakljucana = izPlana ? new Set(['brojPanela', 'invertera']) : new Set();
 
+    function osveziRekap() {
+        const r = rekapitulacija(par);
+        rekapEl.innerHTML = `<h4>Rezultat</h4><dl class="rekap">
+            ${Object.entries(r.vrednosti).map(([k, v]) => `<dt>${escapeXml(k)}</dt><dd>${escapeXml(v)}</dd>`).join('')}
+        </dl>
+        ${r.upozorenja.length ? `<ul class="upozorenja">${r.upozorenja.map(u =>
+            `<li>${escapeXml(u)}</li>`).join('')}</ul>` : ''}
+        ${izPlana ? `<p class="mala"><b>Raspored stringova dolazi iz string plana</b> —
+            broj panela i invertera se odatle čitaju i ovde se ne menjaju.</p>` : ''}
+        <p class="mala">Šema se generiše sa auto-rasporedom; sve se posle može doterati u editoru.</p>`;
+    }
+
+    function crtajPolja() {
     poljaEl.innerHTML = POLJA.map(g => `
         <fieldset>
             <legend>${escapeXml(g.grupa)}</legend>
             ${g.polja.map(f => {
+                if (f.katalog) {
+                    const spisak = f.katalog === 'modul' ? katalogModula() : katalogInvertera();
+                    return `<label class="preko-dva">${escapeXml(f.label)}
+                        <select data-katalog="${f.katalog}" data-cilj="${f.cilj}">
+                            <option value="">— izaberi —</option>
+                            ${spisak.map(k => `<option value="${escapeXml(k.id)}">${escapeXml(k.naziv)}</option>`).join('')}
+                        </select></label>`;
+                }
                 const v = uzmi(par, f.put);
                 const onemoguceno = zakljucana.has(f.put) ? ' disabled title="Dolazi iz string plana"' : '';
                 if (f.tip === 'check') {
@@ -120,19 +144,18 @@ export function otvoriGenerator(model, canvas, meta = {}, preset = null) {
             }).join('')}
         </fieldset>`).join('');
 
-    function osveziRekap() {
-        const r = rekapitulacija(par);
-        rekapEl.innerHTML = `<h4>Rezultat</h4><dl class="rekap">
-            ${Object.entries(r.vrednosti).map(([k, v]) => `<dt>${escapeXml(k)}</dt><dd>${escapeXml(v)}</dd>`).join('')}
-        </dl>
-        ${r.upozorenja.length ? `<ul class="upozorenja">${r.upozorenja.map(u =>
-            `<li>${escapeXml(u)}</li>`).join('')}</ul>` : ''}
-        ${izPlana ? `<p class="mala"><b>Raspored stringova dolazi iz string plana</b> —
-            broj panela i invertera se odatle čitaju i ovde se ne menjaju.</p>` : ''}
-        <p class="mala">Šema se generiše sa auto-rasporedom; sve se posle može doterati u editoru.</p>`;
-    }
+    poljaEl.querySelectorAll('select[data-katalog]').forEach(el => {
+        el.addEventListener('change', () => {
+            const stavka = nadji(el.getAttribute('data-katalog'), el.value);
+            if (!stavka) return;
+            // katalog puni parametre; ostala polja u grupi se osvežavaju
+            Object.assign(par[el.getAttribute('data-cilj')], podaci(stavka));
+            crtajPolja();
+            osveziRekap();
+        });
+    });
 
-    poljaEl.querySelectorAll('input, select').forEach(el => {
+    poljaEl.querySelectorAll('input[data-put], select[data-put]').forEach(el => {
         el.addEventListener('input', () => {
             const put = el.getAttribute('data-put');
             let v;
@@ -143,7 +166,9 @@ export function otvoriGenerator(model, canvas, meta = {}, preset = null) {
             osveziRekap();
         });
     });
+    }
 
+    crtajPolja();
     osveziRekap();
 
     const d = otvori(izPlana ? 'Generiši šemu iz string plana' : 'Generiši šemu iz parametara', koren, 900);

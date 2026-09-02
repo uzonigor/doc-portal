@@ -3,8 +3,10 @@
  */
 
 import { escapeXml } from './util.js';
+import { pitaj } from './dijalog.js';
 import { TIPOVI_OPREME } from './plan-model.js';
 import { izvestajDuzina } from './plan-trase.js';
+import { moduli as katalogModula, nadji, podaci, dodaj } from './katalog.js';
 
 function polje(label, tip, vrednost, cilj, kljuc, dodatno = '') {
     const korak = tip === 'int' ? '1' : (tip === 'float' ? 'any' : null);
@@ -118,13 +120,14 @@ function odeljakTrasa(model) {
                 ${polje('Visina spusta (m)', 'float', t.visinaSpusta, 'trasa', 'visinaSpusta')}
                 ${polje('Rezerva (%)', 'float', t.rezerva, 'trasa', 'rezerva')}
             </div>
+            ${polje('Fabrički priključak modula (m)', 'float', t.duzinaPrikljucka, 'trasa', 'duzinaPrikljucka')}
         </div>
 
         ${izv.nedostajeInverter ? `<ul class="upozorenja"><li>Nema invertera na planu —
             vodovi do invertera se ne mogu izmeriti. Dodaj ga alatom <b>Oprema</b>.</li></ul>` : ''}
 
         ${redovi.length ? `<table class="tabela sitna">
-            <thead><tr><th>String</th><th>Ožičenje</th><th>Vod +</th><th>Vod −</th><th>Presek</th><th>Pad</th></tr></thead>
+            <thead><tr><th>String</th><th>Ožičenje</th><th>Vod +</th><th>Vod −</th><th title="Kabl koji treba dokupiti, bez onoga što pokrivaju fabrički priključci">Nabavka</th><th>Presek</th><th>Pad</th></tr></thead>
             <tbody>${redovi.map(s => {
                 const pr = s.predlog;
                 const prelazi = pr && pr.padProcenat > (model.proracun.padDC ?? 3);
@@ -134,6 +137,7 @@ function odeljakTrasa(model) {
                 <td>${s.ozicenje.toFixed(1)} m</td>
                 <td>${s.vodPlus ? s.vodPlus.toFixed(1) + ' m' : '—'}</td>
                 <td>${s.vodMinus ? s.vodMinus.toFixed(1) + ' m' : '—'}</td>
+                <td><b>${s.dodatno.toFixed(1)} m</b></td>
                 <td>${pr && pr.presek ? `<b>${pr.presek}</b> mm²` : '—'}</td>
                 <td class="${prelazi ? 'opasno' : (iznadCilja ? 'iznad-cilja' : '')}">${pr && pr.presek ? pr.padProcenat.toFixed(2) + ' %' : '—'}</td>
             </tr>`; }).join('')}</tbody>
@@ -159,9 +163,13 @@ function odeljakTrasa(model) {
         </table>` : ''}
 
         <dl class="rekap">
-            <dt>DC ukupno</dt><dd>${izv.ukupnoDC.toFixed(1)} m</dd>
+            <dt>DC provodnika ukupno</dt><dd>${izv.ukupnoDC.toFixed(1)} m</dd>
+            <dt title="Bez onoga što pokrivaju fabrički priključci modula">DC za nabavku</dt>
+                <dd>${izv.dodatnoDC.toFixed(1)} m</dd>
             <dt>AC ukupno</dt><dd>${izv.ukupnoAC.toFixed(1)} m</dd>
-        </dl>`;
+        </dl>
+        <p class="mala"><b>Ožičenje</b> je stvarna dužina provodnika u nizu i po njoj se računa
+           pad napona. <b>Nabavka</b> je samo ono što fabrički priključci modula ne pokriju.</p>`;
 }
 
 function odeljakProracuna(model) {
@@ -196,9 +204,16 @@ function odeljakProracuna(model) {
 
 function odeljakModula(model) {
     const m = model.modul;
+    const spisak = katalogModula();
+
     return `
         <h4>Modul</h4>
         <div class="forma">
+            <label>Iz kataloga
+                <select data-cilj="katalog-modul">
+                    <option value="">— izaberi —</option>
+                    ${spisak.map(k => `<option value="${escapeXml(k.id)}">${escapeXml(k.naziv)}</option>`).join('')}
+                </select></label>
             ${polje('Proizvođač', 'text', m.proizvodjac, 'modul', 'proizvodjac')}
             <div class="par">
                 ${polje('Širina (m)', 'float', m.sirina, 'modul', 'sirina')}
@@ -213,6 +228,9 @@ function odeljakModula(model) {
                 ${polje('Vmpp (V)', 'float', m.vmpp, 'modul', 'vmpp')}
             </div>
             ${polje('Impp (A)', 'float', m.impp, 'modul', 'impp')}
+        </div>
+        <div class="akcije">
+            <button data-akcija="u-katalog">Sačuvaj modul u katalog</button>
         </div>
         <p class="mala">Pad napona se računa na Vmpp/Impp, a zaštita i
            opteretljivost na Voc (−10 °C) i 1,25 × Isc.</p>`;
@@ -299,6 +317,15 @@ function vezi(el, model, polje_, oprema_, canvas) {
         });
     });
 
+    const izborKataloga = el.querySelector('select[data-cilj="katalog-modul"]');
+    if (izborKataloga) izborKataloga.addEventListener('change', () => {
+        const stavka = nadji('modul', izborKataloga.value);
+        if (!stavka) return;
+        model.commit('modul iz kataloga', () => {
+            Object.assign(model.modul, podaci(stavka));
+        });
+    });
+
     const fajl = el.querySelector('input[data-cilj="podloga-fajl"]');
     if (fajl) fajl.addEventListener('change', () => {
         const f = fajl.files && fajl.files[0];
@@ -306,7 +333,7 @@ function vezi(el, model, polje_, oprema_, canvas) {
     });
 
     el.querySelectorAll('button[data-akcija]').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             const a = btn.getAttribute('data-akcija');
             const id = btn.getAttribute('data-id');
 
@@ -342,6 +369,17 @@ function vezi(el, model, polje_, oprema_, canvas) {
             if (a === 'obrisi-opremu' && oprema_) {
                 model.removeOprema([oprema_.id]);
                 canvas.postaviIzbor([]);
+            }
+            if (a === 'u-katalog') {
+                const m = model.modul;
+                const predlog = m.proizvodjac
+                    ? `${m.proizvodjac} ${m.pmax} W`
+                    : `${m.pmax} W (${(m.sirina * 1000).toFixed(0)}×${(m.visina * 1000).toFixed(0)})`;
+                const naziv = await pitaj('Sačuvaj modul u katalog', 'Pod kojim nazivom?', predlog);
+                if (naziv === null) return;
+                const r = dodaj('modul', { ...model.modul, naziv });
+                if (r.greska) canvas.onPoruka(r.greska, 'greska');
+                else { canvas.onPoruka(`Modul „${naziv}" je u katalogu.`, 'uspeh'); model.emit('katalog'); }
             }
             if (a === 'obrisi-podlogu') {
                 model.commit('ukloni podlogu', () => { model.podloga.slika = null; });

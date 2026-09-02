@@ -79,6 +79,7 @@ krova i prenosi u generator, koji tada zaključava polja „broj panela" i
 | `js/plan-trase.js` | leapfrog ožičenje, dužine trasa, predlog preseka po stringu |
 | `js/proracun.js` | formule i tabele: pad napona, opteretljivost, izbor preseka |
 | `js/sema-proracun.js` | proračun nad šemom — izvor napajanja se traži u grafu |
+| `js/katalog.js` | katalog modula i invertera koji se ponavljaju |
 | `js/util.js` | sitne deljene funkcije |
 | `js/app.js` | sklapanje, autosave, demo šema |
 
@@ -161,6 +162,17 @@ Iz geometrije krova, ne iz crteža šeme. Za svaki string:
   `vodMinus`) umesto da se jedna dužina množi sa dva: manhattan rastojanje
   po krovu + visina spusta + procenat rezerve, za svaki pol posebno.
 
+### Šta ide u nabavku
+
+Moduli već dolaze ožičeni, pa se za nabavku broji samo ono što fabrički
+priključci ne pokriju. Svaku vezu između dva modula pokrivaju **dva**
+priključka — + jednog i − drugog; dokupljuje se ostatak, po vezi. Parametar
+je *Fabrički priključak modula* (podrazumevano 1,2 m po polu).
+
+Na pad napona to nema uticaja — i fabrički kabl je provodnik, pa proračun
+i dalje ide na punu dužinu. Razlika je znatna: string od 16 modula ima
+32,6 m ožičenja, a sa priključcima od 1,2 m treba dokupiti 0,2 m.
+
 Odatle tri broja koja ne treba mešati:
 
 | Polje | Šta je | Gde se koristi |
@@ -179,6 +191,15 @@ svoj natpis sa dužinom. Trase prvo izlaze iz polja upravno pa idu vodoravno
 
 Zato inverter i ormani moraju biti postavljeni na plan (alat **Oprema**) —
 bez njih nema odakle do kuda da se meri.
+
+## Katalog opreme
+
+Moduli i inverteri se biraju iz padajuće liste umesto da se specifikacije
+prekucavaju na svakom projektu — u panelu string plana i u formi generatora.
+
+Ugrađene stavke su **generičke**: tipične vrednosti po klasi snage, ne
+podaci konkretnog proizvođača. Svoje stvarne modele projektant dodaje iz
+editora (*Sačuvaj modul u katalog*) i oni se čuvaju lokalno, uz ugrađene.
 
 ## Dodavanje novog simbola
 

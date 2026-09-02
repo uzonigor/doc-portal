@@ -49,6 +49,14 @@ function legendaStavke(model) {
                `${(m.sirina * 1000).toFixed(0)}×${(m.visina * 1000).toFixed(0)} mm`
     });
 
+    const izv = izvestajDuzina(model);
+    if (izv.ukupnoDC > 0) {
+        stavke.push({
+            tekst: `DC provodnika ${izv.ukupnoDC.toFixed(0)} m · za nabavku ${izv.dodatnoDC.toFixed(0)} m ` +
+                   `(bez fabričkih priključaka)`
+        });
+    }
+
     return stavke;
 }
 

@@ -80,7 +80,15 @@ export class PlanModel extends Dokument {
             // do invertera, pa se dužina računa manhattan rastojanjem.
             putanja: 'manhattan',
             visinaSpusta: 3,     // m — vertikalni spust od krova do invertera
-            rezerva: 10          // % — savijanja, ulazak u orman, rezerva
+            rezerva: 10,         // % — savijanja, ulazak u orman, rezerva
+
+            /**
+             * Dužina fabričkog priključnog kabla po polu modula. Moduli već
+             * dolaze ožičeni, pa se za NABAVKU broji samo ono što fabrički
+             * kablovi ne pokriju. Na pad napona nema uticaja — i fabrički
+             * kabl je provodnik.
+             */
+            duzinaPrikljucka: 1.2
         }, data.trasa);
     }
 

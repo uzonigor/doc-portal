@@ -102,6 +102,21 @@ function duzinaPutanje(tacke, nacin) {
 }
 
 /**
+ * Koliko kabla treba DOKUPITI za ožičenje stringa.
+ *
+ * Svaku vezu između dva modula pokrivaju dva fabrička priključka — + jednog
+ * i − drugog. Dokupljuje se samo ono što preko toga ostane, po vezi.
+ */
+function dodatnoOzicenje(tacke, prikljucak) {
+    const pokriveno = 2 * (prikljucak || 0);
+    let d = 0;
+    for (let i = 0; i < tacke.length - 1; i++) {
+        d += Math.max(0, rastojanje(tacke[i], tacke[i + 1], 'vazdusna') - pokriveno);
+    }
+    return d;
+}
+
+/**
  * Dužina jednog voda od tačke do tačke: manhattan po krovu + vertikalni
  * spust + procenat rezerve na savijanja i ulazak u orman.
  */
@@ -142,6 +157,8 @@ export function duzineStringova(model) {
         // Ožičenje ide stvarnim rasporedom modula, pa je tu vazdušna linija
         // realnija od manhattan-a — kabl ide dijagonalno preko okvira modula.
         const ozicenje = duzinaPutanje(putanja, 'vazdusna');
+        const prikljucak = t.duzinaPrikljucka || 0;
+        const ozicenjeDodatno = dodatnoOzicenje(putanja, prikljucak);
 
         // Leapfrog se zatvara blizu početka: prvi modul nosi jedan pol,
         // poslednji drugi. Oba kraja se mere do invertera zasebno.
@@ -168,11 +185,18 @@ export function duzineStringova(model) {
             inverterPos: inv ? inv.pos : null,
             inverterOznaka: inv ? inv.oznaka : null,
             ozicenje,
+            ozicenjeDodatno,
             vodPlus,
             vodMinus,
             vod,
             vodUkupno,
             ukupno: ozicenje + vodUkupno,
+
+            // za nabavku: fabrički priključci pokrivaju deo, i na krajevima
+            // stringa po jedan priključak ide u vod
+            dodatno: ozicenjeDodatno
+                + Math.max(0, vodPlus - prikljucak)
+                + Math.max(0, vodMinus - prikljucak),
             nacin
         };
     });
@@ -244,6 +268,7 @@ export function izvestajDuzina(model) {
         stringovi,
         ac,
         ukupnoDC: stringovi.reduce((z, s) => z + s.ukupno, 0),
+        dodatnoDC: stringovi.reduce((z, s) => z + s.dodatno, 0),
         ukupnoAC: ac.reduce((z, d) => z + d.duzina, 0),
         nedostajeInverter: stringovi.some(s => s.modula > 0 && !s.inverterPos)
     };
