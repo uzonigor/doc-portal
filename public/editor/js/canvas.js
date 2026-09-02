@@ -7,6 +7,7 @@
  */
 
 import { crtezSvg } from './render.js';
+import { crtez3lSvg } from './render-3l.js';
 import { nodeBBox, portPosition } from './symbols.js';
 
 const GRID = 10;
@@ -19,6 +20,7 @@ export class Canvas {
         this.onPoruka = opcije.onPoruka || (() => {});
 
         this.izabrani = new Set();
+        this.prikaz = '1L';      // '1L' jednopolna, '3L' tropolna — isti model
         this.pan = { x: 80, y: 60 };
         this.zoom = 1;
 
@@ -64,10 +66,15 @@ export class Canvas {
     render() {
         this.viewport.setAttribute('transform', `translate(${this.pan.x} ${this.pan.y}) scale(${this.zoom})`);
         this.pozadinaEl.setAttribute('transform', `translate(${this.pan.x} ${this.pan.y}) scale(${this.zoom})`);
-        this.viewport.innerHTML = crtezSvg(this.model, {
-            izabrani: [...this.izabrani],
-            interaktivan: true
-        });
+        this.svg.setAttribute('data-prikaz', this.prikaz);
+        this.viewport.innerHTML = this.prikaz === '3L'
+            ? crtez3lSvg(this.model, { izabrani: [...this.izabrani] })
+            : crtezSvg(this.model, { izabrani: [...this.izabrani], interaktivan: true });
+    }
+
+    postaviPrikaz(prikaz) {
+        this.prikaz = prikaz;
+        this.render();
     }
 
     postaviIzbor(ids) {

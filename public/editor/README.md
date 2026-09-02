@@ -8,6 +8,7 @@ Faza 3: string plan — raspored modula na krovu preko učitanog snimka,
 dodela stringova i prenos u generator jednopolne.
 Faza 4: trase i dužine iz geometrije krova, proračun preseka (bakar),
 specifikacija kablova.
+Faza 5: tropolna šema — prikaz istog grafa po žilama.
 
 ## Pokretanje
 
@@ -33,7 +34,7 @@ string plan ──> raspodela stringova ──> generator ──> jednopolna še
 
 model (JSON graf) ──┬── render.js  → SVG (canvas i izvoz)
                     ├── export.js  → list sa okvirom, legendom i sastavnicom
-                    └── (kasnije)  → tropolni renderer nad istim podacima
+                    └── render-3l.js → tropolna nad ISTIM podacima
 ```
 
 Krug je zatvoren: broj modula po stringu se ne kuca dvaput — čita se sa
@@ -45,7 +46,8 @@ krova i prenosi u generator, koji tada zaključava polja „broj panela" i
 | `js/symbols.js` | registar simbola: geometrija, portovi, šema parametara |
 | `js/model.js` | graf model, validacija, undo/redo |
 | `js/router.js` | ortogonalno rutiranje provodnika (L-ruta + A* kad ima prepreka) |
-| `js/render.js` | model → SVG (koriste ga i canvas i izvoz) |
+| `js/render.js` | model → SVG, jednopolna (koriste ga i canvas i izvoz) |
+| `js/render-3l.js` | model → SVG, tropolna: žile kao paralelne linije, polovi |
 | `js/canvas.js` | pan/zoom, izbor, pomeranje, povezivanje portova |
 | `js/panel.js` | paleta simbola i panel svojstava (forma se generiše iz `props`) |
 | `js/export.js` | list A3/A4 sa okvirom, legendom i sastavnicom; SVG/PNG/štampa |
@@ -162,6 +164,33 @@ legenda i validacija se izvode iz te definicije, bez izmena drugde.
 }
 ```
 
-`conductors` je razlog zbog kog tropolna šema neće biti novi editor nego
-novi renderer: jednopolni prikaz crta jednu liniju sa oznakom `3P+N+PE`,
+`conductors` je razlog zbog kog tropolna šema nije nov editor nego nov
+renderer: jednopolni prikaz crta jednu liniju sa oznakom `3P+N+PE`,
 tropolni crta po jednu liniju po žili.
+
+## Tropolna šema (Faza 5)
+
+Prekidač u traci menja prikaz; model je isti. Menja se na jednopolnoj, a
+tropolna se iz njega izvodi.
+
+**Višepolni uređaji se ne crtaju novim simbolima.** Svaki simbol nosi
+`poli`, koji kaže kako se ponaša na tropolnoj:
+
+| `poli` | Ponašanje | Primeri |
+|---|---|---|
+| `polni` | isti simbol ponovljen po svakom polu koji prekida, polovi povezani isprekidanom mehaničkom spregom | prekidači, osigurači, rastavljači |
+| `blok` | uređaj kroz koji žile ulaze u telo; ako ima portove nazvane po žilama (L1, L2, L3, N, PE) koriste se oni, inače se telo razvuče preko snopa | inverter, brojilo, ormani, mreža |
+| `odvod` | po jedan element između svake faze i PE | prenaponska zaštita, uzemljenje |
+
+Koje žile element prekida izvodi se iz parametra `polova` (`3P` prekida
+faze, `3P+N` i neutralni, PE se nikad ne prekida). Na DC strani je `polova`
+prost broj provodnika.
+
+Gde generičko pravilo ne bi bilo tačno, simbol može definisati `draw3l` i
+sam nacrtati višepolni prikaz — tako je urađen FID, kod kog je sumacioni
+transformator zajednički za sve polove, pa se elipsa crta jednom preko
+celog snopa umesto po polu.
+
+Žile se crtaju paralelnim pomeranjem iste putanje koju koristi i
+jednopolna (`pomeriPoliliniju`), pa raspored elemenata ostaje isti na oba
+lista.

@@ -152,9 +152,20 @@ function postaviAlatke() {
     el('#btn-uklopi').addEventListener('click', () => canvas.uklopiUProzor());
     el('#btn-zoom-plus').addEventListener('click', () => canvas.postaviZoom(canvas.zoom * 1.2));
     el('#btn-zoom-minus').addEventListener('click', () => canvas.postaviZoom(canvas.zoom / 1.2));
-    el('#btn-svg').addEventListener('click', () => izveziSvg(model));
-    el('#btn-png').addEventListener('click', () => izveziPng(model));
-    el('#btn-pdf').addEventListener('click', () => stampaj(model));
+    el('#prikaz').addEventListener('click', (e) => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        canvas.postaviPrikaz(b.getAttribute('data-prikaz'));
+        el('#prikaz').querySelectorAll('button').forEach(x =>
+            x.classList.toggle('aktivan', x === b));
+        el('#pomoc-1l').hidden = canvas.prikaz !== '1L';
+        el('#pomoc-3l').hidden = canvas.prikaz !== '3L';
+    });
+
+    const opcijePrikaza = () => ({ prikaz: canvas.prikaz });
+    el('#btn-svg').addEventListener('click', () => izveziSvg(model, opcijePrikaza()));
+    el('#btn-png').addEventListener('click', () => izveziPng(model, opcijePrikaza()));
+    el('#btn-pdf').addEventListener('click', () => stampaj(model, opcijePrikaza()));
 
     el('#btn-generator').addEventListener('click', () => otvoriGenerator(model, canvas, model.meta));
     el('#btn-tabele').addEventListener('click', () => otvoriTabele(model));

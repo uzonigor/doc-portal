@@ -1,6 +1,16 @@
 /**
  * Registar simbola (IEC 60617 / SRPS).
  *
+ * `poli` određuje kako se simbol crta na TROPOLNOJ šemi:
+ *   'polni' - prekidački element: isti simbol se ponavlja po svakom polu koji
+ *             prekida, a polovi se povezuju isprekidanom mehaničkom spregom.
+ *             Tako 3-polni prekidač ne traži nov simbol.
+ *   'blok'  - uređaj kroz koji provodnici prolaze u telo (inverter, brojilo,
+ *             ormani, mreža). Ako simbol ima portove nazvane po žilama
+ *             (L1, L2, L3, N, PE), koriste se oni; inače se telo razvuče
+ *             preko snopa i naprave se priključci po žili.
+ *   'odvod' - element koji visi sa voda na PE (prenaponska zaštita, uzemljenje).
+ *
  * Svaki simbol definiše:
  *   size    - [širina, visina] u jedinicama crteža (1 jedinica = 1 px pri zoom 1)
  *   ports   - priključne tačke: { id: { x, y, dir, system, label } }
@@ -32,6 +42,7 @@ export const SYMBOLS = {
     // ─────────────────────────────── DC strana ───────────────────────────────
 
     pv_modul: {
+        poli: 'blok',
         naziv: 'PV modul',
         kategorija: 'dc',
         oznaka: 'G',
@@ -55,6 +66,7 @@ export const SYMBOLS = {
     },
 
     pv_string: {
+        poli: 'blok',
         naziv: 'PV niz (string)',
         kategorija: 'dc',
         oznaka: 'G',
@@ -91,6 +103,7 @@ export const SYMBOLS = {
     },
 
     string_kutija: {
+        poli: 'blok',
         naziv: 'String kutija (DC orman)',
         kategorija: 'dc',
         oznaka: 'A',
@@ -111,6 +124,7 @@ export const SYMBOLS = {
     },
 
     dc_osigurac: {
+        poli: 'polni',
         naziv: 'DC osigurač',
         kategorija: 'dc',
         oznaka: 'F',
@@ -132,6 +146,7 @@ export const SYMBOLS = {
     },
 
     dc_prekidac: {
+        poli: 'polni',
         naziv: 'DC prekidač / rastavljač',
         kategorija: 'dc',
         oznaka: 'Q',
@@ -154,6 +169,7 @@ export const SYMBOLS = {
     },
 
     dc_spd: {
+        poli: 'odvod',
         naziv: 'DC prenaponska zaštita (SPD)',
         kategorija: 'dc',
         oznaka: 'F',
@@ -176,6 +192,7 @@ export const SYMBOLS = {
     // ────────────────────────────── Konverzija ───────────────────────────────
 
     inverter_1f: {
+        poli: 'blok',
         naziv: 'Inverter 1-fazni',
         kategorija: 'konverzija',
         oznaka: 'T',
@@ -201,6 +218,7 @@ export const SYMBOLS = {
     },
 
     inverter_3f: {
+        poli: 'blok',
         naziv: 'Inverter 3-fazni',
         kategorija: 'konverzija',
         oznaka: 'T',
@@ -230,6 +248,7 @@ export const SYMBOLS = {
     },
 
     baterija: {
+        poli: 'blok',
         naziv: 'Baterija (skladište)',
         kategorija: 'konverzija',
         oznaka: 'G',
@@ -253,6 +272,7 @@ export const SYMBOLS = {
     // ─────────────────────────────── AC strana ───────────────────────────────
 
     ac_prekidac: {
+        poli: 'polni',
         naziv: 'AC prekidač / osigurač',
         kategorija: 'ac',
         oznaka: 'Q',
@@ -276,6 +296,7 @@ export const SYMBOLS = {
     },
 
     fid: {
+        poli: 'polni',
         naziv: 'FID sklopka (RCD)',
         kategorija: 'ac',
         oznaka: 'Q',
@@ -295,10 +316,34 @@ export const SYMBOLS = {
             <rect x="10" y="8" width="36" height="32" ${S}/>
             <line x1="10" y1="24" x2="46" y2="24" ${THIN}/>
             <ellipse cx="28" cy="24" rx="12" ry="8" ${S}/>
-            <line x1="46" y1="24" x2="56" y2="24" ${S}/>`
+            <line x1="46" y1="24" x2="56" y2="24" ${S}/>`,
+
+        /**
+         * Na tropolnoj FID nije više odvojenih uređaja nego JEDAN višepolni:
+         * kroz sve polove prolazi zajednički sumacioni transformator, pa se
+         * elipsa crta jednom preko celog snopa.
+         */
+        draw3l: (props, o) => {
+            const n = o.polova.length;
+            const visina = (n - 1) * o.razmak;
+            const kontakti = o.polova.map((_, i) => {
+                const y = 24 + i * o.razmak;
+                return `<line x1="0" y1="${y}" x2="16" y2="${y}" ${S}/>
+                        <line x1="16" y1="${y}" x2="34" y2="${y - 12}" ${S}/>
+                        <circle cx="16" cy="${y}" r="2.2" ${SF}/>
+                        <circle cx="38" cy="${y}" r="2.2" ${SF}/>
+                        <line x1="38" y1="${y}" x2="56" y2="${y}" ${S}/>`;
+            }).join('');
+
+            return `
+                ${kontakti}
+                <ellipse cx="28" cy="${24 + visina / 2}" rx="15" ry="${visina / 2 + 12}" ${S}/>
+                <line x1="34" y1="12" x2="34" y2="${24 + visina}" ${S} stroke-dasharray="3 3" stroke-width="1"/>`;
+        }
     },
 
     ac_spd: {
+        poli: 'odvod',
         naziv: 'AC prenaponska zaštita (SPD)',
         kategorija: 'ac',
         oznaka: 'F',
@@ -319,6 +364,7 @@ export const SYMBOLS = {
     },
 
     sabirnica: {
+        poli: 'blok',
         naziv: 'Sabirnica',
         kategorija: 'ac',
         oznaka: 'W',
@@ -339,6 +385,7 @@ export const SYMBOLS = {
     },
 
     ac_orman: {
+        poli: 'blok',
         naziv: 'AC razvodni orman (PV-RO)',
         kategorija: 'ac',
         oznaka: 'A',
@@ -359,6 +406,7 @@ export const SYMBOLS = {
     // ───────────────────────────── Merenje i mreža ───────────────────────────
 
     brojilo: {
+        poli: 'blok',
         naziv: 'Dvosmerno brojilo',
         kategorija: 'merenje',
         oznaka: 'P',
@@ -378,6 +426,7 @@ export const SYMBOLS = {
     },
 
     strujni_transformator: {
+        poli: 'polni',
         naziv: 'Strujni merni transformator',
         kategorija: 'merenje',
         oznaka: 'T',
@@ -396,6 +445,7 @@ export const SYMBOLS = {
     },
 
     kpk: {
+        poli: 'blok',
         naziv: 'Priključni ormar (KPK/MRO)',
         kategorija: 'merenje',
         oznaka: 'A',
@@ -415,6 +465,7 @@ export const SYMBOLS = {
     },
 
     mreza: {
+        poli: 'blok',
         naziv: 'Distributivna mreža',
         kategorija: 'merenje',
         oznaka: 'W',
@@ -433,6 +484,7 @@ export const SYMBOLS = {
     },
 
     transformator: {
+        poli: 'blok',
         naziv: 'Transformator SN/NN',
         kategorija: 'merenje',
         oznaka: 'T',
@@ -456,6 +508,7 @@ export const SYMBOLS = {
     // ──────────────────────────────── Ostalo ─────────────────────────────────
 
     uzemljenje: {
+        poli: 'odvod',
         naziv: 'Uzemljenje (PE)',
         kategorija: 'ostalo',
         oznaka: 'X',
@@ -474,6 +527,7 @@ export const SYMBOLS = {
     },
 
     potrosac: {
+        poli: 'blok',
         naziv: 'Potrošač / objekat',
         kategorija: 'ostalo',
         oznaka: 'E',
@@ -490,6 +544,7 @@ export const SYMBOLS = {
     },
 
     komunikacija: {
+        poli: 'blok',
         naziv: 'Komunikacija / monitoring',
         kategorija: 'ostalo',
         oznaka: 'A',
@@ -507,6 +562,36 @@ export const SYMBOLS = {
             <circle cx="28" cy="26" r="2" ${SF}/>`
     }
 };
+
+/** Kako se simbol crta na tropolnoj šemi. */
+export function poliTip(type) {
+    return getSymbol(type).poli || 'blok';
+}
+
+/**
+ * Žile koje dati element PREKIDA. Zavisi od parametra `polova`:
+ * 3P prekida faze, 3P+N i faze i neutralni, PE se nikad ne prekida.
+ */
+export function prekinuteZile(node, zile) {
+    const polova = String(node.props?.polova ?? '');
+
+    // Na DC strani `polova` je prost broj provodnika koje element prekida.
+    if (zile.includes('L+')) {
+        const broj = parseInt(polova, 10);
+        return Number.isFinite(broj) && broj > 0 ? zile.slice(0, broj) : zile;
+    }
+
+    const faze = zile.filter(z => /^L/.test(z));
+    const jedna = faze.slice(0, 1);
+
+    if (/^1P\+N|^2P/.test(polova)) return [...jedna, 'N'].filter(z => zile.includes(z));
+    if (/^1P/.test(polova)) return jedna;
+    if (/^3P\+N|^4P/.test(polova)) return [...faze, 'N'].filter(z => zile.includes(z));
+    if (/^3P/.test(polova)) return faze;
+
+    // bez zadatih polova: prekida sve osim zaštitnog provodnika
+    return zile.filter(z => z !== 'PE');
+}
 
 /** Vrati definiciju simbola ili baci grešku sa jasnom porukom. */
 export function getSymbol(type) {

@@ -467,3 +467,20 @@ svg[data-alat="kalibracija"] { cursor: crosshair; }
 .proracun-tabela { overflow-x: auto; }
 
 .iznad-cilja { color: #975a16; }
+
+/* ── tropolni prikaz ─────────────────────────────────────────────────────── */
+
+#prikaz button.aktivan { background: var(--akcenat); color: #fff; border-color: var(--akcenat); }
+
+.edge-3l .zila { stroke: #1a202c; stroke-width: 1.2; fill: none; }
+.edge-3l.sys-DC .zila { stroke: #b45309; }
+.edge-3l.sys-PE .zila { stroke: #2f855a; }
+.edge-3l .zila-PE { stroke: #2f855a; }
+.edge-3l .zila-N { stroke: #4a5568; }
+
+.node-3l .prolazna { stroke: #2f855a; stroke-width: 1.2; }
+.node-3l .sprega { stroke: #1a202c; stroke-width: 1; stroke-dasharray: 3 3; }
+.node-3l .telo { fill: rgba(255,255,255,.6); stroke: #1a202c; stroke-width: 1.2; }
+.node-3l .simbol, .node-3l .pol, .node-3l .odvod-pol { color: #1a202c; }
+
+svg[data-prikaz="3L"] .node { cursor: move; }

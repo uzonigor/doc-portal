@@ -25,6 +25,11 @@
             <option value="A3-portrait">A3 portret</option>
         </select>
 
+        <div class="grupa" id="prikaz">
+            <button data-prikaz="1L" class="aktivan">Jednopolna</button>
+            <button data-prikaz="3L">Tropolna</button>
+        </div>
+
         <div class="grupa">
             <button id="btn-undo" title="Ctrl+Z">↶</button>
             <button id="btn-redo" title="Ctrl+Shift+Z">↷</button>
@@ -61,10 +66,14 @@
         <main id="platno">
             <div id="crtez"></div>
             <div id="status">—</div>
-            <div class="pomoc">
+            <div class="pomoc" id="pomoc-1l">
                 Prevuci simbol iz palete · povuci od <b>porta</b> do porta za vezu<br>
                 <b>Shift</b>+prevlačenje ili srednji taster = pomeranje pogleda · točkić = zum<br>
                 <b>R</b> rotiraj · <b>Ctrl+D</b> dupliraj · <b>Delete</b> obriši
+            </div>
+            <div class="pomoc" id="pomoc-3l" hidden>
+                Tropolna je <b>prikaz istog modela</b> — crta se iz žila koje nose grane.<br>
+                Menja se na jednopolnoj; ovde se elementi mogu samo pomerati.
             </div>
         </main>
 
