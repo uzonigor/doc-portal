@@ -504,3 +504,8 @@ svg[data-prikaz="3L"] .node { cursor: move; }
     font-size: 14px; padding: 2px 5px; cursor: pointer; border-radius: 4px;
 }
 .akcije-red button:hover { background: #edf2f7; color: var(--tekst); }
+
+.trasa-pol {
+    font: bold 13px 'Segoe UI', sans-serif;
+    paint-order: stroke; stroke: #fff; stroke-width: 3.5px; stroke-linejoin: round;
+}

@@ -117,9 +117,18 @@ export function duzinaVoda(model, od, ka, opcije = {}) {
  * Kompletan izveštaj o dužinama.
  *
  * Za svaki string daje:
- *   ozicenje  - dužina ožičenja između modula (jednožilno, PV1-F 1×)
- *   vod       - dužina od kraja stringa do invertera, PO PROVODNIKU
- *   ukupno    - 2 × vod + ožičenje (i + i − vod idu do invertera)
+ *   ozicenje   - međusobno povezivanje modula. Broji se JEDNOM: između dva
+ *                susedna modula ide jedan provodnik (+ jednog na − drugog).
+ *   vodPlus    - od kraja stringa sa + polom do invertera
+ *   vodMinus   - od kraja stringa sa − polom do invertera
+ *   vod        - ekvivalentna jednosmerna dužina, (plus + minus) / 2. Ovo ide
+ *                u proračun pada napona, jer formula ΔU = 2·L·I/(κ·S) već
+ *                sadrži faktor 2 za povratni provodnik.
+ *   vodUkupno  - plus + minus, stvarna dužina kabla za nabavku
+ *   ukupno     - ožičenje + vodUkupno
+ *
+ * Kod leapfroga + i − izlaze sa RAZLIČITIH krajeva stringa (susednih, ali ne
+ * istih), pa se mere odvojeno umesto da se jedna dužina množi sa dva.
  */
 export function duzineStringova(model) {
     const t = model.trasa || {};
@@ -134,8 +143,17 @@ export function duzineStringova(model) {
         // realnija od manhattan-a — kabl ide dijagonalno preko okvira modula.
         const ozicenje = duzinaPutanje(putanja, 'vazdusna');
 
-        const prikljucak = putanja.length ? { x: putanja[0].x, y: putanja[0].y } : null;
-        const vod = inv && prikljucak ? duzinaVoda(model, prikljucak, inv.pos) : 0;
+        // Leapfrog se zatvara blizu početka: prvi modul nosi jedan pol,
+        // poslednji drugi. Oba kraja se mere do invertera zasebno.
+        const krajMinus = putanja.length ? { x: putanja[0].x, y: putanja[0].y } : null;
+        const poslednja = putanja[putanja.length - 1];
+        const krajPlus = putanja.length ? { x: poslednja.x, y: poslednja.y } : null;
+
+        const vodMinus = inv && krajMinus ? duzinaVoda(model, krajMinus, inv.pos) : 0;
+        const vodPlus = inv && krajPlus ? duzinaVoda(model, krajPlus, inv.pos) : 0;
+
+        const vodUkupno = vodPlus + vodMinus;
+        const vod = vodUkupno / 2;   // ekvivalentna jednosmerna dužina za proračun
 
         return {
             stringId: s.id,
@@ -145,12 +163,16 @@ export function duzineStringova(model) {
             mppt: s.mppt,
             modula: moduli.length,
             putanja,
-            prikljucak,
+            krajPlus,
+            krajMinus,
             inverterPos: inv ? inv.pos : null,
             inverterOznaka: inv ? inv.oznaka : null,
             ozicenje,
+            vodPlus,
+            vodMinus,
             vod,
-            ukupno: ozicenje + 2 * vod,
+            vodUkupno,
+            ukupno: ozicenje + vodUkupno,
             nacin
         };
     });

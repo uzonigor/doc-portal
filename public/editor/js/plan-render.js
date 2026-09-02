@@ -85,12 +85,37 @@ export function opremaSvg(model, o, opcije = {}) {
     </g>`;
 }
 
+/** Razmak između susednih vodova kod invertera, u metrima. */
+const RAZMAK_POLOVA = 0.35;
+
 /**
- * Trase kablova: leapfrog ožičenje stringa punom linijom u boji stringa,
- * a vod do invertera isprekidano (jer ne prati krov nego spust).
+ * Vod jednog pola: od svog kraja stringa, uz ivice do invertera.
+ *
+ * Prvo se izlazi iz polja upravno, pa se ide vodoravno do invertera — ista
+ * manhattan dužina kao obrnutim redom, ali vod ne seče preko panela. Mali
+ * pomak razdvaja + i − da se ne poklope.
+ */
+function vodPola(od, ka, pomak) {
+    const y = (ka.y + pomak) * PPM;
+    return `${od.x * PPM},${od.y * PPM} ${od.x * PPM},${y} ${ka.x * PPM},${y} ${ka.x * PPM},${ka.y * PPM}`;
+}
+
+/**
+ * Trase kablova.
+ *
+ * Ožičenje stringa je puna linija u boji stringa — između dva susedna modula
+ * ide jedan provodnik, pa je to jedna linija.
+ *
+ * Do invertera idu DVA provodnika i crtaju se odvojeno: kod leapfroga + i −
+ * izlaze sa različitih krajeva stringa, pa im se i dužine razlikuju.
  */
 export function traseSvg(model) {
     const izvestaj = duzineStringova(model);
+
+    // Svaki pol dobija svoju traku uz inverter, da se vodovi i njihovi
+    // natpisi ne poklope kad ima više stringova.
+    const sviPolovi = izvestaj.filter(s => s.inverterPos && s.krajPlus).length * 2;
+    let traka = 0;
 
     return `<g class="trase">${izvestaj.map(s => {
         if (s.putanja.length < 2 && !s.inverterPos) return '';
@@ -104,25 +129,28 @@ export function traseSvg(model) {
             ? `<polyline class="trasa-ozicenje" points="${tacke}" stroke="${escapeXml(s.boja)}"/>`
             : '';
 
-        const imaVod = s.prikljucak && s.inverterPos;
+        if (!s.inverterPos || !s.krajPlus || !s.krajMinus) {
+            return `<g class="trasa" data-string="${s.stringId}">${ozicenje}</g>`;
+        }
 
-        // Vod se računa manhattan rastojanjem (uz ivice), pa se tako i crta —
-        // kosa linija bi pokazivala kraću trasu nego što je proračunata.
-        const vod = imaVod
-            ? `<polyline class="trasa-vod" stroke="${escapeXml(s.boja)}" fill="none"
-                     points="${s.prikljucak.x * PPM},${s.prikljucak.y * PPM}
-                             ${s.inverterPos.x * PPM},${s.prikljucak.y * PPM}
-                             ${s.inverterPos.x * PPM},${s.inverterPos.y * PPM}"/>`
-            : '';
+        const polovi = [
+            { znak: '−', kraj: s.krajMinus, duzina: s.vodMinus },
+            { znak: '+', kraj: s.krajPlus, duzina: s.vodPlus }
+        ].map(p => ({ ...p, pomak: (traka++ - (sviPolovi - 1) / 2) * RAZMAK_POLOVA }));
 
-        // Natpis ide poslednji da ga linije trase ne bi precrtale.
-        const natpis = imaVod
-            ? `<text class="trasa-tekst" x="${(s.prikljucak.x + s.inverterPos.x) / 2 * PPM}"
-                     y="${s.prikljucak.y * PPM - 8}" text-anchor="middle"
-                     fill="${escapeXml(s.boja)}">${escapeXml(s.oznaka)} · 2×${s.vod.toFixed(1)} m</text>`
-            : '';
+        const vodovi = polovi.map(p => `
+            <polyline class="trasa-vod" stroke="${escapeXml(s.boja)}" fill="none"
+                      points="${vodPola(p.kraj, s.inverterPos, p.pomak)}"/>
+            <text class="trasa-pol" x="${p.kraj.x * PPM}" y="${p.kraj.y * PPM + 5}"
+                  text-anchor="middle" fill="${escapeXml(s.boja)}">${p.znak}</text>`).join('');
 
-        return `<g class="trasa" data-string="${s.stringId}">${vod}${ozicenje}${natpis}</g>`;
+        // Natpisi idu poslednji da ih linije trase ne bi precrtale.
+        const natpisi = polovi.map(p => `
+            <text class="trasa-tekst" x="${(p.kraj.x + s.inverterPos.x) / 2 * PPM}"
+                  y="${(s.inverterPos.y + p.pomak) * PPM - 5}" text-anchor="middle"
+                  fill="${escapeXml(s.boja)}">${escapeXml(s.oznaka)} ${p.znak} ${p.duzina.toFixed(1)} m</text>`).join('');
+
+        return `<g class="trasa" data-string="${s.stringId}">${vodovi}${ozicenje}${natpisi}</g>`;
     }).join('')}</g>`;
 }
 

@@ -156,8 +156,26 @@ Iz geometrije krova, ne iz crteža šeme. Za svaki string:
 - **ožičenje** — leapfrog putanja između modula (po redu: preko svakog
   drugog do kraja, pa nazad preko preskočenih, tako da oba kraja izlaze na
   istoj strani i površina strujne petlje ostane mala)
-- **vod** — od kraja stringa do invertera: manhattan rastojanje po krovu
-  + visina spusta + procenat rezerve, po provodniku
+- **vod** — od kraja stringa do invertera. Kod leapfroga + i − izlaze sa
+  **različitih krajeva** stringa, pa se mere odvojeno (`vodPlus`,
+  `vodMinus`) umesto da se jedna dužina množi sa dva: manhattan rastojanje
+  po krovu + visina spusta + procenat rezerve, za svaki pol posebno.
+
+Odatle tri broja koja ne treba mešati:
+
+| Polje | Šta je | Gde se koristi |
+|---|---|---|
+| `vodPlus`, `vodMinus` | dužina svakog pola | crtež, legenda |
+| `vodUkupno` | zbir oba | nabavka kabla |
+| `vod` | prosek, tj. ekvivalentna **jednosmerna** dužina | proračun pada napona |
+
+Pad se računa na `vod`, a ne na `vodUkupno`, jer formula
+`ΔU = 2·L·I/(κ·S)` već sadrži faktor 2 za povratni provodnik. Sabirati oba
+pola i onda ih još jednom udvostručiti značilo bi dvostruko brojanje.
+
+Oba pola se i **crtaju odvojeno**: svaki dobija svoju traku uz inverter i
+svoj natpis sa dužinom. Trase prvo izlaze iz polja upravno pa idu vodoravno
+— ista manhattan dužina kao obrnutim redom, ali vod ne seče preko panela.
 
 Zato inverter i ormani moraju biti postavljeni na plan (alat **Oprema**) —
 bez njih nema odakle do kuda da se meri.

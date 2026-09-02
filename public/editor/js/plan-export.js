@@ -3,6 +3,7 @@
  */
 
 import { planSvg, planBBox, razmernikSvg, severSvg } from './plan-render.js';
+import { izvestajDuzina } from './plan-trase.js';
 import { listSvg as okvirLista, preuzmi, svgUPng, stampajSvg, bezbednoIme } from './list.js';
 
 const STIL = `
@@ -13,15 +14,29 @@ const STIL = `
     .modul-oznaka { font: bold 11px 'Segoe UI', sans-serif; fill: #fff; text-anchor: middle;
                     paint-order: stroke; stroke: rgba(0,0,0,.35); stroke-width: 2px; }
     .polje-natpis { font: 10px 'Segoe UI', sans-serif; fill: #111; }
+    .trasa-ozicenje { fill: none; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+    .trasa-vod { stroke-width: 2; stroke-dasharray: 9 5; fill: none; }
+    .trasa-tekst { font: bold 10px 'Segoe UI', sans-serif;
+                   paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+    .trasa-pol { font: bold 12px 'Segoe UI', sans-serif;
+                 paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
     .razmernik-tekst, .sever-tekst { font: 10px 'Segoe UI', sans-serif; fill: #111; }
 `;
 
 function legendaStavke(model) {
     const po = model.modulaPoStringu();
-    const stavke = model.stringovi.map(s => ({
-        boja: s.boja,
-        tekst: `${s.oznaka} — ${po.get(s.id) || 0} modula · inverter ${s.inverter}, MPPT ${s.mppt}`
-    }));
+    const duzine = new Map(izvestajDuzina(model).stringovi.map(d => [d.stringId, d]));
+
+    const stavke = model.stringovi.map(s => {
+        const d = duzine.get(s.id);
+        const vod = d && d.vodPlus
+            ? ` · vod + ${d.vodPlus.toFixed(1)} m / − ${d.vodMinus.toFixed(1)} m`
+            : '';
+        return {
+            boja: s.boja,
+            tekst: `${s.oznaka} — ${po.get(s.id) || 0} modula · inverter ${s.inverter}, MPPT ${s.mppt}${vod}`
+        };
+    });
 
     const nedodeljeni = model.nedodeljenihModula();
     if (nedodeljeni > 0) {

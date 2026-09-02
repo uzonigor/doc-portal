@@ -124,7 +124,7 @@ function odeljakTrasa(model) {
             vodovi do invertera se ne mogu izmeriti. Dodaj ga alatom <b>Oprema</b>.</li></ul>` : ''}
 
         ${redovi.length ? `<table class="tabela sitna">
-            <thead><tr><th>String</th><th>Ožičenje</th><th>Vod</th><th>Presek</th><th>Pad</th></tr></thead>
+            <thead><tr><th>String</th><th>Ožičenje</th><th>Vod +</th><th>Vod −</th><th>Presek</th><th>Pad</th></tr></thead>
             <tbody>${redovi.map(s => {
                 const pr = s.predlog;
                 const prelazi = pr && pr.padProcenat > (model.proracun.padDC ?? 3);
@@ -132,7 +132,8 @@ function odeljakTrasa(model) {
                 return `<tr>
                 <td><span class="boja-tacka" style="background:${escapeXml(s.boja)}"></span> ${escapeXml(s.oznaka)}</td>
                 <td>${s.ozicenje.toFixed(1)} m</td>
-                <td>${s.vod ? '2×' + s.vod.toFixed(1) + ' m' : '—'}</td>
+                <td>${s.vodPlus ? s.vodPlus.toFixed(1) + ' m' : '—'}</td>
+                <td>${s.vodMinus ? s.vodMinus.toFixed(1) + ' m' : '—'}</td>
                 <td>${pr && pr.presek ? `<b>${pr.presek}</b> mm²` : '—'}</td>
                 <td class="${prelazi ? 'opasno' : (iznadCilja ? 'iznad-cilja' : '')}">${pr && pr.presek ? pr.padProcenat.toFixed(2) + ' %' : '—'}</td>
             </tr>`; }).join('')}</tbody>
@@ -143,6 +144,8 @@ function odeljakTrasa(model) {
         ${redovi.filter(s => s.predlog && !s.predlog.presek).length ? `
             <ul class="upozorenja">${redovi.filter(s => s.predlog && !s.predlog.presek).map(s =>
                 `<li class="greska">${escapeXml(s.oznaka)}: ${escapeXml(s.predlog.poruke[0] || 'presek se ne može odrediti')}</li>`).join('')}</ul>` : ''}
+        <p class="mala">+ i − izlaze sa različitih krajeva stringa, pa im se dužine razlikuju.
+           Pad napona se računa na njihovom proseku, jer formula već sadrži povratni provodnik.</p>
         <p class="mala">Presek je <b>predlog</b>: najmanji standardni koji zadovoljava i pad napona
            i strujnu opteretljivost. Projektant ga potvrđuje.</p>`
         : '<p class="mala">Dodeli module stringovima da bi se dužine izračunale.</p>'}

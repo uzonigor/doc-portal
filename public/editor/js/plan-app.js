@@ -139,7 +139,9 @@ function uJednopolnu() {
         duzine: {
             stringovi: duzine.stringovi.map(s => ({
                 oznaka: s.oznaka, inverter: s.inverter, mppt: s.mppt,
-                modula: s.modula, ozicenje: s.ozicenje, vod: s.vod, ukupno: s.ukupno,
+                modula: s.modula, ozicenje: s.ozicenje,
+                vod: s.vod, vodPlus: s.vodPlus, vodMinus: s.vodMinus, vodUkupno: s.vodUkupno,
+                ukupno: s.ukupno,
                 presek: s.predlog ? s.predlog.presek : null
             })),
             ac: duzine.ac
