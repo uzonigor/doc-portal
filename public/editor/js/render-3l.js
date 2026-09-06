@@ -12,6 +12,7 @@
 
 import { getSymbol, portPosition, nodeSize, nodeBBox, poliTip, prekinuteZile } from './symbols.js';
 import { route, ortogonalizuj } from './router.js';
+import { mesto, trebaOznaka } from './natpisi.js';
 import { nodeTransform, escapeXml } from './render.js';
 
 /**
@@ -280,6 +281,15 @@ function odvodElement(model, node) {
  * Natpisi se pomeraju samo za toliko — inače bi kod invertera, koji ima
  * sopstvene portove po žilama, naziv odlutao daleko ispod simbola.
  */
+/** Poluširina najšireg snopa koji dodiruje element. */
+function polaSnopa(model, node) {
+    const grane = model.edges.filter(e =>
+        e.from.split(':')[0] === node.id || e.to.split(':')[0] === node.id);
+    if (!grane.length) return 0;
+    const najsiri = Math.max(...grane.map(e => (e.conductors || []).length));
+    return Math.max(0, (najsiri - 1) * RAZMAK_ZILA / 2);
+}
+
 function vertikalniRaspon(model, node) {
     const sve = zileElementa(model, node);
     const tip = poliTip(node.type);
@@ -294,7 +304,7 @@ function vertikalniRaspon(model, node) {
     return 0;
 }
 
-export function nodeSvg3l(model, node) {
+export function nodeSvg3l(model, node, zauzeti) {
     const bbox = nodeBBox(node);
     const [, h] = nodeSize(node);
     const def = getSymbol(node.type);
@@ -305,12 +315,25 @@ export function nodeSvg3l(model, node) {
         odvod: odvodElement
     }[poliTip(node.type)](model, node);
 
-    const pola = vertikalniRaspon(model, node) / 2;
+    // natpis mora izaći i iz tela elementa i iz snopa koji kroz njega prolazi
+    const pola = Math.max(vertikalniRaspon(model, node) / 2, polaSnopa(model, node) - h / 2);
+
+    const oznaka = node.oznaka || '';
+    const naziv = node.label || def.naziv;
+
+    // Odvod (prenaponska zaštita, uzemljenje) visi sa voda, pa mu iznad stoji
+    // sabirnica — oznaka zato ide sa strane, a ne iznad.
+    const odvod = poliTip(node.type) === 'odvod';
+    const xOznake = odvod ? bbox.x + bbox.w + 8 : bbox.x;
+    const yOznake = odvod
+        ? mesto(zauzeti, xOznake, bbox.y + 14, oznaka, 'start', 1)
+        : mesto(zauzeti, bbox.x, bbox.y - 10 - pola, oznaka, 'start', -1);
+    const yNaziva = mesto(zauzeti, bbox.x, bbox.y + h + 20 + pola, naziv, 'start', 1);
 
     return `<g class="node node-3l" data-id="${node.id}">
         ${telo}
-        <text class="oznaka" x="${bbox.x}" y="${bbox.y - 8 - pola}">${escapeXml(node.oznaka || '')}</text>
-        <text class="label" x="${bbox.x}" y="${bbox.y + h + 16 + pola}">${escapeXml(node.label || def.naziv)}</text>
+        <text class="oznaka" x="${xOznake}" y="${yOznake}">${escapeXml(oznaka)}</text>
+        <text class="label" x="${bbox.x}" y="${yNaziva}">${escapeXml(naziv)}</text>
     </g>`;
 }
 
@@ -356,39 +379,72 @@ export function edgeSvg3l(model, edge, opcije = {}) {
     }).join('');
 
     // Oznake žila jednom po vodu, na sredini najdužeg segmenta.
-    const natpis = opcije.prikaziOznake === false ? '' : oznakaSnopa(osnovna, zile, edge);
+    const natpis = opcije.prikaziOznake === false ? '' : oznakaSnopa(osnovna, zile, edge, opcije.zauzeti);
 
     return `<g class="edge edge-3l sys-${edge.system}" data-id="${edge.id}">${linije}${natpis}</g>`;
 }
 
-function oznakaSnopa(tacke, zile, edge) {
+/**
+ * Natpis snopa: imena žila i podatak o kablu.
+ *
+ * Postavlja se van snopa, ne na njega — iznad najviše žile kod vodoravne
+ * deonice, odnosno pored najdesnije kod uspravne. Ranije je tekst padao
+ * pravo na provodnike, jer se računao od ose putanje bez obzira na to
+ * koliko je snop širok i u kom smeru ide.
+ */
+function oznakaSnopa(tacke, zile, edge, zauzeti) {
     let najbolji = null, najduzi = 0;
     for (let i = 0; i < tacke.length - 1; i++) {
         const l = Math.hypot(tacke[i + 1].x - tacke[i].x, tacke[i + 1].y - tacke[i].y);
         if (l > najduzi) { najduzi = l; najbolji = [tacke[i], tacke[i + 1]]; }
     }
-    if (!najbolji || najduzi < 50) return '';
+    // na kratkoj deonici natpis ne staje a da ne udari u susedni element
+    if (!najbolji || najduzi < 70) return '';
 
     const [a, b] = najbolji;
     const cx = (a.x + b.x) / 2;
     const cy = (a.y + b.y) / 2;
-    const gornja = cy + pomakZile(zile, zile[0]) - 8;
+    const horizontalna = Math.abs(b.x - a.x) >= Math.abs(b.y - a.y);
+    const pola = (zile.length - 1) * RAZMAK_ZILA / 2;
 
     const kabl = edge.cable && edge.cable.presek
         ? `${edge.cable.tip || ''} ${zile.length}×${edge.cable.presek} mm²`.trim()
         : '';
 
+    const imena = zile.join('  ');
+
+    if (horizontalna) {
+        const yImena = mesto(zauzeti, cx, cy - pola - 12, imena, 'middle', -1);
+        const yKabla = kabl ? mesto(zauzeti, cx, cy + pola + 20, kabl, 'middle', 1) : 0;
+        return `
+            <text class="zile-tekst" x="${cx}" y="${yImena}" text-anchor="middle">${escapeXml(imena)}</text>
+            ${kabl ? `<text class="kabl-tekst" x="${cx}" y="${yKabla}"
+                           text-anchor="middle">${escapeXml(kabl)}</text>` : ''}`;
+    }
+
+    // uspravan snop: natpis ide pored, da ne legne na žile
+    const x = cx + pola + 10;
+    const yImena = mesto(zauzeti, x, cy - 4, imena, 'start', -1);
+    const yKabla = kabl ? mesto(zauzeti, x, cy + 10, kabl, 'start', 1) : 0;
     return `
-        <text class="zile-tekst" x="${cx}" y="${gornja}" text-anchor="middle">${escapeXml(zile.join('  '))}</text>
-        ${kabl ? `<text class="kabl-tekst" x="${cx}" y="${cy + pomakZile(zile, zile[zile.length - 1]) + 16}"
-                       text-anchor="middle">${escapeXml(kabl)}</text>` : ''}`;
+        <text class="zile-tekst" x="${x}" y="${yImena}" text-anchor="start">${escapeXml(imena)}</text>
+        ${kabl ? `<text class="kabl-tekst" x="${x}" y="${yKabla}"
+                       text-anchor="start">${escapeXml(kabl)}</text>` : ''}`;
 }
 
 // ── ceo crtež ────────────────────────────────────────────────────────────────
 
 export function crtez3lSvg(model, opcije = {}) {
-    const edges = model.edges.map(e => edgeSvg3l(model, e, opcije)).join('');
-    const nodes = model.nodes.map(n => nodeSvg3l(model, n)).join('');
+    // zajednička evidencija zauzetih mesta, da se natpisi različitih grana i
+    // elemenata ne poklope
+    const zauzeti = [];
+
+    const edges = model.edges.map(e => edgeSvg3l(model, e, {
+        ...opcije,
+        zauzeti,
+        prikaziOznake: opcije.prikaziOznake === false ? false : trebaOznaka(model, e)
+    })).join('');
+    const nodes = model.nodes.map(n => nodeSvg3l(model, n, zauzeti)).join('');
     return `<g class="provodnici">${edges}</g><g class="elementi">${nodes}</g>`;
 }
 
@@ -404,7 +460,7 @@ export function crtez3lBBox(model, margina = 60) {
     model.nodes.forEach(n => {
         const b = nodeBBox(n);
         // vodovi se šire oko elementa, pa gabarit uzima i snop koji ga dodiruje
-        const d = Math.max(snop, vertikalniRaspon(model, n) / 2) + 24;
+        const d = Math.max(snop, vertikalniRaspon(model, n) / 2, polaSnopa(model, n)) + 34;
         minX = Math.min(minX, b.x);
         minY = Math.min(minY, b.y - d);
         maxX = Math.max(maxX, b.x + b.w);

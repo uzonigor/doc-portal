@@ -81,6 +81,7 @@ krova i prenosi u generator, koji tada zaključava polja „broj panela" i
 | `js/sema-proracun.js` | proračun nad šemom — izvor napajanja se traži u grafu |
 | `js/katalog.js` | katalog modula i invertera koji se ponavljaju |
 | `js/provere.js` | granice DC ulaza invertera: napon na oba temperaturna ekstrema, struje |
+| `js/natpisi.js` | raspoređivanje natpisa: zauzetost mesta i pravilo „obeleži gde se menja" |
 | `js/util.js` | sitne deljene funkcije |
 | `js/app.js` | sklapanje, autosave, demo šema |
 
@@ -290,6 +291,24 @@ lista.
 Razmak žila (`RAZMAK_ZILA`, 24 jedinice) ima donju granicu: visinu simbola
 jednog pola. Najviši prekidački glif je ~20 jedinica, strujni merni
 transformator ~22 — ispod toga bi se polovi dodirivali.
+
+## Natpisi se ne preklapaju
+
+Natpisi se generišu po grani i po elementu, nezavisno jedan od drugog, pa su
+se sudarali kad dve grane prođu blizu. `natpisi.js` drži zajedničku
+evidenciju zauzetih pravougaonika: svaki natpis prijavi svoje mesto, a ako
+je zauzeto, pomera se dok ne nađe slobodno.
+
+Uz to, na tropolnoj se kabl ne ispisuje na svakoj deonici — obeležava se
+samo tamo gde se nešto **menja**: drugi sistem, druge žile ili drugi kabl
+nego na grani koja u taj čvor ulazi. Ostalo se čita iz tabele kablova. Time
+je broj natpisa pao sa 12 na 2 po crtežu.
+
+Odvodi (prenaponska zaštita, uzemljenje) vise sa voda, pa im oznaka ide sa
+strane — iznad je sabirnica.
+
+Mereno u browseru, na oba prikaza: **0 sudara natpis-natpis** (ranije 8 na
+jednopolnoj).
 
 ## Samo pravi uglovi
 

@@ -7,6 +7,7 @@
 
 import { getSymbol, portPosition, nodeSize, nodeBBox } from './symbols.js';
 import { route, pathD } from './router.js';
+import { mesto } from './natpisi.js';
 import { escapeXml } from './util.js';
 
 export { escapeXml };
@@ -28,6 +29,7 @@ export function nodeTransform(node) {
  * @param {object} opcije - { selektovan, interaktivan, model }
  */
 export function nodeSvg(node, opcije = {}) {
+    const zauzeti = opcije.zauzeti;
     const def = getSymbol(node.type);
     const bbox = nodeBBox(node);
     const [w, h] = nodeSize(node);
@@ -43,9 +45,14 @@ export function nodeSvg(node, opcije = {}) {
     const simbol = `<g transform="${nodeTransform(node)}" class="simbol">${def.draw(node.props || {})}</g>`;
 
     // Oznaka i naziv se crtaju uspravno, nezavisno od rotacije simbola.
+    const oznaka = node.oznaka || '';
+    const naziv = node.label || def.naziv;
+    const yOznake = mesto(zauzeti, bbox.x, bbox.y - 6, oznaka, 'start', -1);
+    const yNaziva = mesto(zauzeti, bbox.x, bbox.y + h + 14, naziv, 'start', 1);
+
     const tekst = `
-        <text class="oznaka" x="${bbox.x}" y="${bbox.y - 6}">${escapeXml(node.oznaka || '')}</text>
-        <text class="label" x="${bbox.x}" y="${bbox.y + h + 14}">${escapeXml(node.label || def.naziv)}</text>`;
+        <text class="oznaka" x="${bbox.x}" y="${yOznake}">${escapeXml(oznaka)}</text>
+        <text class="label" x="${bbox.x}" y="${yNaziva}">${escapeXml(naziv)}</text>`;
 
     const okvir = opcije.selektovan
         ? `<rect class="izbor" x="${bbox.x - 6}" y="${bbox.y - 6}" width="${w + 12}" height="${h + 12}" rx="3"/>`
@@ -71,7 +78,7 @@ export function nodeSvg(node, opcije = {}) {
  * o kablu. Postavlja se na NAJDUŽI segment putanje da tekst ne bi upadao
  * u simbole; na kratkim vezama se izostavlja jer nema mesta.
  */
-function oznakaZila(tacke, edge) {
+function oznakaZila(tacke, edge, zauzeti) {
     // najduži segment putanje
     let najbolji = null, najduzi = 0;
     for (let i = 0; i < tacke.length - 1; i++) {
@@ -92,20 +99,22 @@ function oznakaZila(tacke, edge) {
 
     // Tekst ide iznad horizontalne, odnosno desno od vertikalne veze.
     const tx = horizontalan ? cx : cx + 8;
-    const ty = horizontalan ? cy - 16 : cy - 4;
     const poravnanje = horizontalan ? 'middle' : 'start';
+    // mesto() pomera natpis ako je zauzet, da se ne poklopi sa susednim
+    const ty = mesto(zauzeti, tx, horizontalan ? cy - 16 : cy - 4, opis, poravnanje, -1);
 
     // Kosu crtu crtamo upravno na provodnik.
     const crta = horizontalan
         ? `x1="${cx - 6}" y1="${cy + 6}" x2="${cx + 6}" y2="${cy - 6}"`
         : `x1="${cx - 6}" y1="${cy + 6}" x2="${cx + 6}" y2="${cy - 6}"`;
 
-    const mestaZaKabl = najduzi >= 70;
+    const mestaZaKabl = najduzi >= 70 && kabl;
+    const yKabla = mestaZaKabl ? mesto(zauzeti, tx, ty + 12, kabl, poravnanje, -1) : 0;
 
     return `
         <line class="zile" ${crta}/>
         <text class="zile-tekst" x="${tx}" y="${ty}" text-anchor="${poravnanje}">${escapeXml(opis)}</text>
-        ${kabl && mestaZaKabl ? `<text class="kabl-tekst" x="${tx}" y="${ty + 10}" text-anchor="${poravnanje}">${escapeXml(kabl)}</text>` : ''}`;
+        ${mestaZaKabl ? `<text class="kabl-tekst" x="${tx}" y="${yKabla}" text-anchor="${poravnanje}">${escapeXml(kabl)}</text>` : ''}`;
 }
 
 /** Jedna grana (provodnik). */
@@ -122,20 +131,25 @@ export function edgeSvg(model, edge, opcije = {}) {
     return `<g class="${klasa}" data-id="${edge.id}">
         <path class="pogodak" d="${d}"/>
         <path class="linija" d="${d}"/>
-        ${opcije.prikaziOznake === false ? '' : oznakaZila(tacke, edge)}
+        ${opcije.prikaziOznake === false ? '' : oznakaZila(tacke, edge, opcije.zauzeti)}
     </g>`;
 }
 
 /** Ceo crtež (bez okvira lista) — koristi ga i canvas i izvoz. */
 export function crtezSvg(model, opcije = {}) {
     const izabrani = new Set(opcije.izabrani || []);
+    // zajednička evidencija zauzetih mesta, da se natpisi ne poklope
+    const zauzeti = [];
+
     const edges = model.edges.map(e => edgeSvg(model, e, {
         selektovan: izabrani.has(e.id),
-        prikaziOznake: opcije.prikaziOznake
+        prikaziOznake: opcije.prikaziOznake,
+        zauzeti
     })).join('');
     const nodes = model.nodes.map(n => nodeSvg(n, {
         selektovan: izabrani.has(n.id),
         interaktivan: opcije.interaktivan,
+        zauzeti,
         model
     })).join('');
     return `<g class="provodnici">${edges}</g><g class="elementi">${nodes}</g>`;
