@@ -64,10 +64,7 @@ export const SYMBOLS = {
         },
         draw: () => `
             ${box(70, 46)}
-            <line x1="0" y1="23" x2="70" y2="23" ${THIN}/>
-            <line x1="23" y1="0" x2="23" y2="46" ${THIN}/>
-            <line x1="47" y1="0" x2="47" y2="46" ${THIN}/>
-            <path d="M8 38 L14 30 L20 38" ${S}/>`
+            <path d="M16 10 L54 10 L35 38 Z" ${S} stroke-linejoin="round"/>`
     },
 
     pv_string: {
@@ -98,12 +95,11 @@ export const SYMBOLS = {
         }),
         draw: () => `
             ${box(86, 56)}
-            <line x1="0" y1="28" x2="86" y2="28" ${THIN}/>
             <line x1="29" y1="0" x2="29" y2="56" ${THIN}/>
             <line x1="57" y1="0" x2="57" y2="56" ${THIN}/>
-            <path d="M8 46 L14 38 L20 46" ${S}/>
-            <path d="M36 46 L42 38 L48 46" ${S}/>
-            <path d="M64 46 L70 38 L76 46" ${S}/>`
+            <path d="M5 15 L24 15 L14.5 43 Z" ${S} stroke-linejoin="round"/>
+            <path d="M33.5 15 L52.5 15 L43 43 Z" ${S} stroke-linejoin="round"/>
+            <path d="M62 15 L81 15 L71.5 43 Z" ${S} stroke-linejoin="round"/>`
     },
 
     string_kutija: {
@@ -216,9 +212,9 @@ export const SYMBOLS = {
         },
         draw: () => `
             ${box(80, 80)}
-            <line x1="18" y1="62" x2="62" y2="18" ${S}/>
-            <path d="M14 34 h8 M26 34 h8" ${S}/>
-            <path d="M46 54 q6 -12 12 0" ${S}/>`
+            <line x1="0" y1="80" x2="80" y2="0" ${S}/>
+            <path d="M14 26 h7 M25 26 h7 M36 26 h7" ${S}/>
+            <path d="M44 56 q6 -13 12 0 q6 13 12 0" ${S}/>`
     },
 
     inverter_3f: {
@@ -246,9 +242,9 @@ export const SYMBOLS = {
         },
         draw: () => `
             ${box(90, 110)}
-            <line x1="20" y1="90" x2="70" y2="20" ${S}/>
-            <path d="M16 44 h9 M31 44 h9" ${S}/>
-            <path d="M50 72 q7 -14 14 0" ${S}/>`
+            <line x1="0" y1="110" x2="90" y2="0" ${S}/>
+            <path d="M16 32 h8 M28 32 h8 M40 32 h8" ${S}/>
+            <path d="M48 80 q7 -14 14 0 q7 14 14 0" ${S}/>`
     },
 
     baterija: {
