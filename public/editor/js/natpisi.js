@@ -8,7 +8,10 @@
 
 const VISINA_TEKSTA = 12;
 const SIRINA_ZNAKA = 5.2;
-const MAX_POKUSAJA = 8;
+const MAX_POKUSAJA = 10;
+
+/** Debljina koju provodnik zauzima za potrebe raspoređivanja natpisa. */
+const DEBLJINA_VODA = 4;
 
 function pravougaonik(x, y, tekst, poravnanje) {
     const w = String(tekst).length * SIRINA_ZNAKA;
@@ -28,12 +31,16 @@ function seku(a, b) {
 export function mesto(zauzeti, x, y, tekst, poravnanje = 'middle', smer = 1) {
     if (!zauzeti) return y;
 
-    for (let i = 0; i < MAX_POKUSAJA; i++) {
-        const pomeren = y + i * smer * (VISINA_TEKSTA + 2);
-        const r = pravougaonik(x, pomeren, tekst, poravnanje);
-        if (!zauzeti.some(z => seku(z, r))) {
-            zauzeti.push(r);
-            return pomeren;
+    // prvo se traži u zadatom smeru, pa u suprotnom — natpis oko elementa
+    // ume da bude stešnjen sa jedne strane a slobodan sa druge
+    for (const s of [smer, -smer]) {
+        for (let i = 0; i < MAX_POKUSAJA; i++) {
+            const pomeren = y + i * s * (VISINA_TEKSTA + 2);
+            const r = pravougaonik(x, pomeren, tekst, poravnanje);
+            if (!zauzeti.some(z => seku(z, r))) {
+                zauzeti.push(r);
+                return pomeren;
+            }
         }
     }
 
@@ -41,9 +48,30 @@ export function mesto(zauzeti, x, y, tekst, poravnanje = 'middle', smer = 1) {
     return y;
 }
 
-/** Zauzmi mesto koje nije natpis (telo elementa), da natpisi idu oko njega. */
-export function zauzmi(zauzeti, x, y, w, h) {
-    if (zauzeti) zauzeti.push({ x, y, w, h });
+/**
+ * Upiši provodnike i tela elemenata kao zauzeto, da natpisi ne legnu na njih.
+ *
+ * @param {Array} zauzeti
+ * @param {Array<Array<{x,y}>>} putanje - polilinije provodnika
+ * @param {Array<{x,y,w,h}>} tela - gabariti elemenata
+ * @param {number} poluDebljina - koliko se snop širi oko putanje (tropolna)
+ */
+export function zauzmiCrtez(zauzeti, putanje, tela = [], poluDebljina = 0) {
+    const d = DEBLJINA_VODA / 2 + poluDebljina;
+
+    putanje.forEach(tacke => {
+        for (let i = 0; i < tacke.length - 1; i++) {
+            const a = tacke[i], b = tacke[i + 1];
+            zauzeti.push({
+                x: Math.min(a.x, b.x) - d,
+                y: Math.min(a.y, b.y) - d,
+                w: Math.abs(b.x - a.x) + 2 * d,
+                h: Math.abs(b.y - a.y) + 2 * d
+            });
+        }
+    });
+
+    tela.forEach(t => zauzeti.push({ x: t.x, y: t.y, w: t.w, h: t.h }));
 }
 
 /**

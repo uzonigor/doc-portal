@@ -307,8 +307,20 @@ je broj natpisa pao sa 12 na 2 po crtežu.
 Odvodi (prenaponska zaštita, uzemljenje) vise sa voda, pa im oznaka ide sa
 strane — iznad je sabirnica.
 
-Mereno u browseru, na oba prikaza: **0 sudara natpis-natpis** (ranije 8 na
-jednopolnoj).
+U evidenciju ulaze i **provodnici i tela elemenata**, ne samo drugi natpisi
+— zato putanje računa `crtezSvg` jednom i deli ih i crtanju i
+raspoređivanju, umesto da se rutira dvaput.
+
+Mereno u browseru, na izvezenim listovima:
+
+| Crtež | Natpisa | Sudara | Preko voda |
+|---|---|---|---|
+| 10 kW jednopolna | 51 | 0 | 0 |
+| 10 kW tropolna | 36 | 0 | 0 |
+| 60 kW, 3 invertera | 107 | 0 | 0 |
+
+Pre toga je jednopolna imala 8 sudara i natpise preko vodova. Iscrtavanje
+šeme od 28 grana traje ~3,5 ms, pa deljenje putanja pokriva trošak provere.
 
 ## Samo pravi uglovi
 

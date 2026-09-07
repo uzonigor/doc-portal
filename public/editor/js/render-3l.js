@@ -12,7 +12,7 @@
 
 import { getSymbol, portPosition, nodeSize, nodeBBox, poliTip, prekinuteZile } from './symbols.js';
 import { route, ortogonalizuj } from './router.js';
-import { mesto, trebaOznaka } from './natpisi.js';
+import { mesto, trebaOznaka, zauzmiCrtez } from './natpisi.js';
 import { nodeTransform, escapeXml } from './render.js';
 
 /**
@@ -339,6 +339,15 @@ export function nodeSvg3l(model, node, zauzeti) {
 
 // ── grane ────────────────────────────────────────────────────────────────────
 
+/** Osnovna putanja snopa; žile su njeni paralelni pomaci. */
+export function osnovnaPutanja(model, edge) {
+    const kraj = model.edgeEndpoints(edge);
+    if (!kraj) return null;
+    const odId = edge.from.split(':')[0], doId = edge.to.split(':')[0];
+    return route(kraj.from, kraj.to, edge.waypoints || [],
+        model.prepreke([odId, doId]), { izlaz: IZLAZ_3L });
+}
+
 export function edgeSvg3l(model, edge, opcije = {}) {
     const kraj = model.edgeEndpoints(edge);
     if (!kraj) return '';
@@ -353,8 +362,8 @@ export function edgeSvg3l(model, edge, opcije = {}) {
     const izlaz = prikljucci(od, odPort, zile);
     const ulaz = prikljucci(ka, doPort, zile);
 
-    const osnovna = route(kraj.from, kraj.to, edge.waypoints || [],
-        model.prepreke([odId, doId]), { izlaz: IZLAZ_3L });
+    const osnovna = (opcije.putanje && opcije.putanje.get(edge.id))
+        || osnovnaPutanja(model, edge);
 
     const linije = zile.map((z, i) => {
         const d = pomakZile(zile, z);
@@ -435,12 +444,26 @@ function oznakaSnopa(tacke, zile, edge, zauzeti) {
 // ── ceo crtež ────────────────────────────────────────────────────────────────
 
 export function crtez3lSvg(model, opcije = {}) {
-    // zajednička evidencija zauzetih mesta, da se natpisi različitih grana i
-    // elemenata ne poklope
+    // Zajednička evidencija zauzetih mesta: prvo snopovi i tela elemenata, pa
+    // natpisi oko njih. Snop se širi oko putanje, pa se putanja tako i upisuje.
+    const putanje = new Map();
+    model.edges.forEach(e => {
+        const t = osnovnaPutanja(model, e);
+        if (t) putanje.set(e.id, t);
+    });
+
     const zauzeti = [];
+    model.edges.forEach(e => {
+        const t = putanje.get(e.id);
+        if (!t) return;
+        const pola = ((e.conductors || []).length - 1) * RAZMAK_ZILA / 2;
+        zauzmiCrtez(zauzeti, [t], [], pola);
+    });
+    zauzmiCrtez(zauzeti, [], model.nodes.map(nodeBBox));
 
     const edges = model.edges.map(e => edgeSvg3l(model, e, {
         ...opcije,
+        putanje,
         zauzeti,
         prikaziOznake: opcije.prikaziOznake === false ? false : trebaOznaka(model, e)
     })).join('');

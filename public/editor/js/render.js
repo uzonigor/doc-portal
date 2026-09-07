@@ -7,7 +7,7 @@
 
 import { getSymbol, portPosition, nodeSize, nodeBBox } from './symbols.js';
 import { route, pathD } from './router.js';
-import { mesto } from './natpisi.js';
+import { mesto, zauzmiCrtez } from './natpisi.js';
 import { escapeXml } from './util.js';
 
 export { escapeXml };
@@ -117,13 +117,29 @@ function oznakaZila(tacke, edge, zauzeti) {
         ${mestaZaKabl ? `<text class="kabl-tekst" x="${tx}" y="${yKabla}" text-anchor="${poravnanje}">${escapeXml(kabl)}</text>` : ''}`;
 }
 
+/** Putanja jedne grane; računa se jednom pa deli između crtanja i natpisa. */
+export function putanjaGrane(model, edge) {
+    const kraj = model.edgeEndpoints(edge);
+    if (!kraj) return null;
+    const izuzmi = [edge.from.split(':')[0], edge.to.split(':')[0]];
+    return route(kraj.from, kraj.to, edge.waypoints || [], model.prepreke(izuzmi));
+}
+
+/** Sve putanje odjednom — ulaz i za crtanje i za raspoređivanje natpisa. */
+export function putanjeGrana(model) {
+    const mapa = new Map();
+    model.edges.forEach(e => {
+        const t = putanjaGrane(model, e);
+        if (t) mapa.set(e.id, t);
+    });
+    return mapa;
+}
+
 /** Jedna grana (provodnik). */
 export function edgeSvg(model, edge, opcije = {}) {
-    const kraj = model.edgeEndpoints(edge);
-    if (!kraj) return '';
+    const tacke = (opcije.putanje && opcije.putanje.get(edge.id)) || putanjaGrane(model, edge);
+    if (!tacke) return '';
 
-    const izuzmi = [edge.from.split(':')[0], edge.to.split(':')[0]];
-    const tacke = route(kraj.from, kraj.to, edge.waypoints || [], model.prepreke(izuzmi));
     const d = pathD(tacke);
 
     const klasa = `edge sys-${edge.system}${opcije.selektovan ? ' selektovan' : ''}`;
@@ -138,12 +154,17 @@ export function edgeSvg(model, edge, opcije = {}) {
 /** Ceo crtež (bez okvira lista) — koristi ga i canvas i izvoz. */
 export function crtezSvg(model, opcije = {}) {
     const izabrani = new Set(opcije.izabrani || []);
-    // zajednička evidencija zauzetih mesta, da se natpisi ne poklope
+
+    // Zajednička evidencija zauzetih mesta: prvo provodnici i tela elemenata,
+    // pa natpisi oko njih. Putanje se računaju jednom i dele.
+    const putanje = putanjeGrana(model);
     const zauzeti = [];
+    zauzmiCrtez(zauzeti, [...putanje.values()], model.nodes.map(nodeBBox));
 
     const edges = model.edges.map(e => edgeSvg(model, e, {
         selektovan: izabrani.has(e.id),
         prikaziOznake: opcije.prikaziOznake,
+        putanje,
         zauzeti
     })).join('');
     const nodes = model.nodes.map(n => nodeSvg(n, {
