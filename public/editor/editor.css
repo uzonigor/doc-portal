@@ -12,6 +12,7 @@
     --akcenat: #2b6cb0;
     --panel: #ffffff;
     --podloga: #f7fafc;
+    --sto: #e8ecf2;
 }
 
 body {
@@ -121,11 +122,57 @@ button.opasno:hover { background: #fff5f5; }
 
 /* ── platno ─────────────────────────────────────────────────────── */
 
-#platno { position: relative; overflow: hidden; background: #fff; }
-#crtez { position: absolute; inset: 0; }
-.platno { width: 100%; height: 100%; display: block; touch-action: none; }
+#platno {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 1fr 26px;
+    background: var(--sto);
+}
 
-.grid-tacka { fill: #cbd5e0; }
+/* crtaća zona; raspored sa lenjirima važi samo gde ih canvas stvarno pravi */
+#crtez { position: relative; overflow: hidden; }
+#crtez.sa-lenjirima {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    grid-template-rows: 22px 1fr;
+}
+
+.ugao-lenjira {
+    grid-area: 1 / 1;
+    background: #eef1f6;
+    border-right: 1px solid var(--ivica);
+    border-bottom: 1px solid var(--ivica);
+}
+.lenjir { background: #f8fafc; display: block; }
+.lenjir.vodoravni { grid-area: 1 / 2; width: 100%; height: 22px; border-bottom: 1px solid var(--ivica); }
+.lenjir.uspravni  { grid-area: 2 / 1; width: 22px; height: 100%; border-right: 1px solid var(--ivica); }
+.lenjir .crtica { stroke: #b6c2d1; stroke-width: 1; }
+.lenjir .crtica.glavna { stroke: #7a8798; }
+.lenjir .broj { font: 9px 'Segoe UI', sans-serif; fill: #6b7a8d; }
+.lenjir .marker { stroke: var(--akcenat); stroke-width: 1; }
+
+.sa-lenjirima svg.platno { grid-area: 2 / 2; }
+svg.platno {
+    width: 100%; height: 100%;
+    display: block;
+    touch-action: none;
+    cursor: crosshair;
+}
+
+/* radna površina i list */
+.sto { fill: var(--sto); }
+.papir { x: 0; y: 0; fill: #fff; stroke: #c3ccd8; stroke-width: 1; vector-effect: non-scaling-stroke; }
+
+.mreza-f { stroke: #e3e8ef; fill: none; vector-effect: non-scaling-stroke; }
+.mreza-g { stroke: #ccd4e0; fill: none; vector-effect: non-scaling-stroke; }
+.bez-mreze .mreza-polje { display: none; }
+
+/* okvir lista sa zonama — isti razred kao u izvozu, da se poklapaju */
+.ram .okvir { stroke: #44506180; fill: none; vector-effect: non-scaling-stroke; }
+.ram .zona { font: 8px 'Segoe UI', sans-serif; fill: #8a94a3; text-anchor: middle; }
+
+.nisan-linija { stroke: var(--akcenat); stroke-width: 1; opacity: .35; shape-rendering: crispEdges; }
 
 .node .simbol { color: #1a202c; }
 .node .oznaka { font: bold 11px 'Segoe UI', sans-serif; fill: #1a202c; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
@@ -191,21 +238,23 @@ button.opasno:hover { background: #fff5f5; }
 
 /* ── statusna traka i poruke ────────────────────────────────────── */
 
-#status {
-    position: absolute;
-    left: 12px; bottom: 12px;
+.statusna {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 12px;
     font-size: 11px;
     color: var(--prigusen);
-    background: rgba(255,255,255,.9);
-    padding: 4px 10px;
-    border-radius: 4px;
-    border: 1px solid var(--ivica);
-    pointer-events: none;
+    background: var(--panel);
+    border-top: 1px solid var(--ivica);
 }
+.statusna .razmak { flex: 1; }
+.statusna #koordinate { display: flex; gap: 14px; font-variant-numeric: tabular-nums; }
+.statusna #koordinate b { font-weight: 600; color: var(--tekst); }
 
 .pomoc {
     position: absolute;
-    right: 12px; bottom: 12px;
+    right: 12px; bottom: 36px;
     font-size: 11px;
     color: var(--prigusen);
     background: rgba(255,255,255,.9);

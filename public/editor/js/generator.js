@@ -8,6 +8,7 @@
 
 import { Model } from './model.js';
 import { rasporedi } from './layout.js';
+import { crtacePolje } from './list.js';
 import { defaultProps } from './symbols.js';
 import { vocHladno } from './provere.js';
 
@@ -263,7 +264,14 @@ export function generisi(p = {}) {
 
     // ── raspored i sklapanje modela ──────────────────────────────────────────
 
-    rasporedi(plan);
+    // Raspored se cilja na crtaće polje lista, da generisana šema sedne na list.
+    const sheet = p.sheet || { format: 'A3', orijentacija: 'landscape' };
+    const polje = crtacePolje(sheet, [...new Set(plan.map(s => s.type))].map(() => ({ tekst: '' })));
+    rasporedi(plan, {
+        maxSirina: polje.w - 40,
+        maxVisina: polje.h - 40,
+        pomak: { x: polje.x + 20, y: polje.y + 20 }
+    });
 
     const model = new Model({
         meta: {

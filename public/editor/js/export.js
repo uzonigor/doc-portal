@@ -39,7 +39,7 @@ function naslovTropolne(naziv) {
 }
 
 /** Legenda šeme: pozicione oznake grupisane po tipu simbola. */
-function legendaStavke(model) {
+export function legendaStavke(model) {
     const korisceni = [...new Set(model.nodes.map(n => n.type))];
     return korisceni.map(t => ({
         tekst: `${model.nodes.filter(n => n.type === t).map(n => n.oznaka).join(', ')} — ${SYMBOLS[t].naziv}`
@@ -59,6 +59,8 @@ export function listSvg(model, opcije = {}) {
         stil: STIL,
         sadrzaj: tropolna ? crtez3lSvg(model) : crtezSvg(model, { interaktivan: false }),
         bbox: tropolna ? crtez3lBBox(model, 20) : crtezBBox(model, 20),
+        // Crta se u koordinatama lista — ono što stoji na ekranu izlazi na list.
+        uklopi: false,
         legenda: legendaStavke(model),
         dodatno: {
             naslov: 'SNAGA DC / AC',

@@ -39,7 +39,8 @@
         <div class="grupa">
             <button id="btn-zoom-minus" title="Umanji">−</button>
             <button id="btn-zoom-plus" title="Uvećaj">+</button>
-            <button id="btn-uklopi" title="Uklopi u prozor">Uklopi</button>
+            <button id="btn-uklopi" title="Uklopi list u prozor">Uklopi list</button>
+            <button id="btn-na-list" title="Pomeri crtež u crtaće polje lista">Na list</button>
         </div>
 
         <span class="razmak"></span>
@@ -67,7 +68,11 @@
 
         <main id="platno">
             <div id="crtez"></div>
-            <div id="status">—</div>
+            <div class="statusna">
+                <span id="status">—</span>
+                <span class="razmak"></span>
+                <span id="koordinate"></span>
+            </div>
             <div class="pomoc" id="pomoc-1l">
                 Prevuci simbol iz palete · povuci od <b>porta</b> do porta za vezu<br>
                 <b>Shift</b>+prevlačenje ili srednji taster = pomeranje pogleda · točkić = zum<br>

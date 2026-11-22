@@ -26,6 +26,9 @@ import { faktorNapona, PODRAZUMEVANE_TEMPERATURE } from './provere.js';
 
 const S = 'stroke="currentColor" fill="none" stroke-width="1.6"';
 const SF = 'stroke="currentColor" fill="currentColor"';
+// tekst u simbolu: samo popuna. SF ovde ne valja — dao bi stroke dvaput,
+// a strogi XML (izvezeni .svg) na dupliranom atributu prekida parsiranje.
+const TXT = 'fill="currentColor" stroke="none"';
 const THIN = 'stroke="currentColor" fill="none" stroke-width="1"';
 
 // Kvadratić za simbole u ormanu / kućištu
@@ -120,7 +123,7 @@ export const SYMBOLS = {
         },
         draw: () => `
             <rect x="0" y="0" width="70" height="70" rx="2" ${S} stroke-dasharray="6 3"/>
-            <text x="35" y="38" text-anchor="middle" font-size="11" ${SF} stroke="none">DC</text>`
+            <text x="35" y="38" text-anchor="middle" font-size="11" ${TXT}>DC</text>`
     },
 
     dc_osigurac: {
@@ -400,7 +403,7 @@ export const SYMBOLS = {
         },
         draw: () => `
             <rect x="0" y="0" width="90" height="70" rx="2" ${S} stroke-dasharray="6 3"/>
-            <text x="45" y="40" text-anchor="middle" font-size="11" ${SF} stroke="none">AC</text>`
+            <text x="45" y="40" text-anchor="middle" font-size="11" ${TXT}>AC</text>`
     },
 
     // ───────────────────────────── Merenje i mreža ───────────────────────────
@@ -421,7 +424,7 @@ export const SYMBOLS = {
         },
         draw: () => `
             <circle cx="28" cy="28" r="24" ${S}/>
-            <text x="28" y="33" text-anchor="middle" font-size="13" ${SF} stroke="none">kWh</text>
+            <text x="28" y="33" text-anchor="middle" font-size="13" ${TXT}>kWh</text>
             <path d="M14 44 l6 -6 M36 12 l6 -6" ${THIN}/>`
     },
 
@@ -461,7 +464,7 @@ export const SYMBOLS = {
         draw: () => `
             <rect x="0" y="0" width="80" height="64" rx="2" ${S}/>
             <line x1="0" y1="16" x2="80" y2="16" ${THIN}/>
-            <text x="40" y="42" text-anchor="middle" font-size="11" ${SF} stroke="none">KPK</text>`
+            <text x="40" y="42" text-anchor="middle" font-size="11" ${TXT}>KPK</text>`
     },
 
     mreza: {
@@ -480,7 +483,7 @@ export const SYMBOLS = {
         draw: () => `
             <line x1="0" y1="24" x2="16" y2="24" ${S}/>
             <path d="M16 24 L34 8 L52 24 L34 40 Z" ${S}/>
-            <text x="34" y="28" text-anchor="middle" font-size="10" ${SF} stroke="none">~</text>`
+            <text x="34" y="28" text-anchor="middle" font-size="10" ${TXT}>~</text>`
     },
 
     transformator: {

@@ -14,6 +14,7 @@ export const FORMATI = {
 };
 
 const MARGINA = 20;
+const ZONA = 14;          // traka sa podelom na zone (A-… / 1-…)
 const SASTAVNICA_W = 460;
 const SASTAVNICA_H = 120;
 const LEGENDA_RED = 16;
@@ -21,8 +22,70 @@ const LEGENDA_SIRINA = 240;
 
 const HALO = 'paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round;';
 
+/** Ciljana veličina jedne zone; broj zona se iz nje izvodi po formatu. */
+const ZONA_CILJ = 170;
+const brojZona = (duzina) => Math.max(3, Math.round(duzina / ZONA_CILJ));
+
+/** Dimenzije lista u jedinicama crteža. */
+export function dimenzijeLista(sheet) {
+    const f = (sheet && sheet.format) || 'A3';
+    const o = (sheet && sheet.orijentacija) || 'landscape';
+    return (FORMATI[f] || FORMATI.A3)[o];
+}
+
+/** Unutrašnji okvir — sve unutar trake sa zonama. */
+export function unutrasnjiOkvir(sheet) {
+    const [W, H] = dimenzijeLista(sheet);
+    const i = MARGINA + ZONA;
+    return { x: i, y: i, w: W - 2 * i, h: H - 2 * i };
+}
+
+/**
+ * Polje u koje sme da uđe crtež: unutrašnji okvir bez donje trake koju
+ * zauzimaju legenda i sastavnica. Canvas i izvoz računaju isto, pa je ono
+ * što se vidi na ekranu tačno ono što izlazi na list.
+ */
+export function crtacePolje(sheet, stavkeLegende) {
+    const u = unutrasnjiOkvir(sheet);
+    const donja = Math.max(SASTAVNICA_H, visinaLegende(stavkeLegende)) + 12;
+    return { x: u.x, y: u.y, w: u.w, h: u.h - donja };
+}
+
+/** Okvir lista sa podelom na zone — isti i na ekranu i na izvozu. */
+export function okvirSvg(sheet) {
+    const [W, H] = dimenzijeLista(sheet);
+    const u = unutrasnjiOkvir(sheet);
+    const nx = brojZona(u.w), ny = brojZona(u.h);
+    const d = [
+        `<rect x="${MARGINA}" y="${MARGINA}" width="${W - 2 * MARGINA}" height="${H - 2 * MARGINA}" class="okvir"/>`,
+        `<rect x="${u.x}" y="${u.y}" width="${u.w}" height="${u.h}" class="okvir" stroke-width="1"/>`
+    ];
+
+    for (let i = 0; i < nx; i++) {
+        const x1 = u.x + u.w * i / nx;
+        if (i) d.push(
+            `<line x1="${x1}" y1="${MARGINA}" x2="${x1}" y2="${u.y}" class="okvir" stroke-width="0.8"/>`,
+            `<line x1="${x1}" y1="${u.y + u.h}" x2="${x1}" y2="${H - MARGINA}" class="okvir" stroke-width="0.8"/>`);
+        const cx = x1 + u.w / nx / 2;
+        d.push(`<text class="zona" x="${cx}" y="${MARGINA + ZONA - 4}">${i + 1}</text>`,
+               `<text class="zona" x="${cx}" y="${H - MARGINA - 4}">${i + 1}</text>`);
+    }
+    for (let i = 0; i < ny; i++) {
+        const y1 = u.y + u.h * i / ny;
+        if (i) d.push(
+            `<line x1="${MARGINA}" y1="${y1}" x2="${u.x}" y2="${y1}" class="okvir" stroke-width="0.8"/>`,
+            `<line x1="${u.x + u.w}" y1="${y1}" x2="${W - MARGINA}" y2="${y1}" class="okvir" stroke-width="0.8"/>`);
+        const cy = y1 + u.h / ny / 2 + 3;
+        const slovo = String.fromCharCode(65 + i);
+        d.push(`<text class="zona" x="${MARGINA + ZONA / 2}" y="${cy}">${slovo}</text>`,
+               `<text class="zona" x="${W - MARGINA - ZONA / 2}" y="${cy}">${slovo}</text>`);
+    }
+    return `<g class="ram">${d.join('')}</g>`;
+}
+
 export const OSNOVNI_STIL = `
     .okvir { stroke: #111; stroke-width: 1.5; fill: none; }
+    .ram .zona { font: 8px 'Segoe UI', sans-serif; fill: #555; text-anchor: middle; }
     .sastavnica text { font: 10px 'Segoe UI', sans-serif; fill: #111; }
     .sastavnica .naslov { font: bold 13px 'Segoe UI', sans-serif; }
     .sastavnica .oznaka-polja { font: 8px 'Segoe UI', sans-serif; fill: #666; }
@@ -63,7 +126,7 @@ function sastavnica(meta, dodatno, x, y, w, h) {
     </g>`;
 }
 
-function visinaLegende(stavke) {
+export function visinaLegende(stavke) {
     return stavke && stavke.length ? 26 + stavke.length * LEGENDA_RED : 0;
 }
 
@@ -99,29 +162,30 @@ function legenda(stavke, naslov, x, y) {
  * @param {number} o.maxSkala  - gornja granica uvećanja (podrazumevano 1.6)
  */
 export function listSvg(o) {
-    const format = (o.sheet && o.sheet.format) || 'A3';
-    const orijentacija = (o.sheet && o.sheet.orijentacija) || 'landscape';
-    const [W, H] = (FORMATI[format] || FORMATI.A3)[orijentacija];
-
-    // Donja traka je rezervisana za legendu i sastavnicu — crtež se u nju
-    // nikada ne spušta, pa legenda ne može prekriti sadržaj.
+    const sheet = o.sheet || { format: 'A3', orijentacija: 'landscape' };
+    const [W, H] = dimenzijeLista(sheet);
+    const u = unutrasnjiOkvir(sheet);
     const legendaH = visinaLegende(o.legenda);
-    const donjaTrakaY = H - MARGINA - Math.max(SASTAVNICA_H, legendaH);
 
-    const b = o.bbox && o.bbox.w > 0 ? o.bbox : { x: 0, y: 0, w: 800, h: 600 };
-    const poljeW = W - MARGINA * 2 - 20;
-    const poljeH = donjaTrakaY - MARGINA - 30;
-    const k = Math.min(o.maxSkala ?? 1.6, poljeW / b.w, poljeH / b.h);
-    const ox = MARGINA + 10 + (poljeW - b.w * k) / 2 - b.x * k;
-    const oy = MARGINA + 10 + (poljeH - b.h * k) / 2 - b.y * k;
+    // uklopi === false: crtež ide u sopstvenim koordinatama lista (ekran = izvoz).
+    // Inače se gabarit sam uklopi i centrira u crtaće polje.
+    let transform = '';
+    if (o.uklopi !== false) {
+        const polje = crtacePolje(sheet, o.legenda);
+        const b = o.bbox && o.bbox.w > 0 ? o.bbox : { x: 0, y: 0, w: 800, h: 600 };
+        const k = Math.min(o.maxSkala ?? 1.6, polje.w / b.w, polje.h / b.h);
+        const ox = polje.x + (polje.w - b.w * k) / 2 - b.x * k;
+        const oy = polje.y + (polje.h - b.h * k) / 2 - b.y * k;
+        transform = ` transform="translate(${ox} ${oy}) scale(${k})"`;
+    }
 
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">
         <style>${OSNOVNI_STIL}${o.stil || ''}</style>
         <rect x="0" y="0" width="${W}" height="${H}" fill="#fff"/>
-        <rect x="${MARGINA}" y="${MARGINA}" width="${W - MARGINA * 2}" height="${H - MARGINA * 2}" class="okvir"/>
-        <g transform="translate(${ox} ${oy}) scale(${k})">${o.sadrzaj}</g>
-        ${legenda(o.legenda, o.naslovLegende, MARGINA + 12, H - MARGINA - legendaH)}
-        ${sastavnica(o.meta, o.dodatno, W - MARGINA - SASTAVNICA_W, H - MARGINA - SASTAVNICA_H, SASTAVNICA_W, SASTAVNICA_H)}
+        ${okvirSvg(sheet)}
+        <g${transform}>${o.sadrzaj}</g>
+        ${legenda(o.legenda, o.naslovLegende, u.x + 12, u.y + u.h - legendaH)}
+        ${sastavnica(o.meta, o.dodatno, u.x + u.w - SASTAVNICA_W, u.y + u.h - SASTAVNICA_H, SASTAVNICA_W, SASTAVNICA_H)}
     </svg>`;
 }
 

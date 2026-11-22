@@ -13,6 +13,15 @@ import { getSymbol } from './symbols.js';
 
 const RAZMAK_KOLONA = 110;
 const RAZMAK_REDOVA = 60;
+// ispod ovoga crtež postaje nečitak, pa se radije prelije preko lista
+const MIN_RAZMAK_KOLONA = 45;
+const MIN_RAZMAK_REDOVA = 30;
+
+/** Najveći razmak koji još stane u zadatu dužinu, u granicama [min, zeljeni]. */
+function stegniRazmak(zeljeni, min, zbirVelicina, broj, raspolozivo) {
+    if (!raspolozivo || broj < 2) return zeljeni;
+    return Math.max(min, Math.min(zeljeni, (raspolozivo - zbirVelicina) / (broj - 1)));
+}
 
 /**
  * @param {Array} stavke - objekti sa { type, kol, red } (i bilo čime drugim)
@@ -21,10 +30,8 @@ const RAZMAK_REDOVA = 60;
 export function rasporedi(stavke, opcije = {}) {
     if (!stavke.length) return stavke;
 
-    const razmakKolona = opcije.razmakKolona ?? RAZMAK_KOLONA;
-    const razmakRedova = opcije.razmakRedova ?? RAZMAK_REDOVA;
-
     const dim = (s) => getSymbol(s.type).size;
+    const pomak = opcije.pomak || { x: 0, y: 0 };
 
     // ── kolone: širina = najširi simbol u koloni ─────────────────────────────
     const kolone = [...new Set(stavke.map(s => s.kol))].sort((a, b) => a - b);
@@ -33,6 +40,10 @@ export function rasporedi(stavke, opcije = {}) {
         const u = stavke.filter(s => s.kol === k);
         sirinaKolone.set(k, Math.max(...u.map(s => dim(s)[0])));
     });
+
+    const razmakKolona = stegniRazmak(
+        opcije.razmakKolona ?? RAZMAK_KOLONA, MIN_RAZMAK_KOLONA,
+        kolone.reduce((a, k) => a + sirinaKolone.get(k), 0), kolone.length, opcije.maxSirina);
 
     const xKolone = new Map();
     let x = 0;
@@ -48,6 +59,10 @@ export function rasporedi(stavke, opcije = {}) {
         const u = stavke.filter(s => Math.floor(s.red) === r);
         visinaReda.set(r, Math.max(...u.map(s => dim(s)[1])));
     });
+
+    const razmakRedova = stegniRazmak(
+        opcije.razmakRedova ?? RAZMAK_REDOVA, MIN_RAZMAK_REDOVA,
+        celiRedovi.reduce((a, r) => a + visinaReda.get(r), 0), celiRedovi.length, opcije.maxVisina);
 
     const yReda = new Map();
     let y = 0;
@@ -79,8 +94,8 @@ export function rasporedi(stavke, opcije = {}) {
 
         // element se centrira unutar svoje trake
         s.pos = {
-            x: Math.round((trakaX + (trakaW - w) / 2) / 10) * 10,
-            y: Math.round((trakaY + (trakaH - h) / 2) / 10) * 10
+            x: Math.round((pomak.x + trakaX + (trakaW - w) / 2) / 10) * 10,
+            y: Math.round((pomak.y + trakaY + (trakaH - h) / 2) / 10) * 10
         };
     });
 

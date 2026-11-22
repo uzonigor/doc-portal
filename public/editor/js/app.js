@@ -29,6 +29,18 @@ function poruka(tekst, vrsta = 'info') {
 
 function status(tekst) { el('#status').textContent = tekst; }
 
+/** Desna strana statusne trake: položaj kursora, zum, korak mreže, izbor. */
+function prikaziStanje(s) {
+    const polje = el('#koordinate');
+    if (!polje) return;
+    const koord = s.x === null ? '—' : `${s.x}, ${s.y}`;
+    polje.innerHTML =
+        `<span>X, Y <b>${koord}</b></span>` +
+        `<span>Zum <b>${Math.round(s.zoom * 100)}%</b></span>` +
+        `<span>Mreža <b>${s.grid}</b></span>` +
+        `<span>Izabrano <b>${s.izabrano}</b></span>`;
+}
+
 // ── demo šema ────────────────────────────────────────────────────────────────
 
 /** Demo je obična primena generatora — nema odvojenog, ručno složenog crteža. */
@@ -93,7 +105,8 @@ async function start() {
 
     canvas = new Canvas(el('#crtez'), model, {
         onIzbor: (ids) => renderSvojstva(el('#svojstva'), model, ids, canvas),
-        onPoruka: (t, v) => poruka(t, v)
+        onPoruka: (t, v) => poruka(t, v),
+        onStanje: (s) => prikaziStanje(s)
     });
 
     model.on(() => {
@@ -133,6 +146,8 @@ function postaviAlatke() {
         const [f, o] = e.target.value.split('-');
         model.sheet.format = f;
         model.sheet.orijentacija = o;
+        canvas.render();
+        canvas.uklopiUProzor();
         zakaziAutosave();
     });
 
@@ -140,6 +155,17 @@ function postaviAlatke() {
     el('#btn-undo').addEventListener('click', () => { model.undo(); canvas.postaviIzbor([]); });
     el('#btn-redo').addEventListener('click', () => model.redo());
     el('#btn-uklopi').addEventListener('click', () => canvas.uklopiUProzor());
+    el('#btn-na-list').addEventListener('click', () => {
+        const r = canvas.poraniNaList();
+        if (!r) return poruka('Crtež je prazan.');
+        canvas.uklopiUProzor();
+        const { desno, dole } = r.prelivanje;
+        if (desno > 0 || dole > 0) {
+            poruka(`Crtež je veći od crtaćeg polja za ${Math.max(desno, 0)}×${Math.max(dole, 0)} — uzmi veći format ili razmakni manje.`, 'greska');
+        } else {
+            poruka(r.pomereno ? 'Crtež pomeren u crtaće polje lista.' : 'Crtež je već u crtaćem polju.');
+        }
+    });
     el('#btn-zoom-plus').addEventListener('click', () => canvas.postaviZoom(canvas.zoom * 1.2));
     el('#btn-zoom-minus').addEventListener('click', () => canvas.postaviZoom(canvas.zoom / 1.2));
     el('#prikaz').addEventListener('click', (e) => {
@@ -177,6 +203,7 @@ function postaviAlatke() {
             model.edges = novi.edges;
         });
         canvas.postaviIzbor([]);
+        canvas.poraniNaList();
         canvas.uklopiUProzor();
     });
 

@@ -174,13 +174,14 @@ export function otvoriGenerator(model, canvas, meta = {}, preset = null) {
     const d = otvori(izPlana ? 'Generiši šemu iz string plana' : 'Generiši šemu iz parametara', koren, 900);
     d.podnozje.appendChild(dugme('Odustani', '', d.zatvori));
     d.podnozje.appendChild(dugme('Generiši', 'primarno', () => {
-        const novi = generisi(par);
+        const novi = generisi({ ...par, sheet: model.sheet });
         model.commit('generiši šemu', () => {
             model.nodes = novi.nodes;
             model.edges = novi.edges;
             model.meta = novi.meta;
         });
         canvas.postaviIzbor([]);
+        canvas.poraniNaList();
         canvas.uklopiUProzor();
         d.zatvori();
     }));
